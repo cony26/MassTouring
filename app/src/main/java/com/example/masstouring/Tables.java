@@ -3,6 +3,7 @@ package com.example.masstouring;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.CaptivePortal;
+import android.util.Log;
 
 public enum Tables implements ITable{
     POSITIONS("positions"){
@@ -26,8 +27,6 @@ public enum Tables implements ITable{
             setColumns(new IColumn[]{RecordsEndInfo.ID, RecordsEndInfo.END_TIME, RecordsEndInfo.ORDER_SIZE});
         }
     };
-
-
 
     private String oName;
     private IColumn[] oPrimaryKeys;
@@ -80,7 +79,9 @@ public enum Tables implements ITable{
         }
         builder.append(" VALUES(");
         for(int i = 0; i < aObjects.length; i++){
-            builder.append(aObjects[i].toString());
+            builder.append("'")
+                    .append(aObjects[i].toString())
+                    .append("'");
             if(i < aObjects.length - 1){
                 builder.append(",");
             }else{
@@ -88,6 +89,23 @@ public enum Tables implements ITable{
             }
         }
         return builder.toString();
+    }
+
+    @Override
+    public void insertLog(Object... aObjects) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        for(int i = 0; i < oColumns.length; i++){
+            builder.append(oColumns[i].getName())
+                    .append(":")
+                    .append(aObjects[i]);
+            if(i < oColumns.length - 1){
+                builder.append(",");
+            }else{
+                builder.append("]");
+            }
+        }
+        Log.d(LoggerTag.RECORDS, builder.toString());
     }
 
     @Override
@@ -152,4 +170,6 @@ public enum Tables implements ITable{
                 return null;
         }
     }
+
+
 }

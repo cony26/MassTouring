@@ -51,14 +51,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void putRecordsStartInfo(SQLiteDatabase sqLiteDatabase, int aId, String aStartTime){
         sqLiteDatabase.execSQL(Tables.RECORDS_STARTINFO.getInsertSQL(aId, aStartTime));
+        Tables.RECORDS_STARTINFO.insertLog(aId, aStartTime);
     }
 
     public void putRecordsEndInfo(SQLiteDatabase sqLiteDatabase, int aId, String aEndTime, int aOrderSize){
         sqLiteDatabase.execSQL(Tables.RECORDS_ENDINFO.getInsertSQL(aId, aEndTime, aOrderSize));
+        Tables.RECORDS_ENDINFO.insertLog(aId, aEndTime, aOrderSize);
     }
 
     public void putPositions(SQLiteDatabase sqLiteDatabase, int aId, int aOrder, double aLat, double aLon){
         sqLiteDatabase.execSQL(Tables.POSITIONS.getInsertSQL(aId, aOrder, aLat, aLon));
+        Tables.POSITIONS.insertLog(aId, aOrder, aLat, aLon);
     }
 
     public int getUniqueID() {
@@ -87,7 +90,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 int dataSize = -1;
                 String endInfo = null;
-                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, "ID="+id, null, null, null, null);
+                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, "id="+id, null, null, null, null);
                 recordsEndInfoCusor.moveToFirst();
                 if(!recordsEndInfoCusor.isAfterLast()){
                     endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
@@ -103,7 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     locationMap.put(order, new LatLng(latitude, altitude));
                 }
 
-                data.add(new RecordsItem(id, "start:"+startInfo+",end:" + endInfo, "xxx km/h", "appendixText", locationMap));
+                data.add(new RecordsItem(id, startInfo, endInfo, locationMap));
             }
         }
 
