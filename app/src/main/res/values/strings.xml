@@ -3,6 +3,7 @@
     <string name="title_activity_maps">Map</string>
     <string name="openMap">open Map</string>
     <string name="checkPicutures">check Picture</string>
-    <string name="startRecording">start Record Touring</string>
+    <string name="startRecording">Start Recording</string>
+    <string name="stopRecording">Stop Recording</string>
     <string name="memory">Check Records</string>
 </resources>

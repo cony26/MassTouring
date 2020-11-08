@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.database;
 
 public enum RecordsStartInfo implements IColumn{
     ID("id", "INTEGER", 0),

@@ -1,17 +1,15 @@
-package com.example.masstouring;
+package com.example.masstouring.database;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
-
+import com.example.masstouring.RecordsItem;
+import com.example.masstouring.common.Const;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,11 +20,8 @@ import java.util.Set;
 import static java.util.Collections.max;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    public static final String DBNAME = "MassTouring.sqlite";
-    private static final int VERSION = 1;
-
-    DatabaseHelper(Context context, String aDBName){
-        super(context, aDBName, null, VERSION);
+    public DatabaseHelper(Context context, String aDBName){
+        super(context, aDBName, null, Const.DB_VERSION);
     }
 
     @Override
@@ -59,9 +54,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Tables.RECORDS_ENDINFO.insertLog(aId, aEndTime, aOrderSize);
     }
 
-    public void putPositions(SQLiteDatabase sqLiteDatabase, int aId, int aOrder, double aLat, double aLon){
-        sqLiteDatabase.execSQL(Tables.POSITIONS.getInsertSQL(aId, aOrder, aLat, aLon));
-        Tables.POSITIONS.insertLog(aId, aOrder, aLat, aLon);
+    public void putPositions(SQLiteDatabase sqLiteDatabase, int aId, int aOrder, double aLat, double aLon, String aDate){
+        sqLiteDatabase.execSQL(Tables.POSITIONS.getInsertSQL(aId, aOrder, aLat, aLon, aDate));
+        Tables.POSITIONS.insertLog(aId, aOrder, aLat, aLon, aDate);
     }
 
     public int getUniqueID() {
@@ -75,7 +70,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }catch(Exception e){
             return uniqueId;
         }
-        uniqueId  = max(ids) + 1;
+        if(ids.size() != 0){
+            uniqueId  = max(ids) + 1;
+        }
 
         return uniqueId;
     }
@@ -88,25 +85,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
                 String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
 
-                int dataSize = -1;
-                String endInfo = null;
-                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, "id="+id, null, null, null, null);
-                recordsEndInfoCusor.moveToFirst();
+                String endInfo = Const.NO_INFO;
+                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getName() + "=" + id, null, null, null, null);
+                recordsEndInfoCusor.moveToNext();
                 if(!recordsEndInfoCusor.isAfterLast()){
                     endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
-                    dataSize = (int)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.ORDER_SIZE);
                 }
 
                 Map<Integer, LatLng> locationMap = new HashMap<>();
-                Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, "id="+id, null, null, null, null);
+                Map<Integer, String> timeStampMap = new HashMap<>();
+                Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + id, null, null, null, null);
                 while(positionsCursor.moveToNext()){
                     double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                    double altitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.ALTITUDE);
+                    double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
                     int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
-                    locationMap.put(order, new LatLng(latitude, altitude));
+                    String date = (String)Tables.POSITIONS.get(positionsCursor, Positions.TIMESTAMP);
+                    locationMap.put(order, new LatLng(latitude, longitude));
+                    timeStampMap.put(order, date);
                 }
 
-                data.add(new RecordsItem(id, startInfo, endInfo, locationMap));
+                data.add(new RecordsItem(id, startInfo, endInfo, locationMap, timeStampMap));
             }
         }
 

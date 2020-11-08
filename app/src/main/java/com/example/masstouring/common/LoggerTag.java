@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.common;
 
 public class LoggerTag {
     public static final String RECORDS = "RECORD";

@@ -13,11 +13,13 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.masstouring.common.Const;
+import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.database.DatabaseHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -37,7 +39,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,20 +53,17 @@ public class MapsFragment extends FragmentActivity implements OnMapReadyCallback
     private LocationCallback oLocCallback;
     private LocationRequest oLocReq;
     private GoogleMap mMap;
-    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, DatabaseHelper.DBNAME);
-    private int cycleCount = 0;
-    private int id;
+    private int oRecordNumber = 0;
+    private int oId;
     private final List<Location> oLocations= new ArrayList<>();
     private Button oStartRecordingButton;
     private Button oMemoryButton;
     private RecyclerView oRecordsView;
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapsFragment.this);
-    private boolean oRecordsViewVisible = false;
-    private boolean isStartTouring = false;
+    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
+    private boolean oIsRecordsViewVisible = false;
+    private boolean oIsStartTouring = false;
     private Location oLastMappedLocation = null;
-    private static double DISTANCE_GAP = 0.5;
-    private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,22 +105,24 @@ public class MapsFragment extends FragmentActivity implements OnMapReadyCallback
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(isStartTouring){
+                        if(oIsStartTouring){
                             try(SQLiteDatabase db = oDatabaseHelper.getWritableDatabase()){
                                 LocalDateTime now = LocalDateTime.now();
-                                oDatabaseHelper.putRecordsEndInfo(db, id, now.format(FORMAT), cycleCount);
+                                oDatabaseHelper.putRecordsEndInfo(db, oId, now.format(Const.DATE_FORMAT), oRecordNumber);
                             }
-                            isStartTouring = false;
-                            cycleCount = 0;
+                            oIsStartTouring = false;
+                            oRecordNumber = 0;
+                            oStartRecordingButton.setText(R.string.startRecording);
                             Toast.makeText(MapsFragment.this, "Touring Finish!", Toast.LENGTH_SHORT).show();
                         }else{
-                            isStartTouring = true;
+                            oIsStartTouring = true;
                             oLocations.clear();
-                            id = oDatabaseHelper.getUniqueID();
+                            oId = oDatabaseHelper.getUniqueID();
                             try(SQLiteDatabase db = oDatabaseHelper.getWritableDatabase()){
                                 LocalDateTime now = LocalDateTime.now();
-                                oDatabaseHelper.putRecordsStartInfo(db, id, now.format(FORMAT));
+                                oDatabaseHelper.putRecordsStartInfo(db, oId, now.format(Const.DATE_FORMAT));
                             }
+                            oStartRecordingButton.setText(R.string.stopRecording);
                             Toast.makeText(MapsFragment.this, "Touring Start!", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -132,11 +132,11 @@ public class MapsFragment extends FragmentActivity implements OnMapReadyCallback
         oMemoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(oRecordsViewVisible) {
-                    oRecordsViewVisible = false;
+                if(oIsRecordsViewVisible) {
+                    oIsRecordsViewVisible = false;
                     oRecordsView.setVisibility(View.GONE);
                 }else{
-                    oRecordsViewVisible = true;
+                    oIsRecordsViewVisible = true;
                     List<RecordsItem> data = loadRecords();
                     RecyclerView.Adapter adapter = new RecordsViewAdapter(data, MapsFragment.this);
                     oRecordsView.setAdapter(adapter);
@@ -176,17 +176,17 @@ public class MapsFragment extends FragmentActivity implements OnMapReadyCallback
                 Location loc = locationResult.getLastLocation();
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(loc.getLatitude(), loc.getLongitude()), 16f));
-                if(isStartTouring) {
+                if(oIsStartTouring) {
                     if (isDifferenceEnough(loc)) {
                         try (SQLiteDatabase db = oDatabaseHelper.getWritableDatabase()) {
-                            oDatabaseHelper.putPositions(db, id, cycleCount, loc.getLatitude(), loc.getLongitude());
+                            oDatabaseHelper.putPositions(db, oId, oRecordNumber, loc.getLatitude(), loc.getLongitude(), LocalDateTime.now().format(Const.DATE_FORMAT));
                         }
                         oLocations.add(oLastMappedLocation);
-                        cycleCount++;
+                        oRecordNumber++;
                     }
                 }
 
-                if(cycleCount > 0){
+                if(oRecordNumber > 0){
                     PolylineOptions polylineOptions = new PolylineOptions();
                     for(Location mappedLocation : oLocations){
                         polylineOptions.add(new LatLng(mappedLocation.getLatitude(), mappedLocation.getLongitude()));
@@ -245,8 +245,8 @@ public class MapsFragment extends FragmentActivity implements OnMapReadyCallback
 
         float distance = alocation.distanceTo(oLastMappedLocation);
         Log.d(LoggerTag.LOCATION, "(latitude, longitude) = (" + alocation.getLatitude() + "," + alocation.getLongitude() + ")");
-        Log.d(LoggerTag.LOCATION, "(distance, limit) = (" + distance + "," + DISTANCE_GAP + ")");
-        if(distance >= DISTANCE_GAP){
+        Log.d(LoggerTag.LOCATION, "(distance, limit) = (" + distance + "," + Const.DISTANCE_GAP + ")");
+        if(distance >= Const.DISTANCE_GAP){
             oLastMappedLocation = alocation;
             return true;
         }else{
@@ -256,6 +256,9 @@ public class MapsFragment extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onClick(Map<Integer, LatLng> aMap) {
+        if(aMap.size() <= 1)
+            return;
+
         PolylineOptions polylineOptions = new PolylineOptions();
         double minLat;
         double maxLat;
@@ -270,7 +273,7 @@ public class MapsFragment extends FragmentActivity implements OnMapReadyCallback
             latSet.add(latLng.latitude);
             lonSet.add(latLng.longitude);
         }
-        maxLat = latSet.stream().max(Double::compareTo).orElse();
+        maxLat = latSet.stream().max(Double::compareTo).get();
         minLat = latSet.stream().min(Double::compareTo).get();
         maxLon = lonSet.stream().max(Double::compareTo).get();
         minLon = lonSet.stream().min(Double::compareTo).get();

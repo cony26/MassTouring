@@ -1,15 +1,14 @@
-package com.example.masstouring;
+package com.example.masstouring.database;
 
-public enum Positions implements IColumn{
+public enum RecordsEndInfo implements IColumn{
     ID("id", "INTEGER",0),
-    ORDER("order", "INTEGER",1),
-    LATITUDE("latitude", "REAL",2),
-    ALTITUDE("altitude", "REAL",3);
+    END_TIME("end_time", "TEXT",1),
+    ORDER_SIZE("order_size", "INTEGER",2);
 
-    public String oName;
-    public String oType;
-    public int oIndex;
-    Positions(String aName, String aType, int aIndex){
+    String oName;
+    String oType;
+    int oIndex;
+    RecordsEndInfo(String aName, String aType, int aIndex){
         oName = aName;
         oType = aType;
         oIndex = aIndex;
@@ -38,4 +37,6 @@ public enum Positions implements IColumn{
     public int getIndex() {
         return oIndex;
     }
+
+
 }

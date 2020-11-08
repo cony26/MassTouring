@@ -1,14 +1,11 @@
 package com.example.masstouring;
 
-import android.app.LauncherActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> {
@@ -28,7 +25,9 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
 
     @Override
     public void onBindViewHolder(RecordsViewHolder aHolder, int aPosition){
-        aHolder.oDateText.setText(oData.get(aPosition).getDateText());
+        aHolder.oYearText.setText(oData.get(aPosition).getYearText());
+        aHolder.oStartDateText.setText(oData.get(aPosition).getStartDateText());
+        aHolder.oEndDateText.setText(oData.get(aPosition).getEndDateText());
         aHolder.oDistanceText.setText(oData.get(aPosition).getDistanceText());
         aHolder.oAppendixText.setText(oData.get(aPosition).getAppendixText());
         aHolder.itemView.setOnClickListener(new View.OnClickListener() {

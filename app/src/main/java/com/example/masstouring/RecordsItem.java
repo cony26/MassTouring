@@ -2,41 +2,104 @@ package com.example.masstouring;
 
 import android.location.Location;
 
+import com.example.masstouring.common.Const;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public class RecordsItem {
     private final int oId;
+    private final String oYearText;
     private final String oStartDateText;
     private final String oEndDateText;
     private final double oDistance;
     private final String oAppendixText;
     private final Map<Integer, LatLng> oLocationMap;
+    private final Map<Integer, LatLng> oTimeStampMap;
 
-    public RecordsItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap){
+    public RecordsItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap){
         oId = aID;
-        oStartDateText = aStartDateText;
-        oEndDateText = aEndDateText;
+
+        LocalDateTime startDate = LocalDateTime.parse(aStartDateText, Const.DATE_FORMAT);
+        oYearText = Integer.toString(startDate.getYear());
+        oStartDateText = startDate.format(Const.START_DATE_FORMAT);
+
+        if(aEndDateText.equals(Const.NO_INFO)){
+            oEndDateText = Const.NO_INFO;
+        }else {
+            LocalDateTime endDate = LocalDateTime.parse(aEndDateText, Const.DATE_FORMAT);
+            DateTimeFormatter format;
+            if (startDate.getDayOfMonth() == endDate.getDayOfMonth()) {
+                format = Const.END_SAME_DATE_FORMAT;
+            } else {
+                format = Const.END_DIFF_DATE_FORMAT;
+            }
+            oEndDateText = "-" + endDate.format(format);
+        }
+
         oLocationMap = aLocationMap;
+        oTimeStampMap = aTimeStampMap;
         oDistance = calculateDistance();
         oAppendixText = buildAppendixText();
+    }
+
+    public String getYearText() {
+        return oYearText;
+    }
+
+    public String getStartDateText() {
+        return oStartDateText;
+    }
+
+    public String getEndDateText() {
+        return oEndDateText;
+    }
+
+    public String getDistanceText(){
+        StringBuilder builder = new StringBuilder();
+        builder.append(Math.round(oDistance / 1000)).append(Const.KM_UNIT);
+        return builder.toString();
+    }
+
+    public String getAppendixText() {
+        return oAppendixText;
+    }
+
+    public int getId() {
+        return oId;
+    }
+
+    double getDistance() {
+        return oDistance;
+    }
+
+    public Map<Integer, LatLng> getLocationMap() {
+        return oLocationMap;
+    }
+
+    public Map<Integer, LatLng> getTimeStampMap() {
+        return oTimeStampMap;
     }
 
     @Override
     public String toString(){
         StringBuilder builder = new StringBuilder();
         builder.append("id:").append(oId).append(",")
-                .append("Date:").append(oStartDateText).append(",")
+                .append("Year:").append(oYearText).append(",")
+                .append("StartDate:").append(oStartDateText).append(",")
+                .append("EndDate:").append(oEndDateText).append(",")
                 .append("Distance:").append(oDistance).append(",")
                 .append("AppendixText:").append(oAppendixText).append(",")
-                .append("LocationMap:[");
-        for(int i : oLocationMap.keySet()){
-            builder.append(oLocationMap.get(i)).append(",");
+                .append("Locations:[date, <latitude, longitude>]=");
+        for(int i = 0; i < oLocationMap.size(); i++){
+            builder.append("[")
+                    .append(oTimeStampMap.get(i)).append(",<")
+                    .append(oLocationMap.get(i).latitude).append(",")
+                    .append(oLocationMap.get(i).longitude).append("],");
         }
-        builder.append("]");
         return builder.toString();
-
     }
 
     private float calculateDistance(){
@@ -60,33 +123,5 @@ public class RecordsItem {
         StringBuilder builder = new StringBuilder();
         builder.append(oId);
         return builder.toString();
-    }
-
-    public String getDateText(){
-        StringBuilder builder = new StringBuilder();
-        builder.append(oStartDateText).append("-").append(oEndDateText);
-        return builder.toString();
-    }
-
-    public String getDistanceText(){
-        StringBuilder builder = new StringBuilder();
-        builder.append(Math.round(oDistance / 1000)).append("km");
-        return builder.toString();
-    }
-
-    public String getAppendixText() {
-        return oAppendixText;
-    }
-
-    public int getId() {
-        return oId;
-    }
-
-    double getDistance() {
-        return oDistance;
-    }
-
-    public Map<Integer, LatLng> getLocationMap() {
-        return oLocationMap;
     }
 }

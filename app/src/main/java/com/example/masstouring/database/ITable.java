@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.database;
 
 public interface ITable {
     public abstract String getCreateTableSQL();

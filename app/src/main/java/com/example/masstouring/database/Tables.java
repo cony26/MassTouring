@@ -1,16 +1,17 @@
-package com.example.masstouring;
+package com.example.masstouring.database;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.CaptivePortal;
 import android.util.Log;
+
+import com.example.masstouring.common.LoggerTag;
 
 public enum Tables implements ITable{
     POSITIONS("positions"){
         @Override
         public void registerColumns(){
             setPrimaryKeys(new IColumn[]{Positions.ID, Positions.ORDER});
-            setColumns(new IColumn[]{Positions.ID, Positions.ORDER, Positions.LATITUDE, Positions.ALTITUDE});
+            setColumns(new IColumn[]{Positions.ID, Positions.ORDER, Positions.LATITUDE, Positions.LONGITUDE, Positions.TIMESTAMP});
         }
     },
     RECORDS_STARTINFO("records_startinfo"){
