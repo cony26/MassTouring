@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Intent i = new Intent(MainActivity.this, MapsFragment.class);
+                        Intent i = new Intent(MainActivity.this, MapActivity.class);
                         startActivity(i);
                     }
                 }
