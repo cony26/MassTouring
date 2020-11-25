@@ -31,6 +31,8 @@ public class RecordService extends Service {
     private LocationSettingsRequest oLocSetReq;
     private LocationCallback oLocCallback;
     private LocationRequest oLocReq;
+    private NotificationChannel oNotificationChannel;
+    private Notification oNotification;
 
     @Nullable
     @Override
@@ -41,31 +43,35 @@ public class RecordService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(LoggerTag.PROCESS, "onStartCommand RecordService");
-        NotificationChannel channel = new NotificationChannel(Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID, "RecordService", NotificationManager.IMPORTANCE_DEFAULT);
-        Notification notification = new Notification.Builder(this, Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("RecordService")
-                .build();
-        startForeground(1, notification);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
             return START_STICKY;
         }
         oFusedClient.requestLocationUpdates(oLocReq, oLocCallback, Looper.myLooper());
-
         return START_STICKY;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        oNotificationChannel = new NotificationChannel(Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID, getText(R.string.notificationTitle), NotificationManager.IMPORTANCE_DEFAULT);
+        oNotification = new Notification.Builder(this, Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID)
+                .setContentTitle(getText(R.string.notificationTitle))
+                .setContentText(getText(R.string.notificationContent))
+                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark)
+                .build();
+        NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        manager.createNotificationChannel(oNotificationChannel);
         initializeGpsSetting();
-        Log.d(LoggerTag.PROCESS,"create RecordService");
+        startForeground(1, oNotification);
+        Log.d(LoggerTag.PROCESS,"onCreate RecordService");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(LoggerTag.PROCESS,"destroy RecordService");
+        stopForeground(true);
+        Log.d(LoggerTag.PROCESS,"onDestroy RecordService");
     }
 
     private void initializeGpsSetting(){
@@ -76,8 +82,8 @@ public class RecordService extends Service {
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location loc = locationResult.getLastLocation();
-                Intent i = new Intent("RecordService Action");
-                i.putExtra("location", loc);
+                Intent i = new Intent(Const.RECORD_SERVICE_ACTION_ID);
+                i.putExtra(Const.LOCATION_KEY, loc);
                 sendBroadcast(i);
             }
         };

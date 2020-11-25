@@ -23,4 +23,8 @@ public class Const {
 
     //Notification
     public static final String RECORD_SERVICE_NOTIFICATION_CHANNEL_ID = "RecordService";
+
+    //RecordService Transfer
+    public static final String RECORD_SERVICE_ACTION_ID = "RecordService Action";
+    public static final String LOCATION_KEY = "location";
 }

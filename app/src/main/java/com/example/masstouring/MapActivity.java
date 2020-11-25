@@ -53,6 +53,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(LoggerTag.PROCESS,"onCreate MapActivity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
@@ -62,12 +63,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         oRecordsView.setLayoutManager(oManager);
         oRecordReceiver = new RecordReceiver(this);
         IntentFilter filter = new IntentFilter();
-        filter.addAction("RecordService Action");
+        filter.addAction(Const.RECORD_SERVICE_ACTION_ID);
         registerReceiver(oRecordReceiver, filter);
 
         setButtonClickListeners();
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
-        initializeGps();
         startWatchLocation();
     }
 
@@ -104,7 +106,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             oIsStartTouring = false;
                             oRecordNumber = 0;
                             oStartRecordingButton.setText(R.string.startRecording);
-                            Toast.makeText(MapActivity.this, "Touring Finish!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MapActivity.this, getText(R.string.touringFinishToast), Toast.LENGTH_SHORT).show();
                         }else{
                             oIsStartTouring = true;
                             oLocations.clear();
@@ -114,7 +116,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                 oDatabaseHelper.putRecordsStartInfo(db, oId, now.format(Const.DATE_FORMAT));
                             }
                             oStartRecordingButton.setText(R.string.stopRecording);
-                            Toast.makeText(MapActivity.this, "Touring Start!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MapActivity.this, getText(R.string.touringStartToast), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -149,11 +151,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         return data;
     }
 
-    private void initializeGps(){
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-    }
-
     private void startWatchLocation(){
         Intent i = new Intent(MapActivity.this, RecordService.class);
         startForegroundService(i);
@@ -162,24 +159,33 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     protected void onPause(){
         super.onPause();
+        Log.d(LoggerTag.PROCESS,"onPause MapActivity");
     }
 
     @Override
     protected void onResume(){
         super.onResume();
+        Log.d(LoggerTag.PROCESS,"onResume MapActivity");
     }
 
-    private boolean isDifferenceEnough(Location alocation){
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(oRecordReceiver);
+        Log.d(LoggerTag.PROCESS,"onDestroy MapActivity");
+    }
+
+    private boolean isDifferenceEnough(Location aLocation){
         if(oLastMappedLocation == null){
-            oLastMappedLocation = alocation;
+            oLastMappedLocation = aLocation;
             return true;
         }
 
-        float distance = alocation.distanceTo(oLastMappedLocation);
-        Log.d(LoggerTag.LOCATION, "(latitude, longitude) = (" + alocation.getLatitude() + "," + alocation.getLongitude() + ")");
+        float distance = aLocation.distanceTo(oLastMappedLocation);
+        Log.d(LoggerTag.LOCATION, "(latitude, longitude) = (" + aLocation.getLatitude() + "," + aLocation.getLongitude() + ")");
         Log.d(LoggerTag.LOCATION, "(distance, limit) = (" + distance + "," + Const.DISTANCE_GAP + ")");
         if(distance >= Const.DISTANCE_GAP){
-            oLastMappedLocation = alocation;
+            oLastMappedLocation = aLocation;
             return true;
         }else{
             return false;
