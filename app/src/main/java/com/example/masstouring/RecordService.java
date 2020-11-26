@@ -97,4 +97,11 @@ public class RecordService extends Service {
                 .addLocationRequest(oLocReq)
                 .build();
     }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        stopForeground(true);
+        Log.d(LoggerTag.PROCESS,"onTaskRemoved RecordService");
+    }
 }

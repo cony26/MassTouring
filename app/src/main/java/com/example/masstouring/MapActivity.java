@@ -50,6 +50,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private boolean oIsStartTouring = false;
     private Location oLastMappedLocation = null;
     private RecordReceiver oRecordReceiver;
+    private boolean oIsTracePosition = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +91,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
         mMap.setMyLocationEnabled(true);
+        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                oIsTracePosition = true;
+                return false;
+            }
+        });
+        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int i) {
+                if(i == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE){
+                    oIsTracePosition = false;
+                }
+            }
+        });
     }
 
 
@@ -228,11 +244,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         builder.append("[lat1, lon1] = [").append(minLat).append(",").append(minLon).append("]")
                 .append("[lat2, lon2] = [").append(maxLat).append(",").append(maxLon).append("]");
         Log.d(LoggerTag.LOCATION, builder.toString());
+        oIsTracePosition = false;
     }
 
     @Override
     public void onReceiveLocationUpdate(Location aLocation) {
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
+        if(oIsTracePosition) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
+        }
+
         if(oIsStartTouring) {
             if (isDifferenceEnough(aLocation)) {
                 try (SQLiteDatabase db = oDatabaseHelper.getWritableDatabase()) {
