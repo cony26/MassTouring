@@ -20,4 +20,11 @@ public class Const {
     //DB
     public static final String DB_NAME = "MassTouring.sqlite";
     public static final int DB_VERSION = 1;
+
+    //Notification
+    public static final String RECORD_SERVICE_NOTIFICATION_CHANNEL_ID = "RecordService";
+
+    //RecordService Transfer
+    public static final String RECORD_SERVICE_ACTION_ID = "RecordService Action";
+    public static final String LOCATION_KEY = "location";
 }
