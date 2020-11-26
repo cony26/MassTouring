@@ -62,6 +62,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         oRecordsView = findViewById(R.id.recordsView);
         oManager.setOrientation(LinearLayoutManager.VERTICAL);
         oRecordsView.setLayoutManager(oManager);
+        oRecordsView.setVisibility(View.GONE);
         oRecordReceiver = new RecordReceiver(this);
         IntentFilter filter = new IntentFilter();
         filter.addAction(Const.RECORD_SERVICE_ACTION_ID);
