@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> {
-    private List<RecordsItem> oData;
+    private List<RecordItem> oData;
     private IItemClickCallback oCallback;
 
-    public RecordsViewAdapter(List<RecordsItem> aData, IItemClickCallback aCallback){
+    public RecordsViewAdapter(List<RecordItem> aData, IItemClickCallback aCallback){
         oData = aData;
         oCallback = aCallback;
     }

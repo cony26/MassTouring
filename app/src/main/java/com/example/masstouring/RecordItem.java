@@ -1,15 +1,18 @@
 package com.example.masstouring;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.example.masstouring.common.Const;
+import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-public class RecordsItem {
+public class RecordItem {
     private final int oId;
     private final String oYearText;
     private final String oStartDateText;
@@ -19,7 +22,7 @@ public class RecordsItem {
     private final Map<Integer, LatLng> oLocationMap;
     private final Map<Integer, LatLng> oTimeStampMap;
 
-    public RecordsItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap){
+    public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap){
         oId = aID;
 
         LocalDateTime startDate = LocalDateTime.parse(aStartDateText, Const.DATE_FORMAT);
@@ -59,7 +62,8 @@ public class RecordsItem {
 
     public String getDistanceText(){
         StringBuilder builder = new StringBuilder();
-        builder.append(Math.round(oDistance / 1000)).append(Const.KM_UNIT);
+        BigDecimal distance = new BigDecimal(oDistance / 1000);
+        builder.append(distance.setScale(3, BigDecimal.ROUND_UP)).append(Const.KM_UNIT);
         return builder.toString();
     }
 
@@ -97,7 +101,7 @@ public class RecordsItem {
             builder.append("[")
                     .append(oTimeStampMap.get(i)).append(",<")
                     .append(oLocationMap.get(i).latitude).append(",")
-                    .append(oLocationMap.get(i).longitude).append("],");
+                    .append(oLocationMap.get(i).longitude).append(">],");
         }
         return builder.toString();
     }

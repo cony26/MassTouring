@@ -42,7 +42,7 @@ public class RecordService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(LoggerTag.PROCESS, "onStartCommand RecordService");
+        Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
             return START_STICKY;
@@ -64,14 +64,14 @@ public class RecordService extends Service {
         manager.createNotificationChannel(oNotificationChannel);
         initializeGpsSetting();
         startForeground(1, oNotification);
-        Log.d(LoggerTag.PROCESS,"onCreate RecordService");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onCreate RecordService");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         stopForeground(true);
-        Log.d(LoggerTag.PROCESS,"onDestroy RecordService");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy RecordService");
     }
 
     private void initializeGpsSetting(){
@@ -84,6 +84,7 @@ public class RecordService extends Service {
                 Location loc = locationResult.getLastLocation();
                 Intent i = new Intent(Const.RECORD_SERVICE_ACTION_ID);
                 i.putExtra(Const.LOCATION_KEY, loc);
+
                 sendBroadcast(i);
             }
         };
@@ -102,6 +103,6 @@ public class RecordService extends Service {
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
         stopForeground(true);
-        Log.d(LoggerTag.PROCESS,"onTaskRemoved RecordService");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onTaskRemoved RecordService");
     }
 }

@@ -12,7 +12,7 @@ import com.example.masstouring.common.LoggerTag;
 public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState){
-        Log.d(LoggerTag.PROCESS,"onCreate MainActivity");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onCreate MainActivity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -34,18 +34,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(LoggerTag.PROCESS,"onDestroy MainActivity");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy MainActivity");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(LoggerTag.PROCESS,"onPause MainActivity");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onPause MainActivity");
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        Log.d(LoggerTag.PROCESS,"onResume MainActivity");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onResume MainActivity");
     }
 }
