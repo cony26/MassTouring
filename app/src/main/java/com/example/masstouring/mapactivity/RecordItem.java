@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.mapactivity;
 
 import android.location.Location;
 import android.util.Log;
@@ -75,7 +75,7 @@ public class RecordItem {
         return oId;
     }
 
-    double getDistance() {
+    public double getDistance() {
         return oDistance;
     }
 

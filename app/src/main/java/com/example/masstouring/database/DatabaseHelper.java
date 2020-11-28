@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.util.Log;
 
-import com.example.masstouring.RecordItem;
-import com.example.masstouring.RecordObject;
+import com.example.masstouring.mapactivity.RecordItem;
+import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.model.LatLng;

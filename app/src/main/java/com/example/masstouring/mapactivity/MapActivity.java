@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.mapactivity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -16,6 +16,10 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.masstouring.recordservice.ILocationUpdateCallback;
+import com.example.masstouring.R;
+import com.example.masstouring.recordservice.RecordReceiver;
+import com.example.masstouring.recordservice.RecordService;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
@@ -33,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, IItemClickCallback, ILocationUpdateCallback{
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback, IItemClickCallback, ILocationUpdateCallback {
 
     private GoogleMap mMap;
     private Button oStartRecordingButton;

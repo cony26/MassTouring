@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.mainactivity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.masstouring.mapactivity.MapActivity;
+import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
 
 public class MainActivity extends AppCompatActivity {

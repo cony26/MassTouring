@@ -1,5 +1,6 @@
 package com.example.masstouring;
 
+import com.example.masstouring.mapactivity.RecordItem;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.junit.Test;

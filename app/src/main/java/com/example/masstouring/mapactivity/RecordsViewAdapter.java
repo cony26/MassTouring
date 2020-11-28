@@ -1,10 +1,12 @@
-package com.example.masstouring;
+package com.example.masstouring.mapactivity;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.masstouring.R;
 
 import java.util.List;
 

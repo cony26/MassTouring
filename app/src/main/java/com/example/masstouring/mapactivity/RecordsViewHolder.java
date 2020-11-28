@@ -1,9 +1,11 @@
-package com.example.masstouring;
+package com.example.masstouring.mapactivity;
 
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.masstouring.R;
 
 public class RecordsViewHolder extends RecyclerView.ViewHolder {
     TextView oStartDateText;

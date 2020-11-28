@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.mapactivity;
 
 public enum RecordState {
     RECORDING,

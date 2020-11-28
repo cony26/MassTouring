@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.recordservice;
 
 import android.Manifest;
 import android.app.Notification;
@@ -15,6 +15,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 
+import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -102,6 +103,7 @@ public class RecordService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
+        oFusedClient.removeLocationUpdates(oLocCallback);
         stopForeground(true);
         Log.d(LoggerTag.SYSTEM_PROCESS,"onTaskRemoved RecordService");
     }

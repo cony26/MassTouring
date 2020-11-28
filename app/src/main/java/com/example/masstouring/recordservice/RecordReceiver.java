@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.recordservice;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

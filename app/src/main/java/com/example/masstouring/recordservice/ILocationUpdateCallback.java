@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.recordservice;
 
 import android.location.Location;
 

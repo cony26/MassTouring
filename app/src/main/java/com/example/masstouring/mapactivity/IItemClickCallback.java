@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.mapactivity;
 
 import com.google.android.gms.maps.model.LatLng;
 

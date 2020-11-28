@@ -1,4 +1,4 @@
-package com.example.masstouring;
+package com.example.masstouring.mapactivity;
 
 import android.location.Location;
 import android.util.Log;

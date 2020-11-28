@@ -36,17 +36,17 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".MapActivity"
+            android:name=".mapactivity.MapActivity"
             android:label="@string/title_activity_maps">
 
         </activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".mainactivity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".RecordService"
+        <service android:name=".recordservice.RecordService"
             android:foregroundServiceType="location"/>
     </application>
 
