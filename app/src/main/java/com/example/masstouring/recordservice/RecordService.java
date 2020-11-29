@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,6 +19,7 @@ import androidx.core.app.ActivityCompat;
 import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.mapactivity.MapActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -55,12 +57,17 @@ public class RecordService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        oNotificationChannel = new NotificationChannel(Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID, getText(R.string.notificationTitle), NotificationManager.IMPORTANCE_DEFAULT);
+        Intent intent = new Intent(this, MapActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         oNotification = new Notification.Builder(this, Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(getText(R.string.notificationTitle))
                 .setContentText(getText(R.string.notificationContent))
                 .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark)
+                .setContentIntent(pendingIntent)
+                .addAction(R.drawable.common_google_signin_btn_icon_light, getString(R.string.openMap), pendingIntent)
                 .build();
+        oNotificationChannel = new NotificationChannel(Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID, getText(R.string.notificationTitle), NotificationManager.IMPORTANCE_DEFAULT);
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         manager.createNotificationChannel(oNotificationChannel);
         initializeGpsSetting();

@@ -102,19 +102,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(oRecordState.equals(RecordState.RECORDING)) {
+                        if(oRecordState == RecordState.RECORDING){
                             oRecordState = RecordState.STOP;
                             String endDate = LocalDateTime.now().format(Const.DATE_FORMAT);
                             oRecordObject.setEndDate(endDate);
                             oDatabaseHelper.recordEndInfo(oRecordObject);
                             oStartRecordingButton.setText(R.string.startRecording);
                             Toast.makeText(MapActivity.this, getText(R.string.touringFinishToast), Toast.LENGTH_SHORT).show();
-                        }
-
-                        if(oRecordState.equals(RecordState.STOP)){
+                        }else if(oRecordState == RecordState.STOP){
                             oRecordState = RecordState.RECORDING;
                             oRecordObject = new RecordObject(oDatabaseHelper);
-                            mMap.addPolyline(oRecordObject.getPolylineOptions());
                             oDatabaseHelper.recordStartInfo(oRecordObject);
                             oStartRecordingButton.setText(R.string.stopRecording);
                             Toast.makeText(MapActivity.this, getText(R.string.touringStartToast), Toast.LENGTH_SHORT).show();
@@ -245,6 +242,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             if (oRecordObject.isDifferenceEnough(aLocation)) {
                 oRecordObject.addLocation(aLocation);
                 oRecordObject.inclementRecordNumber();
+                oRecordObject.drawPolyline(mMap);
                 oDatabaseHelper.recordPositions(oRecordObject);
             }
         }
