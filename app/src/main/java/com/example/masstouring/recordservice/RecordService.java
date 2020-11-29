@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat;
 import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.mapactivity.IMapActivityCallback;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -28,7 +29,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
 
-public class RecordService extends Service {
+public class RecordService extends Service implements IMapActivityCallback {
     private FusedLocationProviderClient oFusedClient;
     private SettingsClient oSetClient;
     private LocationSettingsRequest oLocSetReq;
@@ -113,5 +114,10 @@ public class RecordService extends Service {
         oFusedClient.removeLocationUpdates(oLocCallback);
         stopForeground(true);
         Log.d(LoggerTag.SYSTEM_PROCESS,"onTaskRemoved RecordService");
+    }
+
+    @Override
+    public void onReceiveInformation() {
+
     }
 }

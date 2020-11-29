@@ -11,6 +11,7 @@ import com.example.masstouring.mapactivity.RecordItem;
 import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.time.LocalDateTime;
@@ -136,6 +137,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return data;
         
+    }
+
+    public RecordObject restoreRecordObjectFromId(int aId){
+        RecordObject recordObject = RecordObject.createRecordObjectForRestore(aId);
+        try(SQLiteDatabase db = getReadableDatabase()){
+            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getName() + "=" + aId, null, null, null, null);
+
+            String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
+            recordObject.setStartDate(startInfo);
+
+            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + aId, null, null, null, null);
+            while(positionsCursor.moveToNext()){
+                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                Location location = new Location("");
+                location.reset();
+                location.setLatitude(latitude);
+                location.setLongitude(longitude);
+                recordObject.addLocation(location);
+
+                if(positionsCursor.isLast()){
+                    int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
+                    recordObject.setRecordNumber(order);
+                }
+            }
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("[RESTORED] id:").append(aId).append(", startDate:").append(recordObject.getStartDate()).append(", RecordNumber:").append(recordObject.getRecordNumber());
+        Log.d(LoggerTag.SYSTEM_PROCESS, builder.toString());
+
+        return recordObject;
     }
 
     public void debugPrint(){

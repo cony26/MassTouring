@@ -6,11 +6,13 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -47,9 +49,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private RecordReceiver oRecordReceiver;
     private boolean oIsRecordsViewVisible = false;
     private boolean oIsTracePosition = true;
-    private RecordObject oRecordObject;
+    private RecordObject oRecordObject = null;
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
+    private static final String ID_KEY = "ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +73,48 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         initializeReceiver();
         setButtonClickListeners();
         startRecordService();
+
+        if(savedInstanceState != null){
+            int id = (int)savedInstanceState.get(ID_KEY);
+
+            if(id != -1){
+                oRecordObject = oDatabaseHelper.restoreRecordObjectFromId(id);
+                oRecordState = RecordState.RECORDING;
+                oStartRecordingButton.setText(R.string.stopRecording);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onResume MapActivity");
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onPause MapActivity");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(oRecordReceiver);
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy MapActivity");
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        int id = -1;
+        if(oRecordObject != null) {
+            id = oRecordObject.getRecordId();
+            outState.putInt(ID_KEY, id);
+        }else{
+            outState.putInt(ID_KEY, id);
+        }
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState:[Id:"+id + "]");
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -108,6 +153,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             oRecordObject.setEndDate(endDate);
                             oDatabaseHelper.recordEndInfo(oRecordObject);
                             oStartRecordingButton.setText(R.string.startRecording);
+                            oRecordObject = null;
                             Toast.makeText(MapActivity.this, getText(R.string.touringFinishToast), Toast.LENGTH_SHORT).show();
                         }else if(oRecordState == RecordState.STOP){
                             oRecordState = RecordState.RECORDING;
@@ -160,24 +206,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         registerReceiver(oRecordReceiver, filter);
     }
 
-    @Override
-    protected void onPause(){
-        super.onPause();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onPause MapActivity");
-    }
 
-    @Override
-    protected void onResume(){
-        super.onResume();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onResume MapActivity");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(oRecordReceiver);
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy MapActivity");
-    }
 
     @Override
     public void onRecordItemClick(Map<Integer, LatLng> aMap) {
@@ -247,4 +276,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         }
     }
+
+
 }

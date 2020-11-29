@@ -30,6 +30,14 @@ public class RecordObject {
         oStartDate = LocalDateTime.now().format(Const.DATE_FORMAT);
     }
 
+    private RecordObject(int aId){
+        oRecordId = aId;
+    }
+
+    public static RecordObject createRecordObjectForRestore(int aId){
+        return new RecordObject(aId);
+    }
+
     public int getRecordId() {
         return oRecordId;
     }
@@ -38,12 +46,20 @@ public class RecordObject {
         return oRecordNumber;
     }
 
+    public void setRecordNumber(int aRecordNumber){
+        oRecordNumber = aRecordNumber;
+    }
+
     public void inclementRecordNumber() {
         oRecordNumber++;
     }
 
     public String getStartDate() {
         return oStartDate;
+    }
+
+    public void setStartDate(String aStartDate){
+        oStartDate = aStartDate;
     }
 
     public String getEndDate() {
