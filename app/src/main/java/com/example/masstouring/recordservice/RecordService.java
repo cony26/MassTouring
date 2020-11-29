@@ -99,6 +99,7 @@ public class RecordService extends Service implements IMapActivityCallback {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
+        onReceiveStopRecording();
         oFusedClient.removeLocationUpdates(oLocCallback);
         stopForeground(true);
         Log.d(LoggerTag.SYSTEM_PROCESS,"onTaskRemoved RecordService");
@@ -114,16 +115,19 @@ public class RecordService extends Service implements IMapActivityCallback {
                 Location location = locationResult.getLastLocation();
                 Intent i = new Intent(Const.LOCATION_UPDATE_ACTION_ID);
                 i.putExtra(Const.LOCATION_KEY, location);
+
                 boolean needUpdate = false;
                 if(oRecordState == RecordState.RECORDING){
                     needUpdate = oRecordObject.isDifferenceEnough(location);
+                    i.putExtra(Const.UPDATE_KEY, needUpdate);
                 }
-                i.putExtra(Const.UPDATE_KEY, needUpdate);
+
                 if (needUpdate) {
                     oRecordObject.addLocation(location);
                     oRecordObject.inclementRecordNumber();
                     oDatabaseHelper.recordPositions(oRecordObject);
                 }
+
                 sendBroadcast(i);
                 Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Sent Location Updates");
             }
@@ -149,7 +153,7 @@ public class RecordService extends Service implements IMapActivityCallback {
 
     @Override
     public void onReceiveStartRecording() {
-        if(oRecordObject == null) {
+        if(oRecordState == RecordState.STOP) {
             oRecordObject = new RecordObject(oDatabaseHelper);
             oDatabaseHelper.recordStartInfo(oRecordObject);
             oRecordState = RecordState.RECORDING;
@@ -159,7 +163,7 @@ public class RecordService extends Service implements IMapActivityCallback {
 
     @Override
     public void onReceiveStopRecording() {
-        if(oRecordObject != null) {
+        if(oRecordState == RecordState.RECORDING) {
             String endDate = LocalDateTime.now().format(Const.DATE_FORMAT);
             oRecordObject.setEndDate(endDate);
             oDatabaseHelper.recordEndInfo(oRecordObject);

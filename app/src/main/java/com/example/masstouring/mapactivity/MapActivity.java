@@ -278,8 +278,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         oRecordState = aRecordState;
         if(oRecordState == RecordState.RECORDING){
             oStartRecordingButton.setText(R.string.stopRecording);
-            oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFromId(aId);
+            oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(aId);
             oLastPolyline = mMap.addPolyline(oPolylineOptions);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(oDatabaseHelper.getLastLatLngFrom(aId), 16f));
         }else if(oRecordState == RecordState.STOP){
             oStartRecordingButton.setText(R.string.startRecording);
         }
