@@ -6,7 +6,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +17,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.masstouring.recordservice.ILocationUpdateCallback;
+import com.example.masstouring.recordservice.IRecordServiceCallback;
 import com.example.masstouring.R;
 import com.example.masstouring.recordservice.RecordReceiver;
 import com.example.masstouring.recordservice.RecordService;
@@ -31,15 +30,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, IItemClickCallback, ILocationUpdateCallback {
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback, IItemClickCallback, IRecordServiceCallback {
 
     private GoogleMap mMap;
     private Button oStartRecordingButton;
@@ -49,10 +48,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private RecordReceiver oRecordReceiver;
     private boolean oIsRecordsViewVisible = false;
     private boolean oIsTracePosition = true;
-    private RecordObject oRecordObject = null;
+    private Polyline oLastPolyline = null;
+    private PolylineOptions oPolylineOptions = new PolylineOptions();
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
-    private static final String ID_KEY = "ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,15 +72,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         initializeReceiver();
         setButtonClickListeners();
         startRecordService();
+        requestCurrentState();
 
         if(savedInstanceState != null){
-            int id = (int)savedInstanceState.get(ID_KEY);
-
-            if(id != -1){
-                oRecordObject = oDatabaseHelper.restoreRecordObjectFromId(id);
-                oRecordState = RecordState.RECORDING;
-                oStartRecordingButton.setText(R.string.stopRecording);
-            }
+            Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreSavedInstanceState");
         }
     }
 
@@ -106,14 +100,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        int id = -1;
-        if(oRecordObject != null) {
-            id = oRecordObject.getRecordId();
-            outState.putInt(ID_KEY, id);
-        }else{
-            outState.putInt(ID_KEY, id);
-        }
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState:[Id:"+id + "]");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState");
         super.onSaveInstanceState(outState);
     }
 
@@ -149,17 +136,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     public void onClick(View view) {
                         if(oRecordState == RecordState.RECORDING){
                             oRecordState = RecordState.STOP;
-                            String endDate = LocalDateTime.now().format(Const.DATE_FORMAT);
-                            oRecordObject.setEndDate(endDate);
-                            oDatabaseHelper.recordEndInfo(oRecordObject);
                             oStartRecordingButton.setText(R.string.startRecording);
-                            oRecordObject = null;
+                            sendInfoToRecordService(Const.STOP_RECORDING);
                             Toast.makeText(MapActivity.this, getText(R.string.touringFinishToast), Toast.LENGTH_SHORT).show();
                         }else if(oRecordState == RecordState.STOP){
                             oRecordState = RecordState.RECORDING;
-                            oRecordObject = new RecordObject(oDatabaseHelper);
-                            oDatabaseHelper.recordStartInfo(oRecordObject);
                             oStartRecordingButton.setText(R.string.stopRecording);
+                            sendInfoToRecordService(Const.START_RECORDING);
                             Toast.makeText(MapActivity.this, getText(R.string.touringStartToast), Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -184,6 +167,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    private void sendInfoToRecordService(String aStartStopInfo){
+        Intent i = new Intent(Const.START_STOP_ACTION_ID);
+        i.putExtra(Const.START_STOP_RECORDING_KEY, aStartStopInfo);
+        sendBroadcast(i);
+        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Sent " + aStartStopInfo);
+    }
+
     private List<RecordItem> loadRecords(){
         List<RecordItem> data = oDatabaseHelper.getRecords();
 
@@ -202,11 +192,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private void initializeReceiver(){
         oRecordReceiver = new RecordReceiver(this);
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Const.RECORD_SERVICE_ACTION_ID);
+        filter.addAction(Const.LOCATION_UPDATE_ACTION_ID);
+        filter.addAction(Const.REPLY_CURRENT_STATE_ACTION_ID);
         registerReceiver(oRecordReceiver, filter);
     }
 
-
+    private void requestCurrentState(){
+        Intent i = new Intent(Const.REQUEST_CURRENT_STATE_ACTION_ID);
+        sendBroadcast(i);
+        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Sent Current State Request");
+    }
 
     @Override
     public void onRecordItemClick(Map<Integer, LatLng> aMap) {
@@ -262,20 +257,32 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     @Override
-    public void onReceiveLocationUpdate(Location aLocation) {
+    public void onReceiveLocationUpdate(Location aLocation, boolean aNeedUpdate) {
         if(oIsTracePosition) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
         }
 
-        if(oRecordState.equals(RecordState.RECORDING)) {
-            if (oRecordObject.isDifferenceEnough(aLocation)) {
-                oRecordObject.addLocation(aLocation);
-                oRecordObject.inclementRecordNumber();
-                oRecordObject.drawPolyline(mMap);
-                oDatabaseHelper.recordPositions(oRecordObject);
+        if(oRecordState.equals(RecordState.RECORDING) && aNeedUpdate) {
+            if(oLastPolyline != null){
+                oLastPolyline.remove();
             }
+            oPolylineOptions.add(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()));
+            oLastPolyline = mMap.addPolyline(oPolylineOptions);
         }
+        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Received Location Updates");
+
     }
 
-
+    @Override
+    public void onReceiveReplyCurrentState(RecordState aRecordState, int aId) {
+        oRecordState = aRecordState;
+        if(oRecordState == RecordState.RECORDING){
+            oStartRecordingButton.setText(R.string.stopRecording);
+            oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFromId(aId);
+            oLastPolyline = mMap.addPolyline(oPolylineOptions);
+        }else if(oRecordState == RecordState.STOP){
+            oStartRecordingButton.setText(R.string.startRecording);
+        }
+        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Received Current State Reply:" + aRecordState);
+    }
 }

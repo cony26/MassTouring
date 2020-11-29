@@ -6,10 +6,7 @@ import android.util.Log;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,9 +17,7 @@ public class RecordObject {
     private int oRecordNumber;
     private String oStartDate;
     private String oEndDate;
-    private Polyline oLastPolyline = null;
     private final List<Location> oLocations= new ArrayList<>();
-    private final PolylineOptions oPolylineOptions = new PolylineOptions();
 
     public RecordObject(DatabaseHelper aDatabaseHelper){
         oRecordId = aDatabaseHelper.getUniqueID();
@@ -72,7 +67,6 @@ public class RecordObject {
 
     public void addLocation(Location aLocation){
         oLocations.add(aLocation);
-        oPolylineOptions.add(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()));
     }
 
     public boolean hasRecords(){
@@ -94,14 +88,6 @@ public class RecordObject {
         } else {
             return false;
         }
-    }
-
-    public void drawPolyline(GoogleMap aMap){
-        if(oLastPolyline != null){
-            oLastPolyline.remove();
-        }
-
-        oLastPolyline = aMap.addPolyline(oPolylineOptions);
     }
 
     public Location getLastLocation(){

@@ -13,6 +13,7 @@ import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -169,6 +170,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(LoggerTag.SYSTEM_PROCESS, builder.toString());
 
         return recordObject;
+    }
+
+    public PolylineOptions restorePolylineOptionsFromId(int aId){
+        PolylineOptions polylineOptions = new PolylineOptions();
+        try(SQLiteDatabase db = getReadableDatabase()){
+            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + aId, null, null, null, null);
+            while(positionsCursor.moveToNext()){
+                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                polylineOptions.add(new LatLng(latitude, longitude));
+            }
+        }
+
+        Log.d(LoggerTag.SYSTEM_PROCESS, "restore Polyline Option From Id");
+        return polylineOptions;
     }
 
     public void debugPrint(){
