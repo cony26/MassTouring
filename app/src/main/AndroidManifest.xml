@@ -48,6 +48,7 @@
         </activity>
         <service android:name=".recordservice.RecordService"
             android:foregroundServiceType="location"/>
+
     </application>
 
 </manifest>

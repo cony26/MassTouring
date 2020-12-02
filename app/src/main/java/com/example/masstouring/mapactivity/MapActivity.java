@@ -12,8 +12,9 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, IItemClickCallback, IRecordServiceCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, IItemClickCallback, IRecordServiceCallback {
 
     private GoogleMap mMap;
     private Button oStartRecordingButton;
@@ -65,6 +66,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         oManager.setOrientation(LinearLayoutManager.VERTICAL);
         oRecordsView.setLayoutManager(oManager);
         oRecordsView.setVisibility(View.GONE);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
