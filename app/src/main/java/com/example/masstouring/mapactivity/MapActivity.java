@@ -7,11 +7,15 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -55,6 +59,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
 
     @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_delete:
+                Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LoggerTag.SYSTEM_PROCESS,"onCreate MapActivity");
@@ -68,6 +83,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         oRecordsView.setVisibility(View.GONE);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -131,6 +148,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.action_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
     private void setButtonClickListeners(){
         oStartRecordingButton.setOnClickListener(

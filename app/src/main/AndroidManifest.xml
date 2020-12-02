@@ -37,7 +37,8 @@
 
         <activity
             android:name=".mapactivity.MapActivity"
-            android:label="@string/title_activity_maps">
+            android:label="@string/title_activity_maps"
+            android:parentActivityName=".mainactivity.MainActivity">
 
         </activity>
         <activity android:name=".mainactivity.MainActivity">
