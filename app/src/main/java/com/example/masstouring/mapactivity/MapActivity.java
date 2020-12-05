@@ -15,20 +15,19 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.masstouring.recordservice.IRecordServiceCallback;
 import com.example.masstouring.R;
-import com.example.masstouring.recordservice.RecordReceiver;
-import com.example.masstouring.recordservice.RecordService;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
+import com.example.masstouring.recordservice.IRecordServiceCallback;
+import com.example.masstouring.recordservice.RecordReceiver;
+import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -49,6 +48,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Button oStartRecordingButton;
     private Button oMemoryButton;
     private RecyclerView oRecordsView;
+    private Toolbar oToolbar;
     private RecordState oRecordState = RecordState.STOP;
     private RecordReceiver oRecordReceiver;
     private boolean oIsRecordsViewVisible = false;
@@ -57,17 +57,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private PolylineOptions oPolylineOptions = new PolylineOptions();
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_delete:
-                Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +70,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         oManager.setOrientation(LinearLayoutManager.VERTICAL);
         oRecordsView.setLayoutManager(oManager);
         oRecordsView.setVisibility(View.GONE);
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(myToolbar);
-        ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        oToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(oToolbar);
+        oToolbar.setVisibility(View.GONE);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -149,6 +137,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_delete:
+                Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.action_menu, menu);
@@ -184,7 +183,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }else{
                     oIsRecordsViewVisible = true;
                     List<RecordItem> data = loadRecords();
-                    RecyclerView.Adapter adapter = new RecordsViewAdapter(data, MapActivity.this);
+                    RecyclerView.Adapter adapter = new RecordsViewAdapter(data, MapActivity.this, MapActivity.this.getApplicationContext());
                     oRecordsView.setAdapter(adapter);
                     oRecordsView.setVisibility(View.VISIBLE);
                 }

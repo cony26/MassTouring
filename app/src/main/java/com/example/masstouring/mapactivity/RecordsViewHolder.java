@@ -14,12 +14,12 @@ public class RecordsViewHolder extends RecyclerView.ViewHolder {
     TextView oDistanceText;
     TextView oAppendixText;
 
-    RecordsViewHolder(View itemView){
-        super(itemView);
-        oYearText = itemView.findViewById(R.id.yearText);
-        oStartDateText = itemView.findViewById(R.id.startDateText);
-        oEndDateText = itemView.findViewById(R.id.endDateText);
-        oDistanceText = itemView.findViewById(R.id.DistanceText);
-        oAppendixText = itemView.findViewById(R.id.appendixText);
+    RecordsViewHolder(View oItemView){
+        super(oItemView);
+        oYearText = oItemView.findViewById(R.id.yearText);
+        oStartDateText = oItemView.findViewById(R.id.startDateText);
+        oEndDateText = oItemView.findViewById(R.id.endDateText);
+        oDistanceText = oItemView.findViewById(R.id.DistanceText);
+        oAppendixText = oItemView.findViewById(R.id.appendixText);
     }
 }
