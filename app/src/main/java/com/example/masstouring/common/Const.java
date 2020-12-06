@@ -39,4 +39,7 @@ public class Const {
     public static final String REQUEST_CURRENT_STATE_ACTION_ID = "Request Current State";
     public static final String CURRENT_STATE = "CURRENT_STATE";
     public static final String RECORDING_ID = "RECORDING_ID";
+
+    //Delete Confirmation Dialog
+    public static final String SELECTED_ID_LIST = "Selected Id List";
 }

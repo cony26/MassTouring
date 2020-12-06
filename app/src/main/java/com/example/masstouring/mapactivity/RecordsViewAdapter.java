@@ -1,14 +1,12 @@
 package com.example.masstouring.mapactivity;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,22 +15,17 @@ import com.example.masstouring.common.LoggerTag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> {
     private List<RecordItem> oData;
-    private IItemClickCallback oCallback;
-    private final Context oContext;
-    private final List<Integer> oColorList = new ArrayList<>();
+    private final IItemClickCallback oCallback;
     private final int oInitialColor;
 
     public RecordsViewAdapter(List<RecordItem> aData, IItemClickCallback aCallback, Context aContext){
         oData = aData;
         oCallback = aCallback;
-        oContext = aContext;
-        oInitialColor = ContextCompat.getColor(oContext, R.color.cardview);
-        for(int i = 0; i < oData.size(); i++){
-            oColorList.add(oInitialColor);
-        }
+        oInitialColor = ContextCompat.getColor(aContext, R.color.cardview);
     }
 
     @Override
@@ -49,24 +42,25 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         aHolder.oEndDateText.setText(oData.get(aPosition).getEndDateText());
         aHolder.oDistanceText.setText(oData.get(aPosition).getDistanceText());
         aHolder.oAppendixText.setText(oData.get(aPosition).getAppendixText());
-        aHolder.itemView.setBackgroundColor(oColorList.get(aPosition));
+        aHolder.itemView.setBackgroundColor(oData.get(aPosition).isSelected() ? Color.CYAN : oInitialColor);
         aHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 oCallback.onRecordItemClick(oData.get(aPosition).getLocationMap());
-                Log.d(LoggerTag.RECORD_RECYCLER_VIEW, aHolder.itemView.toString());
+//                Log.d(LoggerTag.RECORD_RECYCLER_VIEW, aHolder.itemView.toString());
             }
         });
         aHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 int color = Color.CYAN;
-                oColorList.set(aPosition, color);
+                oData.get(aPosition).setSelected(true);
                 view.setBackgroundColor(color);
-                return false;
+                oCallback.onRecordItemLongClick();
+                return true;
             }
         });
-        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "position:" + aPosition + ", AdapterPosition:" + aHolder.getAdapterPosition());
+//        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "position:" + aPosition + ", AdapterPosition:" + aHolder.getAdapterPosition());
     }
 
     @Override
@@ -74,10 +68,14 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         return oData.size();
     }
 
-    @Override
-    public void onViewRecycled(@NonNull RecordsViewHolder aHolder) {
-        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "onViewRecycled");
-        aHolder.itemView.setBackgroundColor(oInitialColor);
-        super.onViewRecycled(aHolder);
+    public List<Integer> getSelectedItemIdList(){
+        return oData.stream()
+                .filter(data -> data.isSelected())
+                .map(data -> data.getId())
+                .collect(Collectors.toList());
+    }
+
+    public void setData(List<RecordItem> aRecordItemList){
+        oData = aRecordItemList;
     }
 }

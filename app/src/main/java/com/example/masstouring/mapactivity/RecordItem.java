@@ -1,10 +1,8 @@
 package com.example.masstouring.mapactivity;
 
 import android.location.Location;
-import android.util.Log;
 
 import com.example.masstouring.common.Const;
-import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.math.BigDecimal;
@@ -21,6 +19,7 @@ public class RecordItem {
     private final String oAppendixText;
     private final Map<Integer, LatLng> oLocationMap;
     private final Map<Integer, LatLng> oTimeStampMap;
+    private boolean oSelected = false;
 
     public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap){
         oId = aID;
@@ -83,8 +82,12 @@ public class RecordItem {
         return oLocationMap;
     }
 
-    public Map<Integer, LatLng> getTimeStampMap() {
-        return oTimeStampMap;
+    public boolean isSelected() {
+        return oSelected;
+    }
+
+    public void setSelected(boolean aIsSelected) {
+         oSelected = aIsSelected;
     }
 
     @Override

@@ -42,12 +42,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, IItemClickCallback, IRecordServiceCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, IItemClickCallback, IRecordServiceCallback, DeleteConfirmationDialog.IDeleteConfirmationDialogCallback {
 
     private GoogleMap mMap;
     private Button oStartRecordingButton;
     private Button oMemoryButton;
     private RecyclerView oRecordsView;
+    private RecordsViewAdapter oRecordsViewAdapter;
     private Toolbar oToolbar;
     private RecordState oRecordState = RecordState.STOP;
     private RecordReceiver oRecordReceiver;
@@ -140,7 +141,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_delete:
-                Toast.makeText(this, "clicked", Toast.LENGTH_SHORT).show();
+                DeleteConfirmationDialog dialog = new DeleteConfirmationDialog();
+                dialog.setCallback(this);
+                dialog.show(getSupportFragmentManager(), "deleteConfirmationDialog");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -183,8 +186,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }else{
                     oIsRecordsViewVisible = true;
                     List<RecordItem> data = loadRecords();
-                    RecyclerView.Adapter adapter = new RecordsViewAdapter(data, MapActivity.this, MapActivity.this.getApplicationContext());
-                    oRecordsView.setAdapter(adapter);
+                    oRecordsViewAdapter = new RecordsViewAdapter(data, MapActivity.this, MapActivity.this.getApplicationContext());
+                    oRecordsView.setAdapter(oRecordsViewAdapter);
                     oRecordsView.setVisibility(View.VISIBLE);
                 }
             }
@@ -239,6 +242,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.addPolyline(polylineOptions);
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
         oIsTracePosition = false;
+    }
+
+    @Override
+    public void onRecordItemLongClick() {
+        if(oRecordsViewAdapter.getSelectedItemIdList().size() > 0){
+            oToolbar.setVisibility(View.VISIBLE);
+        }else{
+            oToolbar.setVisibility(View.GONE);
+        }
     }
 
     private PolylineOptions createPolylineFrom(Map<Integer, LatLng> aMap){
@@ -310,5 +322,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             oStartRecordingButton.setText(R.string.startRecording);
         }
         Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Received Current State Reply:" + aRecordState);
+    }
+
+    @Override
+    public void onPositiveClick() {
+        List<Integer> list = oRecordsViewAdapter.getSelectedItemIdList();
+        for(int id : list){
+            oDatabaseHelper.deleteRecord(id);
+        }
+        oRecordsViewAdapter.setData(oDatabaseHelper.getRecords());
+        oRecordsViewAdapter.notifyDataSetChanged();
+        oToolbar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onNegativeClick() {
+
     }
 }

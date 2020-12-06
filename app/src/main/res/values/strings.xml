@@ -8,6 +8,10 @@
     <string name="memory">Check Records</string>
     <string name="touringFinishToast">Touring Finish!</string>
     <string name="touringStartToast">Touring Start!</string>
+    <string name="deleteDialogTitle">Delete Confirmation</string>
+    <string name="deleteDialogMessage">Delete the selected items</string>
+    <string name="dialogPositive">Yes</string>
+    <string name="dialogNegative">No</string>
 
     <string name="notificationTitle">RecordService</string>
     <string name="notificationContent">Service is recording your location</string>

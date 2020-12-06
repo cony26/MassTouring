@@ -2,16 +2,16 @@ package com.example.masstouring.database;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.util.Log;
 
-import com.example.masstouring.mapactivity.RecordItem;
-import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
-import com.example.masstouring.recordservice.RecordService;
+import com.example.masstouring.mapactivity.RecordItem;
+import com.example.masstouring.mapactivity.RecordObject;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -81,6 +81,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             Location loc = aObj.getLastLocation();
             putPositions(db, aObj.getRecordId(), aObj.getRecordNumber(), loc.getLatitude(), loc.getLongitude(), LocalDateTime.now().format(Const.DATE_FORMAT));
+        }
+    }
+
+    public void deleteRecord(int oId){
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.delete(Tables.RECORDS_STARTINFO.getName(), RecordsStartInfo.ID.getName() + "=" + oId, null);
+            db.delete(Tables.POSITIONS.getName(), Positions.ID.getName() + "=" + oId, null);
+            db.delete(Tables.RECORDS_ENDINFO.getName(), RecordsEndInfo.ID.getName() + "=" + oId, null);
+            Log.d(LoggerTag.DATABASE_PROCESS, "deleted successfully, ID:" + oId);
+        }catch(SQLException e){
+            Log.d(LoggerTag.DATABASE_PROCESS, "failed to delete ID:" + oId);
         }
     }
 

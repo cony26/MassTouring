@@ -6,4 +6,5 @@ import java.util.Map;
 
 public interface IItemClickCallback {
     public abstract void onRecordItemClick(Map<Integer, LatLng> aMap);
+    public abstract void onRecordItemLongClick();
 }
