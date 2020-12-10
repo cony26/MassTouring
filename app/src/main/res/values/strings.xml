@@ -15,4 +15,5 @@
 
     <string name="notificationTitle">RecordService</string>
     <string name="notificationContent">Service is recording your location</string>
+    <string name="notificationStopAction">STOP</string>
 </resources>

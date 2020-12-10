@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -56,6 +57,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private boolean oIsTracePosition = true;
     private Polyline oLastPolyline = null;
     private PolylineOptions oPolylineOptions = new PolylineOptions();
+    private OnBackPressedCallback oOnBackPressedCallback;
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
 
@@ -77,6 +79,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        oOnBackPressedCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                oMemoryButton.performClick();
+                Log.d(LoggerTag.SYSTEM_PROCESS,"handleOnBackPressed");
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
 
         initializeReceiver();
         setButtonClickListeners();
@@ -157,6 +168,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
     private void setButtonClickListeners(){
         oStartRecordingButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -183,12 +199,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if(oIsRecordsViewVisible) {
                     oIsRecordsViewVisible = false;
                     oRecordsView.setVisibility(View.GONE);
+                    oToolbar.setVisibility(View.GONE);
+                    oOnBackPressedCallback.setEnabled(false);
                 }else{
                     oIsRecordsViewVisible = true;
                     List<RecordItem> data = loadRecords();
                     oRecordsViewAdapter = new RecordsViewAdapter(data, MapActivity.this, MapActivity.this.getApplicationContext());
                     oRecordsView.setAdapter(oRecordsViewAdapter);
                     oRecordsView.setVisibility(View.VISIBLE);
+                    oOnBackPressedCallback.setEnabled(true);
                 }
             }
         });

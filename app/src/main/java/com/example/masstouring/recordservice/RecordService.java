@@ -16,6 +16,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
@@ -35,6 +36,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class RecordService extends Service implements IMapActivityCallback {
     private FusedLocationProviderClient oFusedClient;
@@ -48,6 +50,7 @@ public class RecordService extends Service implements IMapActivityCallback {
     private RecordObject oRecordObject = null;
     private RecordState oRecordState = RecordState.STOP;
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
+    private static final String CANCEL_ACTION = "cancel record action";
 
     @Nullable
     @Override
@@ -58,15 +61,19 @@ public class RecordService extends Service implements IMapActivityCallback {
     @Override
     public void onCreate() {
         super.onCreate();
-        Intent intent = new Intent(this, MapActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        oNotification = new Notification.Builder(this, Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID)
+        Intent openMapIntent = new Intent(this, MapActivity.class);
+        openMapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent openMapPendingIntent = PendingIntent.getActivity(this, 0, openMapIntent, 0);
+        Intent cancelRecordIntent = new Intent(this, RecordService.class);
+        cancelRecordIntent.setAction(CANCEL_ACTION);
+        PendingIntent cancelRecordPendingIntent = PendingIntent.getForegroundService(this, 0, cancelRecordIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        oNotification = new NotificationCompat.Builder(this, Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(getText(R.string.notificationTitle))
                 .setContentText(getText(R.string.notificationContent))
                 .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark)
-                .setContentIntent(pendingIntent)
-                .addAction(R.drawable.common_google_signin_btn_icon_light, getString(R.string.openMap), pendingIntent)
+                .setContentIntent(openMapPendingIntent)
+                .addAction(R.drawable.common_google_signin_btn_icon_light, getString(R.string.openMap), openMapPendingIntent)
+                .addAction(R.drawable.common_google_signin_btn_icon_dark, getString(R.string.notificationStopAction), cancelRecordPendingIntent)
                 .build();
         oNotificationChannel = new NotificationChannel(Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID, getText(R.string.notificationTitle), NotificationManager.IMPORTANCE_DEFAULT);
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
@@ -80,6 +87,11 @@ public class RecordService extends Service implements IMapActivityCallback {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
+        Optional.ofNullable(intent.getAction()).ifPresent(e -> {
+            if(e.equals(CANCEL_ACTION)){
+                stopSelf();
+            }
+        });
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
             return START_STICKY;
@@ -91,8 +103,7 @@ public class RecordService extends Service implements IMapActivityCallback {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stopForeground(true);
-        unregisterReceiver(oMapActivityReceiver);
+        stopService();
         Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy RecordService");
     }
 
@@ -100,8 +111,7 @@ public class RecordService extends Service implements IMapActivityCallback {
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
         onReceiveStopRecording();
-        oFusedClient.removeLocationUpdates(oLocCallback);
-        stopForeground(true);
+        stopService();
         Log.d(LoggerTag.SYSTEM_PROCESS,"onTaskRemoved RecordService");
     }
 
@@ -183,5 +193,12 @@ public class RecordService extends Service implements IMapActivityCallback {
         }
         sendBroadcast(i);
         Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Sent Current State Reply:" + oRecordState);
+    }
+
+    private void stopService(){
+        onReceiveStopRecording();
+        unregisterReceiver(oMapActivityReceiver);
+        oFusedClient.removeLocationUpdates(oLocCallback);
+        stopForeground(true);
     }
 }
