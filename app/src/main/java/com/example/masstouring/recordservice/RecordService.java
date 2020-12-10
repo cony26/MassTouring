@@ -110,7 +110,6 @@ public class RecordService extends Service implements IMapActivityCallback {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        onReceiveStopRecording();
         stopService();
         Log.d(LoggerTag.SYSTEM_PROCESS,"onTaskRemoved RecordService");
     }
@@ -197,6 +196,7 @@ public class RecordService extends Service implements IMapActivityCallback {
 
     private void stopService(){
         onReceiveStopRecording();
+        onReceiveCurrentStateRequest();
         unregisterReceiver(oMapActivityReceiver);
         oFusedClient.removeLocationUpdates(oLocCallback);
         stopForeground(true);

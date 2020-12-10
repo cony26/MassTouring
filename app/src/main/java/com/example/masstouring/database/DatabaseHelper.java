@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Collections.max;
@@ -198,18 +199,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return polylineOptions;
     }
 
-    public LatLng getLastLatLngFrom(int aId){
-        LatLng latLng;
+    public Optional<LatLng> getLastLatLngFrom(int aId){
+        LatLng latLng = null;
         try(SQLiteDatabase db = getReadableDatabase()) {
             Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + aId, null, null, null, null);
             positionsCursor.moveToLast();
-            double latitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-            double longitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-            latLng = new LatLng(latitude, longitude);
+            if(!positionsCursor.isAfterLast()) {
+                double latitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                double longitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                latLng = new LatLng(latitude, longitude);
+            }
         }
 
         Log.d(LoggerTag.DATABASE_PROCESS, "get Last LatLng From Id");
-        return latLng;
+        return Optional.ofNullable(latLng);
     }
 
     public void debugPrint(){

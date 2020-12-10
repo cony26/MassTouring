@@ -60,6 +60,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private OnBackPressedCallback oOnBackPressedCallback;
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
+    private static final String RECORD_STATE = "RECORD_STATE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +103,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onResume(){
         super.onResume();
+        if(oRecordState.equals(RecordState.RECORDING)){
+            oStartRecordingButton.setText(R.string.stopRecording);
+        }else if(oRecordState.equals(RecordState.STOP)){
+            oStartRecordingButton.setText(R.string.startRecording);
+        }
         Log.d(LoggerTag.SYSTEM_PROCESS,"onResume MapActivity");
     }
 
@@ -120,8 +126,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState");
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState MapActivity");
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreInstanceState MapActivity");
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
@@ -186,6 +198,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         }else if(oRecordState == RecordState.STOP){
                             oRecordState = RecordState.RECORDING;
                             oStartRecordingButton.setText(R.string.stopRecording);
+                            startRecordService();
                             sendInfoToRecordService(Const.START_RECORDING);
                             Toast.makeText(MapActivity.this, getText(R.string.touringStartToast), Toast.LENGTH_SHORT).show();
                         }
@@ -336,7 +349,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             oStartRecordingButton.setText(R.string.stopRecording);
             oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(aId);
             oLastPolyline = mMap.addPolyline(oPolylineOptions);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(oDatabaseHelper.getLastLatLngFrom(aId), 16f));
+            oDatabaseHelper.getLastLatLngFrom(aId).ifPresent(e -> mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
         }else if(oRecordState == RecordState.STOP){
             oStartRecordingButton.setText(R.string.startRecording);
         }
