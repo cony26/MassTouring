@@ -1,9 +1,7 @@
 package com.example.masstouring.mapactivity;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +16,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,8 +27,6 @@ import com.example.masstouring.recordservice.IRecordServiceCallback;
 import com.example.masstouring.recordservice.RecordReceiver;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -43,9 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, IItemClickCallback, IRecordServiceCallback, DeleteConfirmationDialog.IDeleteConfirmationDialogCallback {
+public class MapActivity extends AppCompatActivity implements IItemClickCallback, IRecordServiceCallback, DeleteConfirmationDialog.IDeleteConfirmationDialogCallback {
 
-    private GoogleMap mMap;
     private Button oStartRecordingButton;
     private Button oMemoryButton;
     private RecyclerView oRecordsView;
@@ -60,7 +54,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private OnBackPressedCallback oOnBackPressedCallback;
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
-    private static final String RECORD_STATE = "RECORD_STATE";
+    private BoundMapFragment oBoundMapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +73,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         oToolbar.setVisibility(View.GONE);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        oBoundMapFragment = new BoundMapFragment(this, mapFragment);
 
         oOnBackPressedCallback = new OnBackPressedCallback(false) {
             @Override
@@ -134,30 +128,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreInstanceState MapActivity");
         super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-        mMap.setMyLocationEnabled(true);
-        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
-            @Override
-            public boolean onMyLocationButtonClick() {
-                oIsTracePosition = true;
-                return false;
-            }
-        });
-        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
-            @Override
-            public void onCameraMoveStarted(int i) {
-                if(i == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE){
-                    oIsTracePosition = false;
-                }
-            }
-        });
     }
 
     @Override
@@ -271,8 +241,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         PolylineOptions polylineOptions = createPolylineFrom(aMap);
         LatLngBounds fitArea = createFitAreaFrom(aMap);
 
-        mMap.addPolyline(polylineOptions);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
+        oBoundMapFragment.getMap().addPolyline(polylineOptions);
+        oBoundMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
         oIsTracePosition = false;
     }
 
@@ -328,7 +298,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onReceiveLocationUpdate(Location aLocation, boolean aNeedUpdate) {
         if(oIsTracePosition) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
+            oBoundMapFragment.getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
         }
 
         if(oRecordState.equals(RecordState.RECORDING) && aNeedUpdate) {
@@ -336,7 +306,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 oLastPolyline.remove();
             }
             oPolylineOptions.add(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()));
-            oLastPolyline = mMap.addPolyline(oPolylineOptions);
+            oLastPolyline = oBoundMapFragment.getMap().addPolyline(oPolylineOptions);
         }
         Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Received Location Updates");
 
@@ -348,8 +318,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if(oRecordState == RecordState.RECORDING){
             oStartRecordingButton.setText(R.string.stopRecording);
             oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(aId);
-            oLastPolyline = mMap.addPolyline(oPolylineOptions);
-            oDatabaseHelper.getLastLatLngFrom(aId).ifPresent(e -> mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
+            oLastPolyline = oBoundMapFragment.getMap().addPolyline(oPolylineOptions);
+            oDatabaseHelper.getLastLatLngFrom(aId).ifPresent(e -> oBoundMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
         }else if(oRecordState == RecordState.STOP){
             oStartRecordingButton.setText(R.string.startRecording);
         }
