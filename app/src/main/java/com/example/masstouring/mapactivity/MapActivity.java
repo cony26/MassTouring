@@ -16,6 +16,8 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,7 +47,6 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
     private RecyclerView oRecordsView;
     private RecordsViewAdapter oRecordsViewAdapter;
     private Toolbar oToolbar;
-    private RecordState oRecordState = RecordState.STOP;
     private RecordReceiver oRecordReceiver;
     private boolean oIsRecordsViewVisible = false;
     private boolean oIsTracePosition = true;
@@ -55,6 +56,7 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
     private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private BoundMapFragment oBoundMapFragment;
+    private MapActivtySharedViewModel oMapActivitySharedViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +76,7 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         oBoundMapFragment = new BoundMapFragment(this, mapFragment);
+        oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
 
         oOnBackPressedCallback = new OnBackPressedCallback(false) {
             @Override
@@ -92,16 +95,23 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
         if(savedInstanceState != null){
             Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreSavedInstanceState");
         }
+
+        subscribe();
+    }
+
+    private void subscribe(){
+        oMapActivitySharedViewModel.getRecordState().observe(this, new Observer<RecordState>() {
+            @Override
+            public void onChanged(RecordState recordState) {
+                oStartRecordingButton.setText(recordState.getButtonStringId());
+                Toast.makeText(MapActivity.this, getText(recordState.getToastId()), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        if(oRecordState.equals(RecordState.RECORDING)){
-            oStartRecordingButton.setText(R.string.stopRecording);
-        }else if(oRecordState.equals(RecordState.STOP)){
-            oStartRecordingButton.setText(R.string.startRecording);
-        }
         Log.d(LoggerTag.SYSTEM_PROCESS,"onResume MapActivity");
     }
 
@@ -160,17 +170,19 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(oRecordState == RecordState.RECORDING){
-                            oRecordState = RecordState.STOP;
-                            oStartRecordingButton.setText(R.string.startRecording);
-                            sendInfoToRecordService(Const.STOP_RECORDING);
-                            Toast.makeText(MapActivity.this, getText(R.string.touringFinishToast), Toast.LENGTH_SHORT).show();
-                        }else if(oRecordState == RecordState.STOP){
-                            oRecordState = RecordState.RECORDING;
-                            oStartRecordingButton.setText(R.string.stopRecording);
-                            startRecordService();
-                            sendInfoToRecordService(Const.START_RECORDING);
-                            Toast.makeText(MapActivity.this, getText(R.string.touringStartToast), Toast.LENGTH_SHORT).show();
+                        RecordState state = oMapActivitySharedViewModel.getRecordState().getValue();
+                        switch (state){
+                            case RECORDING:
+                                oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
+                                sendInfoToRecordService(Const.STOP_RECORDING);
+                                break;
+                            case STOP:
+                                oMapActivitySharedViewModel.getRecordState().setValue(RecordState.RECORDING);
+                                startRecordService();
+                                sendInfoToRecordService(Const.START_RECORDING);
+                                break;
+                            default:
+                                Log.e(LoggerTag.SYSTEM_PROCESS, "unexpected record state detected:" + state.getId());
                         }
                     }
                 }
@@ -301,7 +313,7 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
             oBoundMapFragment.getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
         }
 
-        if(oRecordState.equals(RecordState.RECORDING) && aNeedUpdate) {
+        if(oMapActivitySharedViewModel.getRecordState().getValue().equals(RecordState.RECORDING) && aNeedUpdate) {
             if(oLastPolyline != null){
                 oLastPolyline.remove();
             }
@@ -314,14 +326,11 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
 
     @Override
     public void onReceiveReplyCurrentState(RecordState aRecordState, int aId) {
-        oRecordState = aRecordState;
-        if(oRecordState == RecordState.RECORDING){
-            oStartRecordingButton.setText(R.string.stopRecording);
+        oMapActivitySharedViewModel.getRecordState().setValue(aRecordState);
+        if(aRecordState == RecordState.RECORDING){
             oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(aId);
             oLastPolyline = oBoundMapFragment.getMap().addPolyline(oPolylineOptions);
             oDatabaseHelper.getLastLatLngFrom(aId).ifPresent(e -> oBoundMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
-        }else if(oRecordState == RecordState.STOP){
-            oStartRecordingButton.setText(R.string.startRecording);
         }
         Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Received Current State Reply:" + aRecordState);
     }
