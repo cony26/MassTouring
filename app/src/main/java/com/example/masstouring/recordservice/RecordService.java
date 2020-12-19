@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
@@ -22,9 +23,7 @@ import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
-import com.example.masstouring.mapactivity.IMapActivityCallback;
 import com.example.masstouring.mapactivity.MapActivity;
-import com.example.masstouring.mapactivity.MapActivityReceiver;
 import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.mapactivity.RecordState;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -38,7 +37,7 @@ import com.google.android.gms.location.SettingsClient;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public class RecordService extends Service implements IMapActivityCallback {
+public class RecordService extends Service{
     private FusedLocationProviderClient oFusedClient;
     private SettingsClient oSetClient;
     private LocationSettingsRequest oLocSetReq;
@@ -46,16 +45,23 @@ public class RecordService extends Service implements IMapActivityCallback {
     private LocationRequest oLocReq;
     private NotificationChannel oNotificationChannel;
     private Notification oNotification;
-    private MapActivityReceiver oMapActivityReceiver;
     private RecordObject oRecordObject = null;
     private RecordState oRecordState = RecordState.STOP;
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private static final String CANCEL_ACTION = "cancel record action";
+    private final IBinder oBinder = new RecordServiceBinder();
+
+    public class RecordServiceBinder extends Binder {
+        public RecordService getRecordService(){
+            return RecordService.this;
+        }
+    }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        Log.d(LoggerTag.SYSTEM_PROCESS, "onBind RecordService");
+        return oBinder;
     }
 
     @Override
@@ -79,7 +85,6 @@ public class RecordService extends Service implements IMapActivityCallback {
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         manager.createNotificationChannel(oNotificationChannel);
         initializeGpsSetting();
-        initializeReceiver();
         startForeground(1, oNotification);
         Log.d(LoggerTag.SYSTEM_PROCESS,"onCreate RecordService");
     }
@@ -89,6 +94,7 @@ public class RecordService extends Service implements IMapActivityCallback {
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
         Optional.ofNullable(intent.getAction()).ifPresent(e -> {
             if(e.equals(CANCEL_ACTION)){
+                //TODO:this stopSelf doesn't work correctly. It may need to unbind this service in activity before calling this method
                 stopSelf();
             }
         });
@@ -152,16 +158,7 @@ public class RecordService extends Service implements IMapActivityCallback {
                 .build();
     }
 
-    private void initializeReceiver(){
-        oMapActivityReceiver = new MapActivityReceiver(this);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Const.START_STOP_ACTION_ID);
-        filter.addAction(Const.REQUEST_CURRENT_STATE_ACTION_ID);
-        registerReceiver(oMapActivityReceiver, filter);
-    }
-
-    @Override
-    public void onReceiveStartRecording() {
+    public void startRecording() {
         if(oRecordState == RecordState.STOP) {
             oRecordObject = new RecordObject(oDatabaseHelper);
             oDatabaseHelper.recordStartInfo(oRecordObject);
@@ -170,8 +167,7 @@ public class RecordService extends Service implements IMapActivityCallback {
         Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Received Start Recording");
     }
 
-    @Override
-    public void onReceiveStopRecording() {
+    public void stopRecording() {
         if(oRecordState == RecordState.RECORDING) {
             String endDate = LocalDateTime.now().format(Const.DATE_FORMAT);
             oRecordObject.setEndDate(endDate);
@@ -182,23 +178,14 @@ public class RecordService extends Service implements IMapActivityCallback {
         Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Received Stop Recording");
     }
 
-    @Override
-    public void onReceiveCurrentStateRequest() {
-        Intent i = new Intent(Const.REPLY_CURRENT_STATE_ACTION_ID);
-        i.putExtra(Const.CURRENT_STATE, oRecordState.getId());
-
-        if(oRecordState == RecordState.RECORDING) {
-            i.putExtra(Const.RECORDING_ID, oRecordObject.getRecordId());
-        }
-        sendBroadcast(i);
-        Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Sent Current State Reply:" + oRecordState);
-    }
-
     private void stopService(){
-        onReceiveStopRecording();
-        onReceiveCurrentStateRequest();
-        unregisterReceiver(oMapActivityReceiver);
+        stopRecording();
+        //TODO:need to report stop to Activity (RecordState)
         oFusedClient.removeLocationUpdates(oLocCallback);
         stopForeground(true);
+    }
+
+    public RecordState getRecordState(){
+        return oRecordState;
     }
 }

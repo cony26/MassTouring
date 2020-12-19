@@ -32,11 +32,6 @@ public class Const {
     public static final String REPLY_CURRENT_STATE_ACTION_ID = "Reply Current State";
 
     //MapActivity Transfer
-    public static final String START_STOP_ACTION_ID = "Start Stop Information";
-    public static final String START_STOP_RECORDING_KEY = "START_STOP_RECORDING";
-    public static final String START_RECORDING = "START_RECORDING";
-    public static final String STOP_RECORDING = "STOP_RECORDING";
-    public static final String REQUEST_CURRENT_STATE_ACTION_ID = "Request Current State";
     public static final String CURRENT_STATE = "CURRENT_STATE";
     public static final String RECORDING_ID = "RECORDING_ID";
 

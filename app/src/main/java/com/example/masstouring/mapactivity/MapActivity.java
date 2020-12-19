@@ -1,9 +1,13 @@
 package com.example.masstouring.mapactivity;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,6 +61,8 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
+    private RecordService oRecordService;
+    boolean oRecordServiceBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +96,7 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
         initializeReceiver();
         setButtonClickListeners();
         startRecordService();
-        requestCurrentState();
+        setRecordStateIfExists();
 
         if(savedInstanceState != null){
             Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreSavedInstanceState");
@@ -174,12 +180,16 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
                         switch (state){
                             case RECORDING:
                                 oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
-                                sendInfoToRecordService(Const.STOP_RECORDING);
+                                if(oRecordServiceBound) {
+                                    oRecordService.stopRecording();
+                                }
                                 break;
                             case STOP:
                                 oMapActivitySharedViewModel.getRecordState().setValue(RecordState.RECORDING);
                                 startRecordService();
-                                sendInfoToRecordService(Const.START_RECORDING);
+                                if(oRecordServiceBound){
+                                    oRecordService.startRecording();
+                                }
                                 break;
                             default:
                                 Log.e(LoggerTag.SYSTEM_PROCESS, "unexpected record state detected:" + state.getId());
@@ -209,13 +219,6 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
 
     }
 
-    private void sendInfoToRecordService(String aStartStopInfo){
-        Intent i = new Intent(Const.START_STOP_ACTION_ID);
-        i.putExtra(Const.START_STOP_RECORDING_KEY, aStartStopInfo);
-        sendBroadcast(i);
-        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Sent " + aStartStopInfo);
-    }
-
     private List<RecordItem> loadRecords(){
         List<RecordItem> data = oDatabaseHelper.getRecords();
 
@@ -229,7 +232,25 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
     private void startRecordService(){
         Intent i = new Intent(MapActivity.this, RecordService.class);
         startForegroundService(i);
+        bindService(i, oRecordServiceConnection, Context.BIND_AUTO_CREATE);
     }
+
+    private ServiceConnection oRecordServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            RecordService.RecordServiceBinder binder = (RecordService.RecordServiceBinder)iBinder;
+            oRecordService = binder.getRecordService();
+            oRecordServiceBound = true;
+            setRecordStateIfExists();
+            Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            oRecordServiceBound = false;
+            Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceDisconnected MapActivity");
+        }
+    };
 
     private void initializeReceiver(){
         oRecordReceiver = new RecordReceiver(this);
@@ -239,10 +260,10 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
         registerReceiver(oRecordReceiver, filter);
     }
 
-    private void requestCurrentState(){
-        Intent i = new Intent(Const.REQUEST_CURRENT_STATE_ACTION_ID);
-        sendBroadcast(i);
-        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Sent Current State Request");
+    private void setRecordStateIfExists(){
+        if(oRecordServiceBound){
+            oMapActivitySharedViewModel.getRecordState().setValue(oRecordService.getRecordState());
+        }
     }
 
     @Override
