@@ -72,10 +72,6 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         setButtonClickListeners();
         setRecordStateIfExists();
 
-        if(savedInstanceState != null){
-            Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreSavedInstanceState");
-        }
-
         subscribe();
     }
 
