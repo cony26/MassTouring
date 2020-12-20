@@ -6,5 +6,4 @@ import com.example.masstouring.mapactivity.RecordState;
 
 public interface IRecordServiceCallback {
     public abstract void onReceiveLocationUpdate(Location aLocation, boolean aNeedUpdate);
-    public abstract void onReceiveReplyCurrentState(RecordState aRecordState, int aId);
 }

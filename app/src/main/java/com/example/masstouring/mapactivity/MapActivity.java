@@ -3,9 +3,7 @@ package com.example.masstouring.mapactivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -20,44 +18,26 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
-import com.example.masstouring.recordservice.IRecordServiceCallback;
-import com.example.masstouring.recordservice.RecordReceiver;
 import com.example.masstouring.recordservice.RecordService;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-public class MapActivity extends AppCompatActivity implements IItemClickCallback, IRecordServiceCallback, DeleteConfirmationDialog.IDeleteConfirmationDialogCallback {
+public class MapActivity extends AppCompatActivity implements DeleteConfirmationDialog.IDeleteConfirmationDialogCallback {
 
     private Button oStartRecordingButton;
     private Button oMemoryButton;
-    private RecyclerView oRecordsView;
-    private RecordsViewAdapter oRecordsViewAdapter;
+    private BoundRecordView oRecordsView;
     private Toolbar oToolbar;
-    private RecordReceiver oRecordReceiver;
-    private boolean oIsRecordsViewVisible = false;
-    private boolean oIsTracePosition = true;
-    private Polyline oLastPolyline = null;
-    private PolylineOptions oPolylineOptions = new PolylineOptions();
     private OnBackPressedCallback oOnBackPressedCallback;
-    private final LinearLayoutManager oManager = new LinearLayoutManager(MapActivity.this);
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
@@ -72,17 +52,17 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
         oMemoryButton = findViewById(R.id.btnMemory);
 
-        oRecordsView = findViewById(R.id.recordsView);
-        oManager.setOrientation(LinearLayoutManager.VERTICAL);
-        oRecordsView.setLayoutManager(oManager);
-        oRecordsView.setVisibility(View.GONE);
+        oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
+        oRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, getApplicationContext());
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
         oToolbar.setVisibility(View.GONE);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         oBoundMapFragment = new BoundMapFragment(this, mapFragment);
-        oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
+
+        oRecordsView.setMapFragment(oBoundMapFragment);
+        oRecordsView.setToolbar(oToolbar);
 
         oOnBackPressedCallback = new OnBackPressedCallback(false) {
             @Override
@@ -93,7 +73,6 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
         };
         getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
 
-        initializeReceiver();
         setButtonClickListeners();
         startRecordService();
         setRecordStateIfExists();
@@ -130,7 +109,6 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(oRecordReceiver);
         Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy MapActivity");
     }
 
@@ -201,17 +179,13 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
         oMemoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(oIsRecordsViewVisible) {
-                    oIsRecordsViewVisible = false;
-                    oRecordsView.setVisibility(View.GONE);
+                MutableLiveData<Boolean> isRecordsViewVisible = oMapActivitySharedViewModel.getIsRecordsViewVisible();
+                if(isRecordsViewVisible.getValue()) {
+                    isRecordsViewVisible.setValue(false);
                     oToolbar.setVisibility(View.GONE);
                     oOnBackPressedCallback.setEnabled(false);
                 }else{
-                    oIsRecordsViewVisible = true;
-                    List<RecordItem> data = loadRecords();
-                    oRecordsViewAdapter = new RecordsViewAdapter(data, MapActivity.this, MapActivity.this.getApplicationContext());
-                    oRecordsView.setAdapter(oRecordsViewAdapter);
-                    oRecordsView.setVisibility(View.VISIBLE);
+                    isRecordsViewVisible.setValue(true);
                     oOnBackPressedCallback.setEnabled(true);
                 }
             }
@@ -242,6 +216,7 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
             oRecordService = binder.getRecordService();
             oRecordServiceBound = true;
             setRecordStateIfExists();
+            oRecordService.setIRecordServiceCallback(oBoundMapFragment);
             Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity");
         }
 
@@ -252,118 +227,18 @@ public class MapActivity extends AppCompatActivity implements IItemClickCallback
         }
     };
 
-    private void initializeReceiver(){
-        oRecordReceiver = new RecordReceiver(this);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Const.LOCATION_UPDATE_ACTION_ID);
-        filter.addAction(Const.REPLY_CURRENT_STATE_ACTION_ID);
-        registerReceiver(oRecordReceiver, filter);
-    }
-
     private void setRecordStateIfExists(){
         if(oRecordServiceBound){
-            oMapActivitySharedViewModel.getRecordState().setValue(oRecordService.getRecordState());
+            RecordState state = oRecordService.getRecordState();
+            oMapActivitySharedViewModel.getRecordState().setValue(state);
+            oBoundMapFragment.moveCameraIfRecording(oRecordService, oDatabaseHelper);
+            Log.d(LoggerTag.SYSTEM_PROCESS, "set RecordState from RecordService");
         }
-    }
-
-    @Override
-    public void onRecordItemClick(Map<Integer, LatLng> aMap) {
-        if(aMap.size() <= 1)
-            return;
-
-        PolylineOptions polylineOptions = createPolylineFrom(aMap);
-        LatLngBounds fitArea = createFitAreaFrom(aMap);
-
-        oBoundMapFragment.getMap().addPolyline(polylineOptions);
-        oBoundMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
-        oIsTracePosition = false;
-    }
-
-    @Override
-    public void onRecordItemLongClick() {
-        if(oRecordsViewAdapter.getSelectedItemIdList().size() > 0){
-            oToolbar.setVisibility(View.VISIBLE);
-        }else{
-            oToolbar.setVisibility(View.GONE);
-        }
-    }
-
-    private PolylineOptions createPolylineFrom(Map<Integer, LatLng> aMap){
-        PolylineOptions polylineOptions = new PolylineOptions();
-        for(int i = 0; i < aMap.size(); i++){
-            LatLng latLng = aMap.get(i);
-            polylineOptions.add(latLng);
-        }
-        return polylineOptions;
-    }
-
-    private LatLngBounds createFitAreaFrom(Map<Integer, LatLng> aMap){
-        double minLat;
-        double maxLat;
-        double minLon;
-        double maxLon;
-        Set<Double> latSet = new HashSet<>();
-        Set<Double> lonSet = new HashSet<>();
-
-        for(int i = 0; i < aMap.size(); i++){
-            LatLng latLng = aMap.get(i);
-            latSet.add(latLng.latitude);
-            lonSet.add(latLng.longitude);
-        }
-        maxLat = latSet.stream().max(Double::compareTo).get();
-        minLat = latSet.stream().min(Double::compareTo).get();
-        maxLon = lonSet.stream().max(Double::compareTo).get();
-        minLon = lonSet.stream().min(Double::compareTo).get();
-
-        LatLngBounds area = new LatLngBounds(
-                new LatLng(minLat, minLon),
-                new LatLng(maxLat, maxLon)
-        );
-        StringBuilder builder = new StringBuilder();
-        builder.append("FitArea:")
-                .append("[lat1, lon1] = [").append(minLat).append(",").append(minLon).append("]")
-                .append("[lat2, lon2] = [").append(maxLat).append(",").append(maxLon).append("]");
-        Log.d(LoggerTag.LOCATION, builder.toString());
-
-        return area;
-    }
-
-    @Override
-    public void onReceiveLocationUpdate(Location aLocation, boolean aNeedUpdate) {
-        if(oIsTracePosition) {
-            oBoundMapFragment.getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
-        }
-
-        if(oMapActivitySharedViewModel.getRecordState().getValue().equals(RecordState.RECORDING) && aNeedUpdate) {
-            if(oLastPolyline != null){
-                oLastPolyline.remove();
-            }
-            oPolylineOptions.add(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()));
-            oLastPolyline = oBoundMapFragment.getMap().addPolyline(oPolylineOptions);
-        }
-        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Received Location Updates");
-
-    }
-
-    @Override
-    public void onReceiveReplyCurrentState(RecordState aRecordState, int aId) {
-        oMapActivitySharedViewModel.getRecordState().setValue(aRecordState);
-        if(aRecordState == RecordState.RECORDING){
-            oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(aId);
-            oLastPolyline = oBoundMapFragment.getMap().addPolyline(oPolylineOptions);
-            oDatabaseHelper.getLastLatLngFrom(aId).ifPresent(e -> oBoundMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
-        }
-        Log.d(LoggerTag.BROADCAST_PROCESS, "MapActivity Received Current State Reply:" + aRecordState);
     }
 
     @Override
     public void onPositiveClick() {
-        List<Integer> list = oRecordsViewAdapter.getSelectedItemIdList();
-        for(int id : list){
-            oDatabaseHelper.deleteRecord(id);
-        }
-        oRecordsViewAdapter.setData(oDatabaseHelper.getRecords());
-        oRecordsViewAdapter.notifyDataSetChanged();
+        oRecordsView.deleteSelectedItems();
         oToolbar.setVisibility(View.GONE);
     }
 

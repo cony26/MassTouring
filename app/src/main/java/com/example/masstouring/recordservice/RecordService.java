@@ -50,6 +50,7 @@ public class RecordService extends Service{
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private static final String CANCEL_ACTION = "cancel record action";
     private final IBinder oBinder = new RecordServiceBinder();
+    private Optional<IRecordServiceCallback> oRecordServiceCallback = Optional.empty();
 
     public class RecordServiceBinder extends Binder {
         public RecordService getRecordService(){
@@ -143,7 +144,9 @@ public class RecordService extends Service{
                     oDatabaseHelper.recordPositions(oRecordObject);
                 }
 
-                sendBroadcast(i);
+//                sendBroadcast(i);
+                boolean finalNeedUpdate = needUpdate;
+                oRecordServiceCallback.ifPresent(callback -> callback.onReceiveLocationUpdate(location, finalNeedUpdate));
                 Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Sent Location Updates");
             }
         };
@@ -187,5 +190,13 @@ public class RecordService extends Service{
 
     public RecordState getRecordState(){
         return oRecordState;
+    }
+
+    public void setIRecordServiceCallback(IRecordServiceCallback aCallback){
+        oRecordServiceCallback = Optional.ofNullable(aCallback);
+    }
+
+    public RecordObject getRecordObject(){
+        return oRecordObject;
     }
 }
