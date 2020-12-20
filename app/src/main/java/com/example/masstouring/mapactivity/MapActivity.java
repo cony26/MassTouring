@@ -24,12 +24,11 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
+import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.SupportMapFragment;
-
-import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements DeleteConfirmationDialog.IDeleteConfirmationDialogCallback {
 
@@ -37,17 +36,23 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
     private Button oMemoryButton;
     private BoundRecordView oRecordsView;
     private Toolbar oToolbar;
-    private OnBackPressedCallback oOnBackPressedCallback;
-    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private RecordService oRecordService;
-    boolean oRecordServiceBound = false;
+    private boolean oRecordServiceBound = false;
+    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
+    private OnBackPressedCallback oOnBackPressedCallback = new OnBackPressedCallback(false) {
+        @Override
+        public void handleOnBackPressed() {
+            oMemoryButton.performClick();
+            Log.d(LoggerTag.SYSTEM_PROCESS,"handleOnBackPressed");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onCreate MapActivity");
+        new LifeCycleLogger(this, getClass().getSimpleName());
         setContentView(R.layout.activity_maps);
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
         oMemoryButton = findViewById(R.id.btnMemory);
@@ -56,13 +61,11 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         oRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, getApplicationContext());
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
-        oToolbar.setVisibility(View.GONE);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         oBoundMapFragment = new BoundMapFragment(this, mapFragment);
 
         oRecordsView.setMapFragment(oBoundMapFragment);
-        oRecordsView.setToolbar(oToolbar);
 
         oOnBackPressedCallback = new OnBackPressedCallback(false) {
             @Override
@@ -74,7 +77,6 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
 
         setButtonClickListeners();
-        startRecordService();
         setRecordStateIfExists();
 
         if(savedInstanceState != null){
@@ -82,6 +84,30 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         }
 
         subscribe();
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreInstanceState MapActivity");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onStart() {
+        startRecordService();
+        super.onStart();
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        unbindService(oRecordServiceConnection);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState MapActivity");
+        super.onSaveInstanceState(outState);
     }
 
     private void subscribe(){
@@ -92,36 +118,13 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
                 Toast.makeText(MapActivity.this, getText(recordState.getToastId()), Toast.LENGTH_SHORT).show();
             }
         });
-    }
 
-    @Override
-    protected void onResume(){
-        super.onResume();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onResume MapActivity");
-    }
-
-    @Override
-    protected void onPause(){
-        super.onPause();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onPause MapActivity");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy MapActivity");
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState MapActivity");
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onRestoreInstanceState MapActivity");
-        super.onRestoreInstanceState(savedInstanceState);
+        oMapActivitySharedViewModel.getToolbarVisibility().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                oToolbar.setVisibility(integer);
+            }
+        });
     }
 
     @Override
@@ -142,11 +145,6 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.action_menu, menu);
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
     }
 
     private void setButtonClickListeners(){
@@ -182,7 +180,7 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
                 MutableLiveData<Boolean> isRecordsViewVisible = oMapActivitySharedViewModel.getIsRecordsViewVisible();
                 if(isRecordsViewVisible.getValue()) {
                     isRecordsViewVisible.setValue(false);
-                    oToolbar.setVisibility(View.GONE);
+                    oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
                     oOnBackPressedCallback.setEnabled(false);
                 }else{
                     isRecordsViewVisible.setValue(true);
@@ -191,16 +189,6 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
             }
         });
 
-    }
-
-    private List<RecordItem> loadRecords(){
-        List<RecordItem> data = oDatabaseHelper.getRecords();
-
-        for(RecordItem item : data){
-            Log.d(LoggerTag.RECORDS, item.toString());
-        }
-
-        return data;
     }
 
     private void startRecordService(){
@@ -239,7 +227,7 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
     @Override
     public void onPositiveClick() {
         oRecordsView.deleteSelectedItems();
-        oToolbar.setVisibility(View.GONE);
+        oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
     }
 
     @Override

@@ -7,7 +7,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Binder;
@@ -18,9 +17,11 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.LifecycleService;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
+import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.MapActivity;
@@ -37,7 +38,7 @@ import com.google.android.gms.location.SettingsClient;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public class RecordService extends Service{
+public class RecordService extends LifecycleService {
     private FusedLocationProviderClient oFusedClient;
     private SettingsClient oSetClient;
     private LocationSettingsRequest oLocSetReq;
@@ -61,6 +62,7 @@ public class RecordService extends Service{
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        super.onBind(intent);
         Log.d(LoggerTag.SYSTEM_PROCESS, "onBind RecordService");
         return oBinder;
     }
@@ -68,6 +70,7 @@ public class RecordService extends Service{
     @Override
     public void onCreate() {
         super.onCreate();
+        new LifeCycleLogger(this, getClass().getSimpleName());
         Intent openMapIntent = new Intent(this, MapActivity.class);
         openMapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent openMapPendingIntent = PendingIntent.getActivity(this, 0, openMapIntent, 0);
@@ -92,6 +95,7 @@ public class RecordService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
         Optional.ofNullable(intent.getAction()).ifPresent(e -> {
             if(e.equals(CANCEL_ACTION)){
@@ -129,13 +133,10 @@ public class RecordService extends Service{
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location location = locationResult.getLastLocation();
-                Intent i = new Intent(Const.LOCATION_UPDATE_ACTION_ID);
-                i.putExtra(Const.LOCATION_KEY, location);
 
                 boolean needUpdate = false;
                 if(oRecordState == RecordState.RECORDING){
                     needUpdate = oRecordObject.isDifferenceEnough(location);
-                    i.putExtra(Const.UPDATE_KEY, needUpdate);
                 }
 
                 if (needUpdate) {
@@ -144,10 +145,8 @@ public class RecordService extends Service{
                     oDatabaseHelper.recordPositions(oRecordObject);
                 }
 
-//                sendBroadcast(i);
                 boolean finalNeedUpdate = needUpdate;
                 oRecordServiceCallback.ifPresent(callback -> callback.onReceiveLocationUpdate(location, finalNeedUpdate));
-                Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Sent Location Updates");
             }
         };
 
@@ -167,7 +166,7 @@ public class RecordService extends Service{
             oDatabaseHelper.recordStartInfo(oRecordObject);
             oRecordState = RecordState.RECORDING;
         }
-        Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Received Start Recording");
+        Log.d(LoggerTag.RECORD_SERVICE_PROCESS, "RecordService start Recording");
     }
 
     public void stopRecording() {
@@ -178,7 +177,7 @@ public class RecordService extends Service{
             oRecordObject = null;
             oRecordState = RecordState.STOP;
         }
-        Log.d(LoggerTag.BROADCAST_PROCESS, "RecordService Received Stop Recording");
+        Log.d(LoggerTag.RECORD_SERVICE_PROCESS, "RecordService stop Recording");
     }
 
     private void stopService(){

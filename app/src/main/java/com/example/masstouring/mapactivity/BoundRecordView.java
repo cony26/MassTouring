@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
-import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -32,7 +31,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private RecordsViewAdapter oRecordsViewAdapter;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final DatabaseHelper oDatabaseHelper;
-    private Toolbar oToolbar;
     private BoundMapFragment oMapFragment;
 
     public BoundRecordView(LifecycleOwner aLifeCycleOwner, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, Context aContext){
@@ -95,9 +93,9 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     @Override
     public void onRecordItemLongClick() {
         if(oRecordsViewAdapter.getSelectedItemIdList().size() > 0){
-            oToolbar.setVisibility(View.VISIBLE);
+            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.VISIBLE);
         }else{
-            oToolbar.setVisibility(View.GONE);
+            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
         }
     }
 
@@ -148,10 +146,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
         oRecordsViewAdapter.setData(oDatabaseHelper.getRecords());
         oRecordsViewAdapter.notifyDataSetChanged();
-    }
-
-    public void setToolbar(androidx.appcompat.widget.Toolbar aToolbar) {
-        oToolbar = aToolbar;
     }
 
     public void setMapFragment(BoundMapFragment aMapFragment) {

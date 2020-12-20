@@ -10,6 +10,7 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
@@ -28,8 +29,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(LoggerTag.SYSTEM_PROCESS, "onCreate MainActivity");
         super.onCreate(savedInstanceState);
+        new LifeCycleLogger(this, getClass().getSimpleName());
         setContentView(R.layout.activity_main);
 
         setButtonClickListeners();
@@ -79,23 +80,5 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy MainActivity");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onPause MainActivity");
-    }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onResume MainActivity");
     }
 }
