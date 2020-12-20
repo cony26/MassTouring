@@ -67,13 +67,6 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
 
         oRecordsView.setMapFragment(oBoundMapFragment);
 
-        oOnBackPressedCallback = new OnBackPressedCallback(false) {
-            @Override
-            public void handleOnBackPressed() {
-                oMemoryButton.performClick();
-                Log.d(LoggerTag.SYSTEM_PROCESS,"handleOnBackPressed");
-            }
-        };
         getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
 
         setButtonClickListeners();
@@ -205,6 +198,12 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
             oRecordServiceBound = true;
             setRecordStateIfExists();
             oRecordService.setIRecordServiceCallback(oBoundMapFragment);
+            oRecordService.setUnbindRequestCallback(new RecordService.IUnbindRequestCallback() {
+                @Override
+                public void unbindRecordService() {
+                    unbindService(oRecordServiceConnection);
+                }
+            });
             Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity");
         }
 
@@ -234,4 +233,5 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
     public void onNegativeClick() {
 
     }
+
 }

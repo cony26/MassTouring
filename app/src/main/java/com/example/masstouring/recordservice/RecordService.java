@@ -1,21 +1,16 @@
 package com.example.masstouring.recordservice;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LifecycleService;
 
@@ -27,23 +22,36 @@ import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.mapactivity.RecordState;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.SettingsClient;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class RecordService extends LifecycleService {
-    private FusedLocationProviderClient oFusedClient;
-    private SettingsClient oSetClient;
-    private LocationSettingsRequest oLocSetReq;
-    private LocationCallback oLocCallback;
-    private LocationRequest oLocReq;
+    private BoundLocationClient oBoundLocationClient;
+    private LocationCallback oLocCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            Location location = locationResult.getLastLocation();
+
+            boolean needUpdate = false;
+            if(oRecordState == RecordState.RECORDING){
+                needUpdate = oRecordObject.isDifferenceEnough(location);
+            }
+
+            if (needUpdate) {
+                oRecordObject.addLocation(location);
+                oRecordObject.inclementRecordNumber();
+                oDatabaseHelper.recordPositions(oRecordObject);
+            }
+
+            boolean finalNeedUpdate = needUpdate;
+            oRecordServiceCallback.ifPresent(callback -> callback.onReceiveLocationUpdate(location, finalNeedUpdate));
+        }
+    };
+
     private NotificationChannel oNotificationChannel;
     private Notification oNotification;
     private RecordObject oRecordObject = null;
@@ -51,7 +59,8 @@ public class RecordService extends LifecycleService {
     private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private static final String CANCEL_ACTION = "cancel record action";
     private final IBinder oBinder = new RecordServiceBinder();
-    private Optional<IRecordServiceCallback> oRecordServiceCallback = Optional.empty();
+    private Optional<ILocationUpdateCallback> oRecordServiceCallback = Optional.empty();
+    private IUnbindRequestCallback oUnbindRequestCallback;
 
     public class RecordServiceBinder extends Binder {
         public RecordService getRecordService(){
@@ -71,6 +80,8 @@ public class RecordService extends LifecycleService {
     public void onCreate() {
         super.onCreate();
         new LifeCycleLogger(this, getClass().getSimpleName());
+        oBoundLocationClient = new BoundLocationClient(this, this, oLocCallback);
+
         Intent openMapIntent = new Intent(this, MapActivity.class);
         openMapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent openMapPendingIntent = PendingIntent.getActivity(this, 0, openMapIntent, 0);
@@ -88,9 +99,7 @@ public class RecordService extends LifecycleService {
         oNotificationChannel = new NotificationChannel(Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID, getText(R.string.notificationTitle), NotificationManager.IMPORTANCE_DEFAULT);
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         manager.createNotificationChannel(oNotificationChannel);
-        initializeGpsSetting();
         startForeground(1, oNotification);
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onCreate RecordService");
     }
 
     @Override
@@ -99,15 +108,10 @@ public class RecordService extends LifecycleService {
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
         Optional.ofNullable(intent.getAction()).ifPresent(e -> {
             if(e.equals(CANCEL_ACTION)){
-                //TODO:this stopSelf doesn't work correctly. It may need to unbind this service in activity before calling this method
+                oUnbindRequestCallback.unbindRecordService();
                 stopSelf();
             }
         });
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-            return START_STICKY;
-        }
-        oFusedClient.requestLocationUpdates(oLocReq, oLocCallback, Looper.myLooper());
         return START_STICKY;
     }
 
@@ -115,49 +119,14 @@ public class RecordService extends LifecycleService {
     public void onDestroy() {
         super.onDestroy();
         stopService();
-        Log.d(LoggerTag.SYSTEM_PROCESS,"onDestroy RecordService");
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
         stopService();
+        oBoundLocationClient.removeClient();
         Log.d(LoggerTag.SYSTEM_PROCESS,"onTaskRemoved RecordService");
-    }
-
-    private void initializeGpsSetting(){
-        oFusedClient = LocationServices.getFusedLocationProviderClient(this);
-        oSetClient = LocationServices.getSettingsClient(this);
-        oLocCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                Location location = locationResult.getLastLocation();
-
-                boolean needUpdate = false;
-                if(oRecordState == RecordState.RECORDING){
-                    needUpdate = oRecordObject.isDifferenceEnough(location);
-                }
-
-                if (needUpdate) {
-                    oRecordObject.addLocation(location);
-                    oRecordObject.inclementRecordNumber();
-                    oDatabaseHelper.recordPositions(oRecordObject);
-                }
-
-                boolean finalNeedUpdate = needUpdate;
-                oRecordServiceCallback.ifPresent(callback -> callback.onReceiveLocationUpdate(location, finalNeedUpdate));
-            }
-        };
-
-        oLocReq = new LocationRequest()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(1000)
-                .setFastestInterval(500);
-
-        oLocSetReq = new LocationSettingsRequest.Builder()
-                .addLocationRequest(oLocReq)
-                .build();
     }
 
     public void startRecording() {
@@ -182,8 +151,6 @@ public class RecordService extends LifecycleService {
 
     private void stopService(){
         stopRecording();
-        //TODO:need to report stop to Activity (RecordState)
-        oFusedClient.removeLocationUpdates(oLocCallback);
         stopForeground(true);
     }
 
@@ -191,11 +158,19 @@ public class RecordService extends LifecycleService {
         return oRecordState;
     }
 
-    public void setIRecordServiceCallback(IRecordServiceCallback aCallback){
+    public void setIRecordServiceCallback(ILocationUpdateCallback aCallback){
         oRecordServiceCallback = Optional.ofNullable(aCallback);
     }
 
     public RecordObject getRecordObject(){
         return oRecordObject;
+    }
+
+    public void setUnbindRequestCallback(IUnbindRequestCallback aCallback){
+        oUnbindRequestCallback = aCallback;
+    }
+
+    public interface IUnbindRequestCallback{
+        public abstract void unbindRecordService();
     }
 }

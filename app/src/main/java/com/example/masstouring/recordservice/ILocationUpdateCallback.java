@@ -4,6 +4,6 @@ import android.location.Location;
 
 import com.example.masstouring.mapactivity.RecordState;
 
-public interface IRecordServiceCallback {
+public interface ILocationUpdateCallback {
     public abstract void onReceiveLocationUpdate(Location aLocation, boolean aNeedUpdate);
 }
