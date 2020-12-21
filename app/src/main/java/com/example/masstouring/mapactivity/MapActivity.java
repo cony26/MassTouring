@@ -23,15 +23,12 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.R;
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
-import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.SupportMapFragment;
 
-public class MapActivity extends AppCompatActivity implements DeleteConfirmationDialog.IDeleteConfirmationDialogCallback {
-
+public class MapActivity extends AppCompatActivity{
     private Button oStartRecordingButton;
     private Button oMemoryButton;
     private BoundRecordView oRecordsView;
@@ -40,12 +37,23 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private RecordService oRecordService;
     private boolean oRecordServiceBound = false;
-    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
     private OnBackPressedCallback oOnBackPressedCallback = new OnBackPressedCallback(false) {
         @Override
         public void handleOnBackPressed() {
             oMemoryButton.performClick();
             Log.d(LoggerTag.SYSTEM_PROCESS,"handleOnBackPressed");
+        }
+    };
+
+    private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
+        @Override
+        public void onPositiveClick() {
+            oRecordsView.deleteSelectedItems();
+            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
+        }
+
+        @Override
+        public void onNegativeClick() {
         }
     };
 
@@ -72,7 +80,7 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         setButtonClickListeners();
         setRecordStateIfExists();
 
-        subscribe();
+        subscribeLiveData();
     }
 
     @Override
@@ -99,7 +107,7 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         super.onSaveInstanceState(outState);
     }
 
-    private void subscribe(){
+    private void subscribeLiveData(){
         oMapActivitySharedViewModel.getRecordState().observe(this, new Observer<RecordState>() {
             @Override
             public void onChanged(RecordState recordState) {
@@ -121,7 +129,7 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         switch (item.getItemId()){
             case R.id.action_delete:
                 DeleteConfirmationDialog dialog = new DeleteConfirmationDialog();
-                dialog.setCallback(this);
+                dialog.setCallback(oDeleteDialogCallback);
                 dialog.show(getSupportFragmentManager(), "deleteConfirmationDialog");
                 return true;
             default:
@@ -214,20 +222,9 @@ public class MapActivity extends AppCompatActivity implements DeleteConfirmation
         if(oRecordServiceBound){
             RecordState state = oRecordService.getRecordState();
             oMapActivitySharedViewModel.getRecordState().setValue(state);
-            oBoundMapFragment.moveCameraIfRecording(oRecordService, oDatabaseHelper);
+            oBoundMapFragment.moveCameraIfRecording(oRecordService);
             Log.d(LoggerTag.SYSTEM_PROCESS, "set RecordState from RecordService");
         }
-    }
-
-    @Override
-    public void onPositiveClick() {
-        oRecordsView.deleteSelectedItems();
-        oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
-    }
-
-    @Override
-    public void onNegativeClick() {
-
     }
 
 }

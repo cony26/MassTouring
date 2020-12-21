@@ -85,9 +85,11 @@ public class RecordService extends LifecycleService {
         Intent openMapIntent = new Intent(this, MapActivity.class);
         openMapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent openMapPendingIntent = PendingIntent.getActivity(this, 0, openMapIntent, 0);
+
         Intent cancelRecordIntent = new Intent(this, RecordService.class);
         cancelRecordIntent.setAction(CANCEL_ACTION);
         PendingIntent cancelRecordPendingIntent = PendingIntent.getForegroundService(this, 0, cancelRecordIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         oNotification = new NotificationCompat.Builder(this, Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(getText(R.string.notificationTitle))
                 .setContentText(getText(R.string.notificationContent))
@@ -171,6 +173,6 @@ public class RecordService extends LifecycleService {
     }
 
     public interface IUnbindRequestCallback{
-        public abstract void unbindRecordService();
+        void unbindRecordService();
     }
 }

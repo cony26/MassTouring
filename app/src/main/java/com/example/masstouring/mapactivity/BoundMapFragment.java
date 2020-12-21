@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
@@ -28,12 +29,14 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private MapActivtySharedViewModel aMapActivityViewModel;
     private Polyline oLastPolyline = null;
     private PolylineOptions oPolylineOptions = new PolylineOptions();
+    private final DatabaseHelper oDatabaseHelper;
 
     public BoundMapFragment(LifecycleOwner aLifeCycleOwner, SupportMapFragment aMapFragment){
         aMapFragment.getMapAsync(this);
         oMapFragment = aMapFragment;
         aMapActivityViewModel = new ViewModelProvider(aMapFragment.getActivity()).get(MapActivtySharedViewModel.class);
         aLifeCycleOwner.getLifecycle().addObserver(this);
+        oDatabaseHelper = new DatabaseHelper(aMapFragment.getContext(), Const.DB_NAME);
     }
 
     @Override
@@ -80,12 +83,12 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         Log.d(LoggerTag.SYSTEM_PROCESS, "Location Updates");
     }
 
-    public void moveCameraIfRecording(RecordService aService, DatabaseHelper aDatabaseHelper){
+    public void moveCameraIfRecording(RecordService aService){
         if(aMapActivityViewModel.getRecordState().getValue() == RecordState.RECORDING){
             int id = aService.getRecordObject().getRecordId();
-            oPolylineOptions = aDatabaseHelper.restorePolylineOptionsFrom(id);
+            oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(id);
             oLastPolyline = oMap.addPolyline(oPolylineOptions);
-            aDatabaseHelper.getLastLatLngFrom(id).ifPresent(e -> oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
+            oDatabaseHelper.getLastLatLngFrom(id).ifPresent(e -> oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
         }
     }
 }
