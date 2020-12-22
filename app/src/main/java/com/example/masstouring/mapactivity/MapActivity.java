@@ -94,7 +94,7 @@ public class MapActivity extends AppCompatActivity{
     @Override
     protected void onPause(){
         super.onPause();
-        unbindService(oRecordServiceConnection);
+        unbindServiceGracefully();
     }
 
     @Override
@@ -201,7 +201,7 @@ public class MapActivity extends AppCompatActivity{
             oRecordService.setUnbindRequestCallback(new RecordService.IUnbindRequestCallback() {
                 @Override
                 public void unbindRecordService() {
-                    unbindService(oRecordServiceConnection);
+                    unbindServiceGracefully();
                 }
             });
             Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity");
@@ -220,6 +220,14 @@ public class MapActivity extends AppCompatActivity{
             oMapActivitySharedViewModel.getRecordState().setValue(state);
             oBoundMapFragment.moveCameraIfRecording(oRecordService);
             Log.d(LoggerTag.SYSTEM_PROCESS, "set RecordState from RecordService");
+        }
+    }
+
+    private void unbindServiceGracefully(){
+        if(oRecordServiceBound) {
+            oRecordService.setUnbindRequestCallback(null);
+            unbindService(oRecordServiceConnection);
+            oRecordServiceBound = false;
         }
     }
 

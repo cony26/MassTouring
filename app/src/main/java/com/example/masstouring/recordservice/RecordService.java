@@ -60,7 +60,7 @@ public class RecordService extends LifecycleService {
     private static final String CANCEL_ACTION = "cancel record action";
     private final IBinder oBinder = new RecordServiceBinder();
     private Optional<ILocationUpdateCallback> oRecordServiceCallback = Optional.empty();
-    private IUnbindRequestCallback oUnbindRequestCallback;
+    private Optional<IUnbindRequestCallback> oUnbindRequestCallback;
 
     public class RecordServiceBinder extends Binder {
         public RecordService getRecordService(){
@@ -110,7 +110,7 @@ public class RecordService extends LifecycleService {
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
         Optional.ofNullable(intent.getAction()).ifPresent(e -> {
             if(e.equals(CANCEL_ACTION)){
-                oUnbindRequestCallback.unbindRecordService();
+                oUnbindRequestCallback.ifPresent(callback -> callback.unbindRecordService());
                 stopSelf();
             }
         });
@@ -169,7 +169,7 @@ public class RecordService extends LifecycleService {
     }
 
     public void setUnbindRequestCallback(IUnbindRequestCallback aCallback){
-        oUnbindRequestCallback = aCallback;
+        oUnbindRequestCallback = Optional.ofNullable(aCallback);
     }
 
     public interface IUnbindRequestCallback{
