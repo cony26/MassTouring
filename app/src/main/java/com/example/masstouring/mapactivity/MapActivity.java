@@ -62,17 +62,13 @@ public class MapActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         new LifeCycleLogger(this, getClass().getSimpleName());
         setContentView(R.layout.activity_maps);
+        oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
         oMemoryButton = findViewById(R.id.btnMemory);
-
-        oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
-        oRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, getApplicationContext());
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        oBoundMapFragment = new BoundMapFragment(this, mapFragment);
-
+        oBoundMapFragment = new BoundMapFragment(this, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+        oRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, getApplicationContext());
         oRecordsView.setMapFragment(oBoundMapFragment);
 
         getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
