@@ -1,9 +1,11 @@
 package com.example.masstouring.mapactivity;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -18,6 +20,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -61,6 +64,7 @@ public class MapActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new LifeCycleLogger(this, getClass().getSimpleName());
+        checkPermissions();
         setContentView(R.layout.activity_maps);
         oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
@@ -228,6 +232,12 @@ public class MapActivity extends AppCompatActivity{
             oRecordService.setUnbindRequestCallback(null);
             unbindService(oRecordServiceConnection);
             oRecordServiceBound = false;
+        }
+    }
+
+    private void checkPermissions(){
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
 
