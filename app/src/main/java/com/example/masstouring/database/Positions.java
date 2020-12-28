@@ -5,7 +5,8 @@ public enum Positions implements IColumn{
     ORDER("order", "INTEGER",1),
     LATITUDE("latitude", "REAL",2),
     LONGITUDE("longitude", "REAL",3),
-    TIMESTAMP("time", "TEXT", 4);
+    TIMESTAMP("time", "TEXT", 4),
+    SPEEDMPS("speedMps", "REAL", 5);
 
     public String oName;
     public String oType;

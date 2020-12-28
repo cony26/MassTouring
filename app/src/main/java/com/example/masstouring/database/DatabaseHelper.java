@@ -73,15 +73,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    private void putPositions(SQLiteDatabase sqLiteDatabase, int aId, int aOrder, double aLat, double aLon, String aDate){
-        sqLiteDatabase.execSQL(Tables.POSITIONS.getInsertSQL(aId, aOrder, aLat, aLon, aDate));
-        Tables.POSITIONS.insertLog(aId, aOrder, aLat, aLon, aDate);
+    private void putPositions(SQLiteDatabase sqLiteDatabase, int aId, int aOrder, double aLat, double aLon, String aDate, double aSpeedMps){
+        sqLiteDatabase.execSQL(Tables.POSITIONS.getInsertSQL(aId, aOrder, aLat, aLon, aDate, aSpeedMps));
+        Tables.POSITIONS.insertLog(aId, aOrder, aLat, aLon, aDate, aSpeedMps);
     }
 
     public void recordPositions(RecordObject aObj){
         try (SQLiteDatabase db = getWritableDatabase()) {
             Location loc = aObj.getLastLocation();
-            putPositions(db, aObj.getRecordId(), aObj.getRecordNumber(), loc.getLatitude(), loc.getLongitude(), LocalDateTime.now().format(Const.DATE_FORMAT));
+            putPositions(db, aObj.getRecordId(), aObj.getRecordNumber(), loc.getLatitude(), loc.getLongitude(), LocalDateTime.now().format(Const.DATE_FORMAT), loc.getSpeed());
         }
     }
 

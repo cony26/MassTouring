@@ -172,7 +172,7 @@ public class MapActivity extends AppCompatActivity{
                         switch (state){
                             case RECORDING:
                                 oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
-                                oMapActivitySharedViewModel.getRecordStartEvent().setValue(new RecordStartEvent(getString(R.string.touringFinishToast)));
+                                oMapActivitySharedViewModel.getRecordEndEvent().setValue(new RecordEndEvent(getString(R.string.touringFinishToast)));
                                 if(oRecordServiceBound) {
                                     oRecordService.stopRecording();
                                 }

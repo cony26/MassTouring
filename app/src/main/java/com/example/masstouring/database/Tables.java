@@ -11,7 +11,7 @@ public enum Tables implements ITable{
         @Override
         public void registerColumns(){
             setPrimaryKeys(new IColumn[]{Positions.ID, Positions.ORDER});
-            setColumns(new IColumn[]{Positions.ID, Positions.ORDER, Positions.LATITUDE, Positions.LONGITUDE, Positions.TIMESTAMP});
+            setColumns(new IColumn[]{Positions.ID, Positions.ORDER, Positions.LATITUDE, Positions.LONGITUDE, Positions.TIMESTAMP, Positions.SPEEDMPS});
         }
     },
     RECORDS_STARTINFO("records_startinfo"){
