@@ -31,6 +31,8 @@ import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.SupportMapFragment;
 
+import java.util.Optional;
+
 public class MapActivity extends AppCompatActivity{
     private Button oStartRecordingButton;
     private Button oMemoryButton;
@@ -112,7 +114,24 @@ public class MapActivity extends AppCompatActivity{
             @Override
             public void onChanged(RecordState recordState) {
                 oStartRecordingButton.setText(recordState.getButtonStringId());
-                Toast.makeText(MapActivity.this, getText(recordState.getToastId()), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        oMapActivitySharedViewModel.getRecordStartEvent().observe(this, new Observer<RecordStartEvent>() {
+            @Override
+            public void onChanged(RecordStartEvent recordStartEvent) {
+                Optional.ofNullable(recordStartEvent.getContentIfNotHandled()).ifPresent(content -> {
+                    Toast.makeText(MapActivity.this, content, Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+
+        oMapActivitySharedViewModel.getRecordEndEvent().observe(this, new Observer<RecordEndEvent>() {
+            @Override
+            public void onChanged(RecordEndEvent recordEndEvent) {
+                Optional.ofNullable(recordEndEvent.getContentIfNotHandled()).ifPresent(content -> {
+                    Toast.makeText(MapActivity.this, content, Toast.LENGTH_SHORT).show();
+                });
             }
         });
 
@@ -153,12 +172,14 @@ public class MapActivity extends AppCompatActivity{
                         switch (state){
                             case RECORDING:
                                 oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
+                                oMapActivitySharedViewModel.getRecordStartEvent().setValue(new RecordStartEvent(getString(R.string.touringFinishToast)));
                                 if(oRecordServiceBound) {
                                     oRecordService.stopRecording();
                                 }
                                 break;
                             case STOP:
                                 oMapActivitySharedViewModel.getRecordState().setValue(RecordState.RECORDING);
+                                oMapActivitySharedViewModel.getRecordStartEvent().setValue(new RecordStartEvent(getString(R.string.touringStartToast)));
                                 startRecordService();
                                 if(oRecordServiceBound){
                                     oRecordService.startRecording();
