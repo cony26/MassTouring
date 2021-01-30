@@ -131,6 +131,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 Map<Integer, LatLng> locationMap = new HashMap<>();
                 Map<Integer, String> timeStampMap = new HashMap<>();
+                Map<Integer, Double> speedkmph = new HashMap<>();
                 Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + id, null, null, null, null);
                 while(positionsCursor.moveToNext()){
                     double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
@@ -139,12 +140,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     String date = (String)Tables.POSITIONS.get(positionsCursor, Positions.TIMESTAMP);
                     locationMap.put(order, new LatLng(latitude, longitude));
                     timeStampMap.put(order, date);
+                    speedkmph.put(order, (double)Tables.POSITIONS.get(positionsCursor, Positions.SPEEDMPS) * 60 * 60 / 1000);
                 }
 
                 StringBuilder builder = new StringBuilder();
                 builder.append("id:").append(id).append(", startDate:").append(startInfo).append(", endDate:").append(endInfo);
                 Log.d(LoggerTag.DATABASE_PROCESS, builder.toString());
-                data.add(new RecordItem(id, startInfo, endInfo, locationMap, timeStampMap));
+                data.add(new RecordItem(id, startInfo, endInfo, locationMap, timeStampMap, speedkmph));
             }
         }
 

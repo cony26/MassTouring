@@ -78,12 +78,12 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     }
 
     @Override
-    public void onRecordItemClick(Map<Integer, LatLng> aMap) {
-        if(aMap.size() <= 1)
+    public void onRecordItemClick(Map<Integer, LatLng> aLocationMap, Map<Integer, Double> aSpeedKmphMap) {
+        if(aLocationMap.size() <= 1)
             return;
 
-        PolylineOptions polylineOptions = createPolylineFrom(aMap);
-        LatLngBounds fitArea = createFitAreaFrom(aMap);
+        PolylineOptions polylineOptions = createPolylineFrom(aLocationMap);
+        LatLngBounds fitArea = createFitAreaFrom(aLocationMap);
 
         oMapFragment.getMap().addPolyline(polylineOptions);
         oMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));

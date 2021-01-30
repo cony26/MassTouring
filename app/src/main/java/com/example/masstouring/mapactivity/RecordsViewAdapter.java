@@ -46,7 +46,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         aHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                oCallback.onRecordItemClick(oData.get(aPosition).getLocationMap());
+                oCallback.onRecordItemClick(oData.get(aPosition).getLocationMap(), oData.get(aPosition).getSpeedkmphMap());
 //                Log.d(LoggerTag.RECORD_RECYCLER_VIEW, aHolder.itemView.toString());
             }
         });

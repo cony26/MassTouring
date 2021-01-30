@@ -19,9 +19,10 @@ public class RecordItem {
     private final String oAppendixText;
     private final Map<Integer, LatLng> oLocationMap;
     private final Map<Integer, LatLng> oTimeStampMap;
+    private final Map<Integer, Double> oSpeedkmphMap;
     private boolean oSelected = false;
 
-    public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap){
+    public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap, Map aSpeedKmphMap){
         oId = aID;
 
         LocalDateTime startDate = LocalDateTime.parse(aStartDateText, Const.DATE_FORMAT);
@@ -43,6 +44,7 @@ public class RecordItem {
 
         oLocationMap = aLocationMap;
         oTimeStampMap = aTimeStampMap;
+        oSpeedkmphMap = aSpeedKmphMap;
         oDistance = calculateDistance();
         oAppendixText = buildAppendixText();
     }
@@ -81,6 +83,8 @@ public class RecordItem {
     public Map<Integer, LatLng> getLocationMap() {
         return oLocationMap;
     }
+
+    public Map<Integer, Double> getSpeedkmphMap(){ return oSpeedkmphMap;}
 
     public boolean isSelected() {
         return oSelected;
