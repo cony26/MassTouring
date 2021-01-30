@@ -19,6 +19,9 @@ public class MapActivtySharedViewModel extends ViewModel {
     public MutableLiveData<RecordState> getRecordState() {
         return oRecordState;
     }
+    public boolean isRecording(){
+        return oRecordState.equals(RecordState.RECORDING);
+    }
     public MutableLiveData<Boolean> getIsRecordsViewVisible(){return oIsRecordsViewVisible;}
     public MutableLiveData<Integer> getToolbarVisibility(){return oToolbarVisiblity;}
 

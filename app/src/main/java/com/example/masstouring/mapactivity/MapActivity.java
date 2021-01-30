@@ -253,6 +253,7 @@ public class MapActivity extends AppCompatActivity{
             oRecordService.setUnbindRequestCallback(null);
             unbindService(oRecordServiceConnection);
             oRecordServiceBound = false;
+            oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
         }
     }
 

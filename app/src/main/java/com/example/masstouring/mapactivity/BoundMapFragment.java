@@ -73,7 +73,10 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             oMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
         }
 
-        if(aMapActivityViewModel.getRecordState().getValue().equals(RecordState.RECORDING) && aNeedUpdate) {
+        if(!aNeedUpdate)
+            return;
+
+        if(aMapActivityViewModel.isRecording()) {
             if(oLastPolyline != null){
                 oLastPolyline.remove();
             }
@@ -84,7 +87,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     public void moveCameraIfRecording(RecordService aService){
-        if(aMapActivityViewModel.getRecordState().getValue() == RecordState.RECORDING){
+        if(aMapActivityViewModel.isRecording()){
             int id = aService.getRecordObject().getRecordId();
             oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(id);
             oLastPolyline = oMap.addPolyline(oPolylineOptions);
