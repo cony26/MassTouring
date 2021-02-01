@@ -115,15 +115,28 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
         List<PolylineOptions> polylineOptionsList = new ArrayList<>();
         PolylineOptions polylineOptions = null;
+        int prevColor = Integer.MIN_VALUE;
+
         for(int i = 0; i < aLatLngMap.size(); i++){
-            polylineOptions = createNewPolylineOptionsIfColorChanged(aSpeedKmphMap.get(i), diff, minSpeedKmph, polylineOptions, polylineOptionsList);
-            LatLng latLng = aLatLngMap.get(i);
-            polylineOptions.add(latLng);
+            int color = calculateColorForNewSpeed(aSpeedKmphMap.get(i), diff, minSpeedKmph);
+
+            if(polylineOptions == null){
+                polylineOptions = new PolylineOptions().color(color);
+                prevColor = color;
+                continue;
+            }
+
+            if(color != prevColor){
+                polylineOptionsList.add(polylineOptions);
+                polylineOptions = new PolylineOptions().color(color);
+            }
+            polylineOptions.add(aLatLngMap.get(i));
+            prevColor = color;
         }
         return polylineOptionsList;
     }
 
-    private PolylineOptions createNewPolylineOptionsIfColorChanged(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph, PolylineOptions aPolylineOption, List<PolylineOptions> aPolylineOptionsList){
+    private int calculateColorForNewSpeed(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph){
         int color;
         if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph / 3){
             color = Color.CYAN;
@@ -133,17 +146,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             color = Color.GREEN;
         }
 
-        if(aPolylineOption == null){
-            return new PolylineOptions().color(color);
-        }
-
-        int lastColor = aPolylineOption.getColor();
-        if(color == lastColor){
-            return aPolylineOption;
-        }else{
-            aPolylineOptionsList.add(aPolylineOption);
-            return new PolylineOptions().color(color);
-        }
+        return color;
     }
 
     private LatLngBounds createFitAreaFrom(Map<Integer, LatLng> aMap){
