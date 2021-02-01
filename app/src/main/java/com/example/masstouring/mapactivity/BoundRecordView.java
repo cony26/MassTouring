@@ -1,6 +1,7 @@
 package com.example.masstouring.mapactivity;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
 
@@ -18,8 +19,10 @@ import com.example.masstouring.database.DatabaseHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
+    private List<Polyline> oPrevPolylineList = new ArrayList<>();
 
     public BoundRecordView(LifecycleOwner aLifeCycleOwner, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, Context aContext){
         aLifeCycleOwner.getLifecycle().addObserver(this);
@@ -82,10 +86,15 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         if(aLocationMap.size() <= 1)
             return;
 
-        PolylineOptions polylineOptions = createPolylineFrom(aLocationMap);
+        List<PolylineOptions> polylineOptionsList = createPolylineFrom(aLocationMap, aSpeedKmphMap);
         LatLngBounds fitArea = createFitAreaFrom(aLocationMap);
 
-        oMapFragment.getMap().addPolyline(polylineOptions);
+        oPrevPolylineList.stream().forEach(polyline -> polyline.remove());
+        oPrevPolylineList.clear();
+
+        for(PolylineOptions polylineOptions : polylineOptionsList) {
+            oPrevPolylineList.add(oMapFragment.getMap().addPolyline(polylineOptions));
+        }
         oMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
         oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
     }
@@ -99,13 +108,42 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     }
 
-    private PolylineOptions createPolylineFrom(Map<Integer, LatLng> aMap){
-        PolylineOptions polylineOptions = new PolylineOptions();
-        for(int i = 0; i < aMap.size(); i++){
-            LatLng latLng = aMap.get(i);
+    private List<PolylineOptions> createPolylineFrom(Map<Integer, LatLng> aLatLngMap, Map<Integer, Double> aSpeedKmphMap){
+        double maxSpeedKmph = aSpeedKmphMap.values().stream().max(Double::compareTo).orElse(0.0);
+        double minSpeedKmph = aSpeedKmphMap.values().stream().min(Double::compareTo).orElse(0.0);
+        double diff = maxSpeedKmph - minSpeedKmph;
+
+        List<PolylineOptions> polylineOptionsList = new ArrayList<>();
+        PolylineOptions polylineOptions = null;
+        for(int i = 0; i < aLatLngMap.size(); i++){
+            polylineOptions = createNewPolylineOptionsIfColorChanged(aSpeedKmphMap.get(i), diff, minSpeedKmph, polylineOptions, polylineOptionsList);
+            LatLng latLng = aLatLngMap.get(i);
             polylineOptions.add(latLng);
         }
-        return polylineOptions;
+        return polylineOptionsList;
+    }
+
+    private PolylineOptions createNewPolylineOptionsIfColorChanged(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph, PolylineOptions aPolylineOption, List<PolylineOptions> aPolylineOptionsList){
+        int color;
+        if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph / 3){
+            color = Color.CYAN;
+        }else if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph * 2 / 3){
+            color = Color.BLACK;
+        }else{
+            color = Color.GREEN;
+        }
+
+        if(aPolylineOption == null){
+            return new PolylineOptions().color(color);
+        }
+
+        int lastColor = aPolylineOption.getColor();
+        if(color == lastColor){
+            return aPolylineOption;
+        }else{
+            aPolylineOptionsList.add(aPolylineOption);
+            return new PolylineOptions().color(color);
+        }
     }
 
     private LatLngBounds createFitAreaFrom(Map<Integer, LatLng> aMap){
