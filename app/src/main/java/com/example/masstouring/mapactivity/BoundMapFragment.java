@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.common.Const;
@@ -28,7 +29,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private SupportMapFragment oMapFragment;
     private MapActivtySharedViewModel aMapActivityViewModel;
     private Polyline oLastPolyline = null;
-    private PolylineOptions oPolylineOptions = new PolylineOptions();
+    private PolylineOptions oPolylineOptions = null;
     private final DatabaseHelper oDatabaseHelper;
 
     public BoundMapFragment(LifecycleOwner aLifeCycleOwner, SupportMapFragment aMapFragment){
@@ -93,5 +94,10 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             oLastPolyline = oMap.addPolyline(oPolylineOptions);
             oDatabaseHelper.getLastLatLngFrom(id).ifPresent(e -> oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
         }
+    }
+
+    public void initialize(){
+        oMap.clear();
+        oPolylineOptions = new PolylineOptions();
     }
 }

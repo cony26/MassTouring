@@ -36,6 +36,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
     private List<Polyline> oPrevPolylineList = new ArrayList<>();
+    private static final int alpha = 0x80000000;
 
     public BoundRecordView(LifecycleOwner aLifeCycleOwner, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, Context aContext){
         aLifeCycleOwner.getLifecycle().addObserver(this);
@@ -139,11 +140,11 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private int calculateColorForNewSpeed(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph){
         int color;
         if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph / 3){
-            color = Color.CYAN;
+            color = Color.RED + alpha;
         }else if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph * 2 / 3){
-            color = Color.BLACK;
+            color = Color.GREEN + alpha;
         }else{
-            color = Color.GREEN;
+            color = Color.BLUE + alpha;
         }
 
         return color;
