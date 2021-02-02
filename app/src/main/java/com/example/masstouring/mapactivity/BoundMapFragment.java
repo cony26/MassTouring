@@ -8,7 +8,6 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.common.Const;
