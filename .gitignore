@@ -15,3 +15,10 @@
 /app/
 /app/src/debug/*
 /app/src/debug/res/values/google_maps_api.xml
+/.idea/dictionaries/kosho.xml
+/.idea/gradle.xml
+/.idea/jarRepositories.xml
+/.idea/misc.xml
+/.idea/codeStyles/Project.xml
+/.idea/runConfigurations.xml
+/.idea/vcs.xml
