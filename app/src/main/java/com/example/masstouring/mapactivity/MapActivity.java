@@ -32,8 +32,11 @@ import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.SupportMapFragment;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MapActivity extends AppCompatActivity{
+    ExecutorService executors = Executors.newFixedThreadPool(2);
     private Button oStartRecordingButton;
     private Button oMemoryButton;
     private BoundRecordView oRecordsView;
@@ -80,8 +83,6 @@ public class MapActivity extends AppCompatActivity{
         getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
 
         setButtonClickListeners();
-        setRecordStateIfExists();
-
         subscribeLiveData();
     }
 
@@ -100,6 +101,7 @@ public class MapActivity extends AppCompatActivity{
     @Override
     protected void onPause(){
         super.onPause();
+        stopServiceIfNotRecording();
         unbindServiceGracefully();
     }
 
@@ -179,12 +181,31 @@ public class MapActivity extends AppCompatActivity{
                                 }
                                 break;
                             case STOP:
-                                oMapActivitySharedViewModel.getRecordState().setValue(RecordState.RECORDING);
                                 oMapActivitySharedViewModel.getRecordStartEvent().setValue(new RecordStartEvent(getString(R.string.touringStartToast)));
                                 startRecordService();
-                                if(oRecordServiceBound){
-                                    oRecordService.startRecording();
-                                }
+
+                                executors.execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        while(!oRecordServiceBound){
+                                            try{
+                                                Thread.sleep(10);
+                                            }catch(InterruptedException e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                        Log.i(LoggerTag.SYSTEM_PROCESS, "RecordService connected, start Recording");
+
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                oMapActivitySharedViewModel.getRecordState().setValue(RecordState.RECORDING);
+                                                oRecordService.startRecording();
+                                            }
+                                        });
+
+                                    }
+                                });
                                 break;
                             default:
                                 Log.e(LoggerTag.SYSTEM_PROCESS, "unexpected record state detected:" + state.getId());
@@ -222,11 +243,12 @@ public class MapActivity extends AppCompatActivity{
             RecordService.RecordServiceBinder binder = (RecordService.RecordServiceBinder)iBinder;
             oRecordService = binder.getRecordService();
             oRecordServiceBound = true;
-            setRecordStateIfExists();
+            oMapActivitySharedViewModel.getRecordState().setValue(oRecordService.getRecordState());
             oRecordService.setIRecordServiceCallback(oBoundMapFragment);
-            oRecordService.setUnbindRequestCallback(new RecordService.IUnbindRequestCallback() {
+            oRecordService.setUnbindRequestCallback(new RecordService.IStopRequestCallback() {
                 @Override
-                public void unbindRecordService() {
+                public void onStopRecordService() {
+                    oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
                     unbindServiceGracefully();
                 }
             });
@@ -240,21 +262,12 @@ public class MapActivity extends AppCompatActivity{
         }
     };
 
-    private void setRecordStateIfExists(){
-        if(oRecordServiceBound){
-            RecordState state = oRecordService.getRecordState();
-            oMapActivitySharedViewModel.getRecordState().setValue(state);
-            oBoundMapFragment.moveCameraIfRecording(oRecordService);
-            Log.d(LoggerTag.SYSTEM_PROCESS, "set RecordState from RecordService");
-        }
-    }
-
     private void unbindServiceGracefully(){
         if(oRecordServiceBound) {
             oRecordService.setUnbindRequestCallback(null);
             unbindService(oRecordServiceConnection);
             oRecordServiceBound = false;
-            oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
+            Log.d(LoggerTag.SYSTEM_PROCESS, "unbind RecordService");
         }
     }
 
@@ -264,4 +277,12 @@ public class MapActivity extends AppCompatActivity{
         }
     }
 
+    private void stopServiceIfNotRecording(){
+        if(oMapActivitySharedViewModel.isRecording())
+            return;
+
+        if(oRecordServiceBound){
+            oRecordService.stopService();
+        }
+    }
 }

@@ -60,7 +60,7 @@ public class RecordService extends LifecycleService {
     private static final String CANCEL_ACTION = "cancel record action";
     private final IBinder oBinder = new RecordServiceBinder();
     private Optional<ILocationUpdateCallback> oRecordServiceCallback = Optional.empty();
-    private Optional<IUnbindRequestCallback> oUnbindRequestCallback;
+    private Optional<IStopRequestCallback> oUnbindRequestCallback;
 
     public class RecordServiceBinder extends Binder {
         public RecordService getRecordService(){
@@ -99,28 +99,28 @@ public class RecordService extends LifecycleService {
                 .addAction(R.drawable.common_google_signin_btn_icon_dark, getString(R.string.notificationStopAction), cancelRecordPendingIntent)
                 .build();
         oNotificationChannel = new NotificationChannel(Const.RECORD_SERVICE_NOTIFICATION_CHANNEL_ID, getText(R.string.notificationTitle), NotificationManager.IMPORTANCE_DEFAULT);
-        NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        manager.createNotificationChannel(oNotificationChannel);
-        startForeground(1, oNotification);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        super.onStartCommand(intent, flags, startId);
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
+        super.onStartCommand(intent, flags, startId);
         Optional.ofNullable(intent.getAction()).ifPresent(e -> {
             if(e.equals(CANCEL_ACTION)){
-                oUnbindRequestCallback.ifPresent(callback -> callback.unbindRecordService());
+                oUnbindRequestCallback.ifPresent(callback -> callback.onStopRecordService());
+                stopService();
                 stopSelf();
             }
         });
+        NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        manager.createNotificationChannel(oNotificationChannel);
+        startForeground(1, oNotification);
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stopService();
     }
 
     @Override
@@ -151,7 +151,7 @@ public class RecordService extends LifecycleService {
         Log.d(LoggerTag.RECORD_SERVICE_PROCESS, "RecordService stop Recording");
     }
 
-    private void stopService(){
+    public void stopService(){
         stopRecording();
         stopForeground(true);
     }
@@ -168,11 +168,11 @@ public class RecordService extends LifecycleService {
         return oRecordObject;
     }
 
-    public void setUnbindRequestCallback(IUnbindRequestCallback aCallback){
+    public void setUnbindRequestCallback(IStopRequestCallback aCallback){
         oUnbindRequestCallback = Optional.ofNullable(aCallback);
     }
 
-    public interface IUnbindRequestCallback{
-        void unbindRecordService();
+    public interface IStopRequestCallback {
+        void onStopRecordService();
     }
 }
