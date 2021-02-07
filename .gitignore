@@ -13,4 +13,4 @@
 .externalNativeBuild
 .cxx
 /app/
-/app/src/debug
+/app/src/debug/*
