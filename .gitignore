@@ -14,3 +14,4 @@
 .cxx
 /app/
 /app/src/debug/*
+/app/src/debug/res/values/google_maps_api.xml
