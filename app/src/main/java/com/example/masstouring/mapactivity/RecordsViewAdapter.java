@@ -11,8 +11,12 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.masstouring.R;
+import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,16 +41,44 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
     @Override
     public void onBindViewHolder(RecordsViewHolder aHolder, int aPosition){
         Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "onBindViewHolder");
-        aHolder.oYearText.setText(oData.get(aPosition).getYearText());
-        aHolder.oStartDateText.setText(oData.get(aPosition).getStartDateText());
-        aHolder.oEndDateText.setText(oData.get(aPosition).getEndDateText());
-        aHolder.oDistanceText.setText(oData.get(aPosition).getDistanceText());
-        aHolder.oAppendixText.setText(oData.get(aPosition).getAppendixText());
-        aHolder.itemView.setBackgroundColor(oData.get(aPosition).isSelected() ? Color.CYAN : oInitialColor);
+
+        RecordItem recordItem = oData.get(aPosition);
+        LocalDateTime startDate = recordItem.getStartDate();
+        LocalDateTime endDate = recordItem.getEndDate();
+
+        String yearText = Integer.toString(startDate.getYear());
+        aHolder.oYearText.setText(yearText);
+
+        String startDateText = startDate.format(Const.START_DATE_FORMAT);
+        aHolder.oStartDateText.setText(startDateText);
+
+        String endDateText;
+        if(endDate == null){
+            endDateText =  Const.NO_INFO;
+        }else{
+            DateTimeFormatter format;
+            if (startDate.getDayOfMonth() == endDate.getDayOfMonth()) {
+                format = Const.END_SAME_DATE_FORMAT;
+            } else {
+                format = Const.END_DIFF_DATE_FORMAT;
+            }
+            endDateText =  "-" + endDate.format(format);
+        }
+        aHolder.oEndDateText.setText(endDateText);
+
+        StringBuilder builder = new StringBuilder();
+        BigDecimal distance = new BigDecimal(recordItem.getDistance() / 1000);
+        builder.append(distance.setScale(3, BigDecimal.ROUND_UP)).append(Const.KM_UNIT);
+        aHolder.oDistanceText.setText(builder.toString());
+
+        String appendixText = Integer.toString(recordItem.getId());
+        aHolder.oAppendixText.setText(appendixText);
+
+        aHolder.itemView.setBackgroundColor(recordItem.isSelected() ? Color.CYAN : oInitialColor);
         aHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                oCallback.onRecordItemClick(oData.get(aPosition).getLocationMap(), oData.get(aPosition).getSpeedkmphMap());
+                oCallback.onRecordItemClick(recordItem);
 //                Log.d(LoggerTag.RECORD_RECYCLER_VIEW, aHolder.itemView.toString());
             }
         });
@@ -54,7 +86,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
             @Override
             public boolean onLongClick(View view) {
                 int color = Color.CYAN;
-                oData.get(aPosition).setSelected(true);
+                recordItem.setSelected(true);
                 view.setBackgroundColor(color);
                 oCallback.onRecordItemLongClick();
                 return true;

@@ -83,12 +83,13 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     }
 
     @Override
-    public void onRecordItemClick(Map<Integer, LatLng> aLocationMap, Map<Integer, Double> aSpeedKmphMap) {
-        if(aLocationMap.size() <= 1)
+    public void onRecordItemClick(RecordItem aRecordItem) {
+        Map locationMap = aRecordItem.getLocationMap();
+        if(locationMap.size() <= 1)
             return;
 
-        List<PolylineOptions> polylineOptionsList = createPolylineFrom(aLocationMap, aSpeedKmphMap);
-        LatLngBounds fitArea = createFitAreaFrom(aLocationMap);
+        List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
+        LatLngBounds fitArea = createFitAreaFrom(locationMap);
 
         oPrevPolylineList.stream().forEach(polyline -> polyline.remove());
         oPrevPolylineList.clear();
@@ -98,6 +99,8 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
         oMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
         oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
+
+        addPictures(aRecordItem);
     }
 
     @Override
@@ -179,6 +182,10 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         Log.d(LoggerTag.LOCATION, builder.toString());
 
         return area;
+    }
+
+    private void addPictures(RecordItem aRecordItem){
+
     }
 
     public void deleteSelectedItems(){

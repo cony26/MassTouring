@@ -5,11 +5,15 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -28,11 +32,20 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
+    private int count = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,11 +92,18 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Images.Media.DATE_ADDED
         };
 
-        String selection = MediaStore.Images.Media.DATE_ADDED + " <= 10";
+        final DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
+        Date date = null;
+        try {
+            date = df.parse("2020/11/23");
+        }catch(ParseException e){
+            e.printStackTrace();
+        }
+        String selection = MediaStore.Images.Media.DATE_ADDED + " >= " + (int)(date.getTime() / 1000);
         String[] selectionArgs = new String[]{
-                String.valueOf(TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES))
+
         };
-        String sortOrder = MediaStore.Images.Media.DISPLAY_NAME + " ASC";
+        String sortOrder = MediaStore.Images.Media._ID + " ASC";
 
         try(Cursor cursor = getApplicationContext().getContentResolver().query(
                 collection,
@@ -94,11 +114,11 @@ public class MainActivity extends AppCompatActivity {
         )){
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
             int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE);
-            int countColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED);
+            int dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED);
 
             while(cursor.moveToNext()){
                 long id = cursor.getLong(idColumn);
-                int count = cursor.getInt(countColumn);
+                int count = cursor.getInt(dateAddedColumn);
                 int size = cursor.getInt(sizeColumn);
 
                 Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
@@ -107,6 +127,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         imageList.stream().forEach(e -> Log.d(LoggerTag.SYSTEM_PROCESS, e.toString()));
+        try{
+            InputStream stream = getApplicationContext().getContentResolver().openInputStream(imageList.get(count++).uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(new BufferedInputStream(stream));
+            ImageView view = new ImageView(this);
+            view.setImageBitmap(bitmap);
+            this.addContentView(view, new LinearLayout.LayoutParams(100,100 ));
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
+
     }
 
     class Image{
@@ -123,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         public String toString(){
             StringBuilder builder = new StringBuilder();
             builder.append("uri:").append(uri).append(",")
-                    .append("count:").append(count).append(",")
+                    .append("count:").append(new Date(count * 1000L).toString()).append(",")
                     .append("size:").append(size);
             return builder.toString();
         }
