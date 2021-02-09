@@ -108,7 +108,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         for(Picture picture : aPictureList){
             oMap.addMarker(new MarkerOptions()
                     .position(picture.getLatLng())
-                    .icon(BitmapDescriptorFactory.fromBitmap(picture.getBitmap())));
+                    .icon(BitmapDescriptorFactory.fromBitmap(picture.getBitmap(oMapFragment.getContext()))));
         }
     }
 }

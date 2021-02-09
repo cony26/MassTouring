@@ -210,7 +210,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         startDate -= 2592000;
         Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "startDate:" + startDate + ", endDate:" + endDate);
 
-        Picture.setContext(oRecordsView.getContext());
         List<Picture> pictureList = new ArrayList<>();
         Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projection = new String[]{
