@@ -1,7 +1,11 @@
 package com.example.masstouring.mapactivity;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 
@@ -22,6 +26,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -100,7 +106,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         oMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
         oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
 
-        addPictures(aRecordItem);
+        addPictureMarkersOnMap(aRecordItem);
     }
 
     @Override
@@ -184,8 +190,77 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         return area;
     }
 
-    private void addPictures(RecordItem aRecordItem){
+    private void addPictureMarkersOnMap(RecordItem aRecordItem){
+        long startDate = aRecordItem.getStartDate().toEpochSecond(ZoneOffset.UTC);
 
+        long endDate;
+        Map<Integer, String> timeStampMap = aRecordItem.getTimeStampMap();
+        if(aRecordItem.getEndDate() == null){
+            endDate = LocalDateTime.parse(timeStampMap.get(timeStampMap.size() - 1), Const.DATE_FORMAT).toEpochSecond(ZoneOffset.UTC);
+        } else {
+            endDate = aRecordItem.getEndDate().toEpochSecond(ZoneOffset.UTC);
+        }
+
+        List<Picture> picturesList = loadPictures(aRecordItem, startDate, endDate);
+
+        oMapFragment.drawMarkers(picturesList);
+    }
+
+    private List<Picture> loadPictures(RecordItem aRecordItem, long startDate, long endDate){
+        startDate -= 2592000;
+        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "startDate:" + startDate + ", endDate:" + endDate);
+
+        Picture.setContext(oRecordsView.getContext());
+        List<Picture> pictureList = new ArrayList<>();
+        Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = new String[]{
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATE_ADDED
+        };
+        String selection = MediaStore.Images.Media.DATE_ADDED + " >= " + startDate + " AND " + MediaStore.Images.Media.DATE_ADDED + " <= " + endDate;
+        String[] selectionArgs = new String[]{};
+        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
+
+        try(Cursor cursor = oRecordsView.getContext().getContentResolver().query(
+                collection,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+        )){
+            int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+            int dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED);
+
+            while(cursor.moveToNext()){
+                long id = cursor.getLong(idColumn);
+                int date = cursor.getInt(dateAddedColumn);
+
+                Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                LatLng nearestLatLng = featchNearestLatLng(aRecordItem.getTimeStampMap(), aRecordItem.getLocationMap(), date);
+                pictureList.add(new Picture(contentUri, date, nearestLatLng));
+            }
+        }
+
+        for(Picture picture : pictureList){
+            Log.d(LoggerTag.RECORD_RECYCLER_VIEW, picture.toString());
+        }
+
+        return pictureList;
+    }
+
+    private LatLng featchNearestLatLng(Map<Integer, String> aTimeStampMap, Map<Integer, LatLng> aLocationMap, int aFetchTimeStamp){
+        long candidateTimeStamp;
+        int size = aTimeStampMap.size();
+        int fetchIndex = size - 1;
+        for(int i = 0; i < size; i++){
+            candidateTimeStamp = LocalDateTime.parse(aTimeStampMap.get(i), Const.DATE_FORMAT).toEpochSecond(ZoneOffset.UTC);
+            if(candidateTimeStamp >= aFetchTimeStamp){
+                fetchIndex = i;
+                break;
+            }
+        }
+
+        return aLocationMap.get(fetchIndex);
     }
 
     public void deleteSelectedItems(){

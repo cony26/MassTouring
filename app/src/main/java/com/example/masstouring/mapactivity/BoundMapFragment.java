@@ -19,9 +19,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.List;
 
 public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, ILocationUpdateCallback {
     private GoogleMap oMap;
@@ -98,5 +102,13 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     public void initialize(){
         oMap.clear();
         oPolylineOptions = new PolylineOptions();
+    }
+
+    public void drawMarkers(List<Picture> aPictureList){
+        for(Picture picture : aPictureList){
+            oMap.addMarker(new MarkerOptions()
+                    .position(picture.getLatLng())
+                    .icon(BitmapDescriptorFactory.fromBitmap(picture.getBitmap())));
+        }
     }
 }
