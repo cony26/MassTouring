@@ -24,11 +24,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.List;
 
 public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, ILocationUpdateCallback {
     private GoogleMap oMap;
+    private ClusterManager<Picture> oClusterManager;
     private SupportMapFragment oMapFragment;
     private MapActivtySharedViewModel aMapActivityViewModel;
     private Polyline oLastPolyline = null;
@@ -65,6 +67,12 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                 }
             }
         });
+
+        oClusterManager = new ClusterManager<Picture>(oMapFragment.getContext(), googleMap);
+        PictureClusterRenderer pictureClusterRenderer = new PictureClusterRenderer(oMapFragment.getContext(), oMap, oClusterManager);
+        oClusterManager.setRenderer(pictureClusterRenderer);
+        oMap.setOnCameraIdleListener(oClusterManager);
+        oMap.setOnMarkerClickListener(oClusterManager);
     }
 
     public GoogleMap getMap() {
@@ -106,9 +114,12 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     public void drawMarkers(List<Picture> aPictureList){
         for(Picture picture : aPictureList){
-            oMap.addMarker(new MarkerOptions()
-                    .position(picture.getLatLng())
-                    .icon(BitmapDescriptorFactory.fromBitmap(picture.getBitmap(oMapFragment.getContext()))));
+            oClusterManager.addItem(picture);
+
+
+//            oMap.addMarker(new MarkerOptions()
+//                    .position(picture.getPosition())
+//                    .icon(BitmapDescriptorFactory.fromBitmap(picture.getBitmap(oMapFragment.getContext()))));
         }
     }
 }

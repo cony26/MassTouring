@@ -6,17 +6,20 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.clustering.ClusterItem;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-public class Picture{
+public class Picture implements ClusterItem {
     private final Uri oUri;
     private final int oTimeStamp;
-    private final  LatLng oLatLng;
+    private final LatLng oLatLng;
+    private static int oFusedInt = 0;
     private static final BitmapFactory.Options oBitmapOption = new BitmapFactory.Options();
 
     static{
@@ -26,7 +29,8 @@ public class Picture{
     Picture(Uri aUri, int aTimeStamp, LatLng aLatLng){
         oUri = aUri;
         oTimeStamp = aTimeStamp;
-        oLatLng = aLatLng;
+//        oLatLng = aLatLng;
+        oLatLng = new LatLng(aLatLng.latitude, aLatLng.longitude + oFusedInt++*0.1);
     }
 
     public Bitmap getBitmap(Context aContext) {
@@ -44,8 +48,22 @@ public class Picture{
         return oTimeStamp;
     }
 
-    public LatLng getLatLng() {
+    @NonNull
+    @Override
+    public LatLng getPosition() {
         return oLatLng;
+    }
+
+    @Nullable
+    @Override
+    public String getTitle() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getSnippet() {
+        return null;
     }
 
     @NonNull
