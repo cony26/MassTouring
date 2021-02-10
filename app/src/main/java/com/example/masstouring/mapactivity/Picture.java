@@ -13,7 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-public class Picture {
+public class Picture{
     private final Uri oUri;
     private final int oTimeStamp;
     private final  LatLng oLatLng;
