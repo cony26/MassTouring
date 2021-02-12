@@ -23,7 +23,7 @@ public class Picture implements ClusterItem {
     private static final BitmapFactory.Options oBitmapOption = new BitmapFactory.Options();
 
     static{
-        oBitmapOption.inSampleSize = 20;
+        oBitmapOption.inSampleSize = 15;
     }
 
     Picture(Uri aUri, int aTimeStamp, LatLng aLatLng){
