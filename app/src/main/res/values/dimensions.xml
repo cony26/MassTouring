@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="cluster_item_image">50dp</dimen>
+    <dimen name="cluster_item_image">75dp</dimen>
     <dimen name="cluster_item_padding">2dp</dimen>
-    <dimen name="cluster_image">50dp</dimen>
+    <dimen name="cluster_image">75dp</dimen>
     <dimen name="cluster_padding">2dp</dimen>
+    <color name="bubble_color">@android:color/darker_gray</color>
 </resources>

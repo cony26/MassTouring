@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="@dimen/cluster_image" android:layout_height="@dimen/cluster_image">
+    android:layout_width="@dimen/cluster_image"
+    android:layout_height="@dimen/cluster_image"
+    >
 
     <ImageView
         android:id="@+id/cluster_image"
+        android:padding="@dimen/cluster_padding"
         android:layout_width="@dimen/cluster_image"
         android:layout_height="@dimen/cluster_image"/>
 
