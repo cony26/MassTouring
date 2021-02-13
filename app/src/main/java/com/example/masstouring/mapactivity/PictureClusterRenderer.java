@@ -2,9 +2,6 @@ package com.example.masstouring.mapactivity;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +10,6 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 
 import com.example.masstouring.R;
-import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
@@ -29,12 +25,10 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     private final ImageView oClusterImageView;
     private final ImageView oClusterItemImageView;
     private Context oContext;
-    private ClusterManager<Picture> oClusterManager;
     private final int oDimension;
     public PictureClusterRenderer(Context context, GoogleMap map, ClusterManager<Picture> clusterManager) {
         super(context, map, clusterManager);
         oContext = context;
-        oClusterManager = clusterManager;
         oClusterIconGenerator = new IconGenerator(context);
         oClusterItemIconGenerator = new IconGenerator(context);
 
@@ -54,41 +48,22 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
         Bitmap bitmap = item.getBitmap(oContext, oDimension, oDimension);
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        boolean landscape = width > height;
-        int x;
-        int y;
-        if(landscape){
-            x = (width - oDimension) / 2;
-            y = 0;
-        }else{
-            x = 0;
-            y = (height - oDimension) / 2;
+        if(bitmap == null){
+            return;
         }
-        bitmap = Bitmap.createBitmap(bitmap, x, y, oDimension, oDimension);
-        oClusterItemImageView.setImageBitmap(bitmap);
+
+        oClusterItemImageView.setImageBitmap(centerClipWithDimension(bitmap));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(oClusterItemIconGenerator.makeIcon()));
-        Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap[width, height] = [" + width + "," + height + "], oDimenstion:" + oDimension + "[x,y] = [" + x + "," + y + "]");
     }
 
     @Override
     protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
         Bitmap bitmap = clusterItem.getBitmap(oContext, oDimension, oDimension);
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        boolean landscape = width > height;
-        int x;
-        int y;
-        if(landscape){
-            x = (width - oDimension) / 2;
-            y = 0;
-        }else{
-            x = 0;
-            y = (height - oDimension) / 2;
+        if(bitmap == null){
+            return;
         }
-        bitmap = Bitmap.createBitmap(bitmap, x, y, oDimension, oDimension);
-        oClusterItemImageView.setImageBitmap(bitmap);
+
+        oClusterItemImageView.setImageBitmap(centerClipWithDimension(bitmap));
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(oClusterItemIconGenerator.makeIcon()));
     }
 
@@ -104,6 +79,22 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
         oClusterImageView.setImageBitmap(cluster.getItems().stream().findFirst().get().getBitmap(oContext, oDimension, oDimension));
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+    }
+
+    private Bitmap centerClipWithDimension(Bitmap aBitmap){
+        int width = aBitmap.getWidth();
+        int height = aBitmap.getHeight();
+        boolean landscape = width > height;
+        int x;
+        int y;
+        if(landscape){
+            x = (width - oDimension) / 2;
+            y = 0;
+        }else{
+            x = 0;
+            y = (height - oDimension) / 2;
+        }
+        return Bitmap.createBitmap(aBitmap, x, y, oDimension, oDimension);
     }
 
 

@@ -4,10 +4,12 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 
@@ -52,7 +54,8 @@ public class Picture implements ClusterItem {
             double scaleFactor = calculateScaleFactor(bitmap, oReqWidth, oReqHeight);
             bitmap = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth() * scaleFactor), (int)(bitmap.getHeight() * scaleFactor), true);
         }catch(IOException e){
-            e.printStackTrace();
+            Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap load error {}" , e);
+        }finally {
         }
         return bitmap;
     }
