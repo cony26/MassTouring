@@ -3,6 +3,10 @@ package com.example.masstouring.mapactivity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.provider.DocumentsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,14 +62,14 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
         Bitmap bitmap = item.getBitmap(oContext, oSquarePx, oSquarePx);
-        oItemImageView.setImageBitmap(centerClip(bitmap, oSquarePx, oSquarePx));
+        oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
 
     @Override
     protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
         Bitmap bitmap = clusterItem.getBitmap(oContext, oSquarePx, oSquarePx);
-        oItemImageView.setImageBitmap(centerClip(bitmap, oSquarePx, oSquarePx));
+        oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
 
@@ -90,7 +94,7 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
         return cluster.getSize() > 1;
     }
 
-    private Bitmap centerClip(Bitmap aBitmap, int aClipWidth, int aClipHeight){
+    private Bitmap centerRectClip(Bitmap aBitmap, int aClipWidth, int aClipHeight){
         int width = aBitmap.getWidth();
         int height = aBitmap.getHeight();
         boolean landscape = width > height;
@@ -106,6 +110,20 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
         return Bitmap.createBitmap(aBitmap, x, y, aClipWidth, aClipHeight);
     }
 
+    private Bitmap centerCircleClip(Bitmap aBitmap, int aClipRadius){
+        int width = aBitmap.getWidth();
+        int height = aBitmap.getHeight();
+        int diameter = aClipRadius * 2;
+        Bitmap newBitmap = Bitmap.createBitmap(diameter, diameter, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(newBitmap);
+        Path path = new Path();
+        path.addOval(new RectF(0,0, diameter,diameter), Path.Direction.CW);
+        canvas.clipPath(path);
+        canvas.drawBitmap(aBitmap, - (width / 2 - aClipRadius), -(height / 2 - aClipRadius), null);
+
+        return newBitmap;
+    }
+
     private Bitmap layoutBitmaps(Cluster<Picture> cluster){
         Bitmap mixBitmap = Bitmap.createBitmap(oSquarePx, oSquarePx, Bitmap.Config.ARGB_8888);
         Canvas screen = new Canvas(mixBitmap);
@@ -116,7 +134,7 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
                 // a : b
                 bitmapList = cluster.getItems().stream()
                         .map(picture -> picture.getBitmap(oContext, oSquarePx / 2, oSquarePx))
-                        .map(bitmap -> centerClip(bitmap, oSquarePx / 2, oSquarePx))
+                        .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx))
                         .collect(Collectors.toList());
 
                 screen.drawBitmap(bitmapList.get(0), 0, 0, null);
@@ -127,25 +145,31 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
                 //   c
                 List<Picture> pictureList = cluster.getItems().stream().collect(Collectors.toList());
 
-                Bitmap a = pictureList.get(0).getBitmap(oContext, oSquarePx / 2, oSquarePx / 2);
-                a = centerClip(a, oSquarePx / 2, oSquarePx / 2);
+                bitmapList = cluster.getItems().stream()
+                        .limit(2)
+                        .map(picture -> picture.getBitmap(oContext, oSquarePx / 2, oSquarePx / 2))
+                        .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx / 2))
+                        .collect(Collectors.toList());
 
-                Bitmap b = pictureList.get(1).getBitmap(oContext, oSquarePx / 2, oSquarePx / 2);
-                b = centerClip(b, oSquarePx / 2, oSquarePx / 2);
+                Bitmap c = cluster.getItems().stream()
+                        .skip(2)
+                        .limit(1)
+                        .map(picture -> picture.getBitmap(oContext, oSquarePx, oSquarePx /2))
+                        .map(bitmap -> centerRectClip(bitmap, oSquarePx, oSquarePx / 2))
+                        .findFirst()
+                        .get();
 
-                Bitmap c = pictureList.get(2).getBitmap(oContext, oSquarePx, oSquarePx /2);
-                c = centerClip(c, oSquarePx, oSquarePx / 2);
-
-                screen.drawBitmap(a, 0, 0, null);
-                screen.drawBitmap(b, oSquarePx / 2, 0, null);
+                screen.drawBitmap(bitmapList.get(0), 0, 0, null);
+                screen.drawBitmap(bitmapList.get(1), oSquarePx / 2, 0, null);
                 screen.drawBitmap(c, 0, oSquarePx /2, null);
                 break;
-            default:
+            case 4:
                 // a : b
                 // c : d
                 bitmapList = cluster.getItems().stream()
+                        .limit(4)
                         .map(picture -> picture.getBitmap(oContext, oSquarePx / 2, oSquarePx / 2))
-                        .map(bitmap -> centerClip(bitmap, oSquarePx / 2, oSquarePx / 2))
+                        .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx / 2))
                         .collect(Collectors.toList());
 
                 screen.drawBitmap(bitmapList.get(0), 0, 0, null);
@@ -153,6 +177,29 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
                 screen.drawBitmap(bitmapList.get(2), 0, oSquarePx / 2, null);
                 screen.drawBitmap(bitmapList.get(3), oSquarePx / 2, oSquarePx / 2, null);
                 break;
+            default:
+                // a : b
+                //  (e)
+                // c : d
+                bitmapList = cluster.getItems().stream()
+                        .limit(4)
+                        .map(picture -> picture.getBitmap(oContext, oSquarePx / 2, oSquarePx / 2))
+                        .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx / 2))
+                        .collect(Collectors.toList());
+
+                Bitmap e = cluster.getItems().stream()
+                        .skip(4)
+                        .limit(1)
+                        .map(picture -> picture.getBitmap(oContext, oSquarePx / 2, oSquarePx / 2))
+                        .map(bitmap -> centerCircleClip(bitmap, oSquarePx / 4))
+                        .findFirst()
+                        .get();
+
+                screen.drawBitmap(bitmapList.get(0), 0, 0, null);
+                screen.drawBitmap(bitmapList.get(1), oSquarePx / 2, 0, null);
+                screen.drawBitmap(bitmapList.get(2), 0, oSquarePx / 2, null);
+                screen.drawBitmap(bitmapList.get(3), oSquarePx / 2, oSquarePx / 2, null);
+                screen.drawBitmap(e, oSquarePx / 4, oSquarePx / 4, null);
         }
 
         return mixBitmap;
