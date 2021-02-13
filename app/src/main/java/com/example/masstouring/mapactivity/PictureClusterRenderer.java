@@ -2,7 +2,9 @@ package com.example.masstouring.mapactivity;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 
 import com.example.masstouring.R;
+import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
@@ -50,25 +53,58 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
 
     @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(item.getBitmap(oContext)));
+        Bitmap bitmap = item.getBitmap(oContext, oDimension, oDimension);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        boolean landscape = width > height;
+        int x;
+        int y;
+        if(landscape){
+            x = (width - oDimension) / 2;
+            y = 0;
+        }else{
+            x = 0;
+            y = (height - oDimension) / 2;
+        }
+        bitmap = Bitmap.createBitmap(bitmap, x, y, oDimension, oDimension);
+        oClusterItemImageView.setImageBitmap(bitmap);
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(oClusterItemIconGenerator.makeIcon()));
+        Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap[width, height] = [" + width + "," + height + "], oDimenstion:" + oDimension + "[x,y] = [" + x + "," + y + "]");
+    }
+
+    @Override
+    protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
+        Bitmap bitmap = clusterItem.getBitmap(oContext, oDimension, oDimension);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        boolean landscape = width > height;
+        int x;
+        int y;
+        if(landscape){
+            x = (width - oDimension) / 2;
+            y = 0;
+        }else{
+            x = 0;
+            y = (height - oDimension) / 2;
+        }
+        bitmap = Bitmap.createBitmap(bitmap, x, y, oDimension, oDimension);
+        oClusterItemImageView.setImageBitmap(bitmap);
+        marker.setIcon(BitmapDescriptorFactory.fromBitmap(oClusterItemIconGenerator.makeIcon()));
     }
 
     @Override
     protected void onBeforeClusterRendered(@NonNull Cluster<Picture> cluster, @NonNull MarkerOptions markerOptions) {
-        oClusterImageView.setImageBitmap(cluster.getItems().stream().findFirst().get().getBitmap(oContext));
+        oClusterImageView.setImageBitmap(cluster.getItems().stream().findFirst().get().getBitmap(oContext, oDimension, oDimension));
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
     }
 
     @Override
-    protected void onClusterRendered(@NonNull Cluster<Picture> cluster, @NonNull Marker marker) {
-        oClusterImageView.setImageBitmap(cluster.getItems().stream().findFirst().get().getBitmap(oContext));
+    protected void onClusterUpdated(@NonNull Cluster<Picture> cluster, @NonNull Marker marker) {
+        oClusterImageView.setImageBitmap(cluster.getItems().stream().findFirst().get().getBitmap(oContext, oDimension, oDimension));
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
     }
 
-    @Override
-    protected void onClusterItemRendered(@NonNull Picture clusterItem, @NonNull Marker marker) {
-        marker.setIcon(BitmapDescriptorFactory.fromBitmap(clusterItem.getBitmap(oContext)));
-    }
+
 }
