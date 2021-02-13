@@ -33,12 +33,12 @@ public class Picture implements ClusterItem {
     /**
      *
      * @param aContext application context
-     * @param oReqWidth target width of bitmap
-     * @param oReqHeight target height of bitmap
+     * @param aReqWidth target width of bitmap
+     * @param aReqHeight target height of bitmap
      * @return Bitmap load bitmap from storage based on its URI.<br>
-     *     Bitmap is scaled to {@code oReqWidth} or {@code oReqHeight} so that bitmap doesn't have padding.
+     *     Bitmap is scaled to {@code aReqWidth} or {@code aReqHeight} so that bitmap doesn't have padding.
      */
-    public Bitmap getBitmap(Context aContext, int oReqWidth, int oReqHeight) {
+    public Bitmap getBitmap(Context aContext, int aReqWidth, int aReqHeight) {
         Bitmap bitmap = null;
         try(BufferedInputStream boudStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
             BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
@@ -47,14 +47,15 @@ public class Picture implements ClusterItem {
             oBitmapOption.inSampleSize = 1;
             bitmap = BitmapFactory.decodeStream(boudStream, null, oBitmapOption);
 
-            oBitmapOption.inSampleSize = calculateInSampleSize(oBitmapOption, oReqWidth, oReqHeight);
+            oBitmapOption.inSampleSize = calculateInSampleSize(oBitmapOption, aReqWidth, aReqHeight);
             oBitmapOption.inJustDecodeBounds = false;
             bitmap = BitmapFactory.decodeStream(actualStream, null, oBitmapOption);
 
-            double scaleFactor = calculateScaleFactor(bitmap, oReqWidth, oReqHeight);
+            double scaleFactor = calculateScaleFactor(bitmap, aReqWidth, aReqHeight);
             bitmap = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth() * scaleFactor), (int)(bitmap.getHeight() * scaleFactor), true);
         }catch(IOException e){
             Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap load error {}" , e);
+            bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
         }finally {
         }
         return bitmap;
