@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Picture implements ClusterItem {
-    public static ExecutorService oExecutors = Executors.newFixedThreadPool(2);
+    public static ExecutorService oExecutors = Executors.newFixedThreadPool(4);
     private final Uri oUri;
     private final int oTimeStamp;
     private final LatLng oLatLng;
@@ -36,11 +36,12 @@ public class Picture implements ClusterItem {
     }
 
     /**
+     * Do not invoke this method from ui thread. This is synchronous method.
      *
      * @param aContext application context
      * @param aReqWidth target width of bitmap
      * @param aReqHeight target height of bitmap
-     * @return Bitmap load bitmap from storage based on its URI.<br>
+     * @return Bitmap load bitmap from storage based on its URI synchronously.<br>
      *     Bitmap is scaled to {@code aReqWidth} or {@code aReqHeight} so that bitmap doesn't have padding.
      */
     public Bitmap getBitmapSyncly(Context aContext, int aReqWidth, int aReqHeight) {

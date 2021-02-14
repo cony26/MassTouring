@@ -67,7 +67,6 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
         Bitmap bitmap = item.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx, this);
-//        Bitmap bitmap = item.getBitmapSyncly(oContext, oSquarePx, oSquarePx);
         oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
@@ -75,19 +74,17 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     @Override
     protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
         Bitmap bitmap = clusterItem.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx,  this);
-//        Bitmap bitmap = item.getBitmapSyncly(oContext, oSquarePx, oSquarePx);
         oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
 
-    public void setItemBitmap(Bitmap aBitmap, Marker aMarker){
+    void setItemBitmap(Bitmap aBitmap, Marker aMarker){
         oItemImageView.setImageBitmap(centerRectClip(aBitmap, oSquarePx, oSquarePx));
         aMarker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
 
     @Override
     protected void onBeforeClusterRendered(@NonNull Cluster<Picture> cluster, @NonNull MarkerOptions markerOptions) {
-//        Bitmap bitmap = layoutBitmapsSyncly(cluster);
         Bitmap bitmap = layoutBitmapsAsyncly(cluster);
         oClusterImageView.setImageBitmap(bitmap);
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
@@ -96,7 +93,6 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
 
     @Override
     protected void onClusterUpdated(@NonNull Cluster<Picture> cluster, @NonNull Marker marker) {
-//        Bitmap bitmap = layoutBitmapsSyncly(cluster);
         Bitmap bitmap = layoutBitmapsAsyncly(cluster);
         oClusterImageView.setImageBitmap(bitmap);
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
