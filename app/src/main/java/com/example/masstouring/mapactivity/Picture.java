@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -15,8 +17,11 @@ import com.google.maps.android.clustering.ClusterItem;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Picture implements ClusterItem {
+    public static ExecutorService oExecutors = Executors.newFixedThreadPool(2);
     private final Uri oUri;
     private final int oTimeStamp;
     private final LatLng oLatLng;
@@ -38,7 +43,52 @@ public class Picture implements ClusterItem {
      * @return Bitmap load bitmap from storage based on its URI.<br>
      *     Bitmap is scaled to {@code aReqWidth} or {@code aReqHeight} so that bitmap doesn't have padding.
      */
-    public Bitmap getBitmap(Context aContext, int aReqWidth, int aReqHeight) {
+    public Bitmap getBitmapSyncly(Context aContext, int aReqWidth, int aReqHeight) {
+        return loadBitmap(aContext, aReqWidth, aReqHeight);
+    }
+
+    public Bitmap getItemBitmapAsyncly(Context aContext, int aReqWidth, int aReqHeight, PictureClusterRenderer aClusterRenderer){
+
+//        try {
+//            if (oFutureBitmap != null) {
+//                bitmap = oFutureBitmap.get();
+//                oFutureBitmap = null;
+//                Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "get Future Bitmap");
+//            } else {
+//                oFutureBitmap = createBitmapAsyncly(aContext, aReqWidth, aReqHeight, aClusterManager, aClusterRenderer);
+//                bitmap = oFutureBitmap.get();
+//                Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "get tmp Bitmap");
+//            }
+//        }catch(InterruptedException | ExecutionException e){
+//            Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "Future loading error {}" , e);
+//            bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
+//        }
+
+        oExecutors.execute(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap bitmap = loadBitmap(aContext, aReqWidth, aReqHeight);
+
+                new Handler(Looper.getMainLooper()).post(new Runnable(){
+                    @Override
+                    public void run() {
+                        aClusterRenderer.setItemBitmap(bitmap, aClusterRenderer.getMarker(Picture.this));
+//                            aClusterManager.removeItem(Picture.this);
+//                            aClusterManager.addItem(Picture.this);
+//                            aClusterManager.cluster();
+                        Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "set Future Item Bitmap");
+                    }
+                });
+
+            }
+        });
+
+        Bitmap bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
+
+        return bitmap;
+    }
+
+    private Bitmap loadBitmap(Context aContext, int aReqWidth, int aReqHeight){
         Bitmap bitmap = null;
         try(BufferedInputStream boudStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
             BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
@@ -56,8 +106,8 @@ public class Picture implements ClusterItem {
         }catch(IOException e){
             Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap load error {}" , e);
             bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
-        }finally {
         }
+
         return bitmap;
     }
 
