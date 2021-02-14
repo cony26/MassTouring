@@ -79,7 +79,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
             @Override
             public void onClick(View view) {
                 oCallback.onRecordItemClick(recordItem);
-//                Log.d(LoggerTag.RECORD_RECYCLER_VIEW, aHolder.itemView.toString());
+                Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "record item clicked : " + recordItem.toString());
             }
         });
         aHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {

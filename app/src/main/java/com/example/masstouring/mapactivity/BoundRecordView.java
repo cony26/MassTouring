@@ -106,7 +106,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         oMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
         oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
 
-        addPictureMarkersOnMap(aRecordItem);
+        addPictureMarkersOnMapAsyncly(aRecordItem);
     }
 
     @Override
@@ -190,7 +190,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         return area;
     }
 
-    private void addPictureMarkersOnMap(RecordItem aRecordItem){
+    private void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
         long startDate = aRecordItem.getStartDate().toEpochSecond(ZoneOffset.UTC);
 
         long endDate;
@@ -201,9 +201,13 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             endDate = aRecordItem.getEndDate().toEpochSecond(ZoneOffset.UTC);
         }
 
-        List<Picture> picturesList = loadPictures(aRecordItem, startDate, endDate);
-
-        oMapFragment.drawMarkers(picturesList);
+        Picture.oExecutors.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Picture> picturesList = loadPictures(aRecordItem, startDate, endDate);
+                oMapFragment.drawMarkers(picturesList);
+            }
+        });
     }
 
     private List<Picture> loadPictures(RecordItem aRecordItem, long startDate, long endDate){
