@@ -5,9 +5,7 @@ import android.location.Location;
 import com.example.masstouring.common.Const;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public class RecordItem {
@@ -19,6 +17,7 @@ public class RecordItem {
     private final Map<Integer, String> oTimeStampMap;
     private final Map<Integer, Double> oSpeedkmphMap;
     private boolean oSelected = false;
+    public static final RecordItem EMPTY_RECORD = new RecordItem();
 
     public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap, Map aSpeedKmphMap){
         oId = aID;
@@ -35,6 +34,16 @@ public class RecordItem {
         oTimeStampMap = aTimeStampMap;
         oSpeedkmphMap = aSpeedKmphMap;
         oDistance = calculateDistance(aLocationMap);
+    }
+
+    private RecordItem(){
+        oId = 0;
+        oStartDate = LocalDateTime.parse("1000/10/01 00:00", Const.DATE_FORMAT);;
+        oEndDate = LocalDateTime.parse("1000/10/01 00:00", Const.DATE_FORMAT);
+        oLocationMap = null;
+        oTimeStampMap = null;
+        oSpeedkmphMap = null;
+        oDistance = 0;
     }
 
     public LocalDateTime getStartDate(){

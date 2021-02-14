@@ -220,7 +220,7 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     }
 
     private Bitmap layoutBitmapsAsyncly(Cluster<Picture> cluster){
-        Picture.oExecutors.execute(new Runnable() {
+        MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 Bitmap bitmap = layoutBitmapsSyncly(cluster);

@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MapActivity extends AppCompatActivity{
-    ExecutorService executors = Executors.newFixedThreadPool(2);
+    static final ExecutorService cExecutors = Executors.newFixedThreadPool(5);
     private Button oStartRecordingButton;
     private Button oMemoryButton;
     private BoundRecordView oRecordsView;
@@ -184,7 +184,7 @@ public class MapActivity extends AppCompatActivity{
                                 oMapActivitySharedViewModel.getRecordStartEvent().setValue(new RecordStartEvent(getString(R.string.touringStartToast)));
                                 startRecordService();
 
-                                executors.execute(new Runnable() {
+                                cExecutors.execute(new Runnable() {
                                     @Override
                                     public void run() {
                                         while(!oRecordServiceBound){

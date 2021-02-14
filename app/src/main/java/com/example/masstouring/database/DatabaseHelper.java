@@ -114,6 +114,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return uniqueId;
     }
 
+    public int getRecordSize(){
+        try(SQLiteDatabase db = getReadableDatabase()){
+            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
+            return recordsStartInfoCursor.getColumnCount() - 1;
+        }
+    }
+
     public List<RecordItem> getRecords(){
         List<RecordItem> data = new ArrayList<>();
         try(SQLiteDatabase db = getReadableDatabase()){
@@ -145,9 +152,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 StringBuilder builder = new StringBuilder();
                 builder.append("id:").append(id).append(", startDate:").append(startInfo).append(", endDate:").append(endInfo);
-                Log.d(LoggerTag.DATABASE_PROCESS, builder.toString());
                 data.add(new RecordItem(id, startInfo, endInfo, locationMap, timeStampMap, speedkmph));
             }
+        }
+
+        for(RecordItem item : data){
+            Log.d(LoggerTag.DATABASE_PROCESS, "loaded:" + item.toString());
         }
 
         return data;

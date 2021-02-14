@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -29,6 +31,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -79,13 +82,31 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     }
 
     private List<RecordItem> loadRecords(){
-        List<RecordItem> data = oDatabaseHelper.getRecords();
+        RecordItem recordItemArray[] = new RecordItem[oDatabaseHelper.getRecordSize()];
+        Arrays.fill(recordItemArray, RecordItem.EMPTY_RECORD);
 
-        for(RecordItem item : data){
-            Log.d(LoggerTag.RECORDS, item.toString());
-        }
+        MapActivity.cExecutors.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<RecordItem> data = oDatabaseHelper.getRecords();
+                while(oRecordsViewAdapter == null){
+                    try{
+                        Thread.sleep(500);
+                    }catch(InterruptedException e){
+                        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "interrupted");
+                    }
+                }
+                oRecordsViewAdapter.setData(data);
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        oRecordsViewAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
 
-        return data;
+        return Arrays.asList(recordItemArray);
     }
 
     @Override
@@ -201,7 +222,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             endDate = aRecordItem.getEndDate().toEpochSecond(ZoneOffset.UTC);
         }
 
-        Picture.oExecutors.execute(new Runnable() {
+        MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 List<Picture> picturesList = loadPictures(aRecordItem, startDate, endDate);

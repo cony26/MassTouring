@@ -17,11 +17,8 @@ import com.google.maps.android.clustering.ClusterItem;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Picture implements ClusterItem {
-    public static ExecutorService oExecutors = Executors.newFixedThreadPool(4);
     private final Uri oUri;
     private final int oTimeStamp;
     private final LatLng oLatLng;
@@ -65,7 +62,7 @@ public class Picture implements ClusterItem {
 //            bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
 //        }
 
-        oExecutors.execute(new Runnable() {
+        MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 Bitmap bitmap = loadBitmap(aContext, aReqWidth, aReqHeight);
@@ -104,7 +101,7 @@ public class Picture implements ClusterItem {
 
             double scaleFactor = calculateScaleFactor(bitmap, aReqWidth, aReqHeight);
             bitmap = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth() * scaleFactor), (int)(bitmap.getHeight() * scaleFactor), true);
-        }catch(IOException e){
+        }catch(IOException | NullPointerException e){
             Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap load error {}" , e);
             bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
         }
