@@ -109,18 +109,12 @@ public class RecordService extends LifecycleService {
             if(e.equals(CANCEL_ACTION)){
                 oUnbindRequestCallback.ifPresent(callback -> callback.onStopRecordService());
                 stopService();
-                stopSelf();
             }
         });
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         manager.createNotificationChannel(oNotificationChannel);
         startForeground(1, oNotification);
         return START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -154,6 +148,7 @@ public class RecordService extends LifecycleService {
     public void stopService(){
         stopRecording();
         stopForeground(true);
+        stopSelf();
     }
 
     public RecordState getRecordState(){

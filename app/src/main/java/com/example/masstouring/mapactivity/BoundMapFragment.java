@@ -3,11 +3,15 @@ package com.example.masstouring.mapactivity;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.common.Const;
@@ -29,6 +33,7 @@ import java.util.List;
 public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, ILocationUpdateCallback {
     private GoogleMap oMap;
     private ClusterManager<Picture> oClusterManager;
+    private PictureClusterRenderer oPictureClusterRenderer = null;
     private SupportMapFragment oMapFragment;
     private MapActivtySharedViewModel aMapActivityViewModel;
     private Polyline oLastPolyline = null;
@@ -45,6 +50,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.i(LoggerTag.SYSTEM_PROCESS, "BoundMapFragment:onMapReady");
         oMap = googleMap;
         if(ActivityCompat.checkSelfPermission(oMapFragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(oMapFragment.getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -65,10 +71,9 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                 }
             }
         });
-
-        oClusterManager = new ClusterManager<Picture>(oMapFragment.getContext(), googleMap);
-        PictureClusterRenderer pictureClusterRenderer = new PictureClusterRenderer(oMapFragment.getContext(), oMap, oClusterManager);
-        oClusterManager.setRenderer(pictureClusterRenderer);
+        oClusterManager = new ClusterManager<Picture>(oMapFragment.getContext(), oMap);
+        oPictureClusterRenderer = new PictureClusterRenderer(oMapFragment.getContext(), oMap, oClusterManager);
+        oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);
         oMap.setOnMarkerClickListener(oClusterManager);
     }
@@ -114,5 +119,23 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         for(Picture picture : aPictureList){
             oClusterManager.addItem(picture);
         }
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                oClusterManager.cluster();
+            }
+        });
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    public void onResume(){
+
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    public void clearAll(){
+        oMap.clear();
+        oClusterManager.clearItems();
+        oClusterManager.cluster();
     }
 }

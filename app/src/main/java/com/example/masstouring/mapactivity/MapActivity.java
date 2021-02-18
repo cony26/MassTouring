@@ -105,6 +105,8 @@ public class MapActivity extends AppCompatActivity{
         unbindServiceGracefully();
     }
 
+
+
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         Log.d(LoggerTag.SYSTEM_PROCESS,"onSaveInstanceState MapActivity");
