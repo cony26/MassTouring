@@ -65,6 +65,19 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     }
 
     @Override
+    public void onRemove() {
+        Log.d(LoggerTag.CLUSTER, "onRemove");
+        super.onRemove();
+    }
+
+    @Override
+    public void onAdd() {
+        Log.d(LoggerTag.CLUSTER, "onAdd");
+        oClusterManager.getMarkerCollection().getMarkers().stream().forEach(e -> Log.d(LoggerTag.CLUSTER, e.toString()));
+        super.onAdd();
+    }
+
+    @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
         Bitmap bitmap = item.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx, this);
         oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
@@ -74,6 +87,7 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     @Override
     protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
         Bitmap bitmap = clusterItem.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx,  this);
+        Log.e(LoggerTag.CLUSTER, bitmap.toString());
         oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }

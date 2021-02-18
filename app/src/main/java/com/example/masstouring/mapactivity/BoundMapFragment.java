@@ -15,6 +15,7 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.common.Const;
+import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
@@ -38,13 +39,15 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private MapActivtySharedViewModel aMapActivityViewModel;
     private Polyline oLastPolyline = null;
     private PolylineOptions oPolylineOptions = null;
-    private final DatabaseHelper oDatabaseHelper;
+    private DatabaseHelper oDatabaseHelper;
 
     public BoundMapFragment(LifecycleOwner aLifeCycleOwner, SupportMapFragment aMapFragment){
+        Log.i(LoggerTag.SYSTEM_PROCESS, "BoundMapFragment:constructor");
         aMapFragment.getMapAsync(this);
         oMapFragment = aMapFragment;
+        oMapFragment.getLifecycle().addObserver(this);
+        new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
         aMapActivityViewModel = new ViewModelProvider(aMapFragment.getActivity()).get(MapActivtySharedViewModel.class);
-        aLifeCycleOwner.getLifecycle().addObserver(this);
         oDatabaseHelper = new DatabaseHelper(aMapFragment.getContext(), Const.DB_NAME);
     }
 
@@ -76,6 +79,9 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);
         oMap.setOnMarkerClickListener(oClusterManager);
+        oClusterManager.getMarkerCollection().clear();
+        oClusterManager.clearItems();
+        oMap.clear();
     }
 
     public GoogleMap getMap() {
@@ -134,8 +140,11 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     public void clearAll(){
-        oMap.clear();
         oClusterManager.clearItems();
         oClusterManager.cluster();
+        oPictureClusterRenderer.setOnClusterClickListener(null);
+        oPictureClusterRenderer.setOnClusterItemClickListener(null);
+        oClusterManager.getMarkerCollection().clear();
+        oPictureClusterRenderer.onRemove();
     }
 }
