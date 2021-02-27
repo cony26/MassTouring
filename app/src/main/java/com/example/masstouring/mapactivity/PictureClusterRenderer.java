@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
-    private final IconGenerator oClusterIconGenerator;
-    private final IconGenerator oItemIconGenerator;
-    private final ImageView oClusterImageView;
-    private final ImageView oItemImageView;
+    private IconGenerator oClusterIconGenerator;
+    private IconGenerator oItemIconGenerator;
+    private ImageView oClusterImageView;
+    private ImageView oItemImageView;
     private Context oContext;
     private final int oSquarePx;
     private final ClusterManager<Picture> oClusterManager;
@@ -68,6 +68,11 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     public void onRemove() {
         Log.d(LoggerTag.CLUSTER, "onRemove");
         super.onRemove();
+        oItemIconGenerator = null;
+        oItemImageView = null;
+        oClusterIconGenerator = null;
+        oClusterImageView = null;
+
     }
 
     @Override

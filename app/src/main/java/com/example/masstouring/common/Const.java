@@ -1,14 +1,16 @@
 package com.example.masstouring.common;
 
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public class Const {
     //format for LocalDateTime
-    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     public static final DateTimeFormatter START_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd HH:mm");
     public static final DateTimeFormatter END_SAME_DATE_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     public static final DateTimeFormatter END_DIFF_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd HH:mm");
     public static final String NO_INFO = "no info";
+    public static final ZoneOffset STORED_OFFSET = ZoneOffset.ofHours(9);
 
     //unit
     public static final String KM_UNIT = "km";

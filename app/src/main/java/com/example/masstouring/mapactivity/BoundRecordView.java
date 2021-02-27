@@ -29,7 +29,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -212,27 +211,26 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     }
 
     private void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
-        long startDate = aRecordItem.getStartDate().toEpochSecond(ZoneOffset.UTC);
+        long startDateSecond = aRecordItem.getStartDate().toEpochSecond(Const.STORED_OFFSET);
 
-        long endDate;
+        long endDateSecond;
         Map<Integer, String> timeStampMap = aRecordItem.getTimeStampMap();
         if(aRecordItem.getEndDate() == null){
-            endDate = LocalDateTime.parse(timeStampMap.get(timeStampMap.size() - 1), Const.DATE_FORMAT).toEpochSecond(ZoneOffset.UTC);
+            endDateSecond = LocalDateTime.parse(timeStampMap.get(timeStampMap.size() - 1), Const.DATE_FORMAT).toEpochSecond(Const.STORED_OFFSET);
         } else {
-            endDate = aRecordItem.getEndDate().toEpochSecond(ZoneOffset.UTC);
+            endDateSecond = aRecordItem.getEndDate().toEpochSecond(Const.STORED_OFFSET);
         }
 
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
-                List<Picture> picturesList = loadPictures(aRecordItem, startDate, endDate);
+                List<Picture> picturesList = loadPictures(aRecordItem, startDateSecond, endDateSecond);
                 oMapFragment.drawMarkers(picturesList);
             }
         });
     }
 
     private List<Picture> loadPictures(RecordItem aRecordItem, long startDate, long endDate){
-        startDate -= 2592000;
         Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "startDate:" + startDate + ", endDate:" + endDate);
 
         List<Picture> pictureList = new ArrayList<>();
@@ -260,7 +258,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
                 int date = cursor.getInt(dateAddedColumn);
 
                 Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                LatLng nearestLatLng = featchNearestLatLng(aRecordItem.getTimeStampMap(), aRecordItem.getLocationMap(), date);
+                LatLng nearestLatLng = fetchNearestLatLng(aRecordItem.getTimeStampMap(), aRecordItem.getLocationMap(), date);
                 pictureList.add(new Picture(contentUri, date, nearestLatLng));
             }
         }
@@ -272,12 +270,12 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         return pictureList;
     }
 
-    private LatLng featchNearestLatLng(Map<Integer, String> aTimeStampMap, Map<Integer, LatLng> aLocationMap, int aFetchTimeStamp){
+    private LatLng fetchNearestLatLng(Map<Integer, String> aTimeStampMap, Map<Integer, LatLng> aLocationMap, int aFetchTimeStamp){
         long candidateTimeStamp;
         int size = aTimeStampMap.size();
         int fetchIndex = size - 1;
         for(int i = 0; i < size; i++){
-            candidateTimeStamp = LocalDateTime.parse(aTimeStampMap.get(i), Const.DATE_FORMAT).toEpochSecond(ZoneOffset.UTC);
+            candidateTimeStamp = LocalDateTime.parse(aTimeStampMap.get(i), Const.DATE_FORMAT).toEpochSecond(Const.STORED_OFFSET);
             if(candidateTimeStamp >= aFetchTimeStamp){
                 fetchIndex = i;
                 break;

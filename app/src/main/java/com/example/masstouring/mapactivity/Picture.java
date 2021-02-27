@@ -28,8 +28,8 @@ public class Picture implements ClusterItem {
     Picture(Uri aUri, int aTimeStamp, LatLng aLatLng){
         oUri = aUri;
         oTimeStamp = aTimeStamp;
-//        oLatLng = aLatLng;
-        oLatLng = new LatLng(aLatLng.latitude, aLatLng.longitude + oFusedInt++*0.1);
+        oLatLng = aLatLng;
+//        oLatLng = new LatLng(aLatLng.latitude, aLatLng.longitude + oFusedInt++*0.1);
     }
 
     /**
