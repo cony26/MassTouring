@@ -38,8 +38,8 @@ public class RecordItem {
 
     private RecordItem(){
         oId = 0;
-        oStartDate = LocalDateTime.parse("1000/10/01 00:00", Const.DATE_FORMAT);;
-        oEndDate = LocalDateTime.parse("1000/10/01 00:00", Const.DATE_FORMAT);
+        oStartDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);;
+        oEndDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);
         oLocationMap = null;
         oTimeStampMap = null;
         oSpeedkmphMap = null;
