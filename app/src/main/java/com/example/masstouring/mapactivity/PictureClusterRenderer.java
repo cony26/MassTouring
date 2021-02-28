@@ -66,17 +66,14 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
 
     @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
-        Bitmap bitmap = item.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx, this);
-        oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
+        Bitmap tmpBitmap = item.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx, this);
+        oItemImageView.setImageBitmap(centerRectClip(tmpBitmap, oSquarePx, oSquarePx));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
 
     @Override
     protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
-        Bitmap bitmap = clusterItem.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx,  this);
-        Log.e(LoggerTag.CLUSTER, bitmap.toString());
-        oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
-        marker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
+        clusterItem.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx,  this);
     }
 
     void setItemBitmap(Bitmap aBitmap, Marker aMarker){
@@ -86,18 +83,15 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
 
     @Override
     protected void onBeforeClusterRendered(@NonNull Cluster<Picture> cluster, @NonNull MarkerOptions markerOptions) {
-        Bitmap bitmap = layoutBitmapsAsyncly(cluster);
-        oClusterImageView.setImageBitmap(bitmap);
+        Bitmap tmpBitmap = layoutBitmapsAsyncly(cluster);
+        oClusterImageView.setImageBitmap(tmpBitmap);
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
     }
 
     @Override
     protected void onClusterUpdated(@NonNull Cluster<Picture> cluster, @NonNull Marker marker) {
-        Bitmap bitmap = layoutBitmapsAsyncly(cluster);
-        oClusterImageView.setImageBitmap(bitmap);
-        Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
-        marker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+        layoutBitmapsAsyncly(cluster);
     }
 
     private void setClusterBitmap(Bitmap aBitmap, Marker aMarker, int aClusterSize){
@@ -230,7 +224,7 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
                     @Override
                     public void run() {
                         setClusterBitmap(bitmap, getMarker(cluster), cluster.getSize());
-                        Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "set Future Cluster Bitmap");
+                        Log.i(LoggerTag.CLUSTER, "set Future Cluster Bitmap");
                     }
                 });
 

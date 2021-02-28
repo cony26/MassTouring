@@ -70,12 +70,12 @@ public class Picture implements ClusterItem {
 
     private Bitmap loadBitmap(Context aContext, int aReqWidth, int aReqHeight){
         Bitmap bitmap = null;
-        try(BufferedInputStream boudStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
+        try(BufferedInputStream boundsStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
             BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
         ){
             oBitmapOption.inJustDecodeBounds = true;
             oBitmapOption.inSampleSize = 1;
-            bitmap = BitmapFactory.decodeStream(boudStream, null, oBitmapOption);
+            bitmap = BitmapFactory.decodeStream(boundsStream, null, oBitmapOption);
 
             oBitmapOption.inSampleSize = calculateInSampleSize(oBitmapOption, aReqWidth, aReqHeight);
             oBitmapOption.inJustDecodeBounds = false;
