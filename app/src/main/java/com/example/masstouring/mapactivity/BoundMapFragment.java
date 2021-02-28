@@ -117,6 +117,8 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     public void initialize(){
+        oClusterManager.getMarkerCollection().clear();
+        oClusterManager.clearItems();
         oMap.clear();
         oPolylineOptions = new PolylineOptions();
     }
