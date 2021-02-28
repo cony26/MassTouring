@@ -72,7 +72,6 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
         oItemImageView = null;
         oClusterIconGenerator = null;
         oClusterImageView = null;
-
     }
 
     @Override

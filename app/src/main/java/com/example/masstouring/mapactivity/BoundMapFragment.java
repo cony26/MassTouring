@@ -75,7 +75,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             }
         });
         instantiateClusterManagers();
-        oMap.clear();
     }
 
     public GoogleMap getMap() {
@@ -154,5 +153,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMap.setOnMarkerClickListener(oClusterManager);
         oClusterManager.getMarkerCollection().clear();
         oClusterManager.clearItems();
+        oMap.clear();
     }
 }
