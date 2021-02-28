@@ -42,7 +42,7 @@ public class RecordService extends LifecycleService {
             }
 
             if (needUpdate) {
-                oRecordObject.addLocation(location);
+                oRecordObject.setLastRecordedLocation(location);
                 oRecordObject.inclementRecordNumber();
                 oDatabaseHelper.recordPositions(oRecordObject);
             }

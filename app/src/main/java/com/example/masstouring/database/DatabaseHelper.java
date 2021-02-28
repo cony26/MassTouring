@@ -174,17 +174,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + aId, null, null, null, null);
             while(positionsCursor.moveToNext()){
-                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-                Location location = new Location("");
-                location.reset();
-                location.setLatitude(latitude);
-                location.setLongitude(longitude);
-                recordObject.addLocation(location);
-
                 if(positionsCursor.isLast()){
                     int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
                     recordObject.setRecordNumber(order);
+
+                    double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                    double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                    Location location = new Location("");
+                    location.setLatitude(latitude);
+                    location.setLongitude(longitude);
+                    recordObject.setLastRecordedLocation(location);
                 }
             }
         }

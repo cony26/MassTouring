@@ -21,7 +21,7 @@ public class RecordObject {
     private int oRecordNumber;
     private String oStartDate;
     private String oEndDate;
-    private final List<Location> oLocations= new ArrayList<>();
+    private Location oLastRecordedLocation = null;
 
     public RecordObject(DatabaseHelper aDatabaseHelper){
         oRecordId = aDatabaseHelper.getUniqueID();
@@ -69,10 +69,6 @@ public class RecordObject {
         oEndDate = aEndDate;
     }
 
-    public void addLocation(Location aLocation){
-        oLocations.add(aLocation);
-    }
-
     public boolean hasRecords(){
         return oRecordNumber >= 0;
     }
@@ -82,7 +78,7 @@ public class RecordObject {
             return true;
         }
 
-        float distance = aLocation.distanceTo(getLastLocation());
+        float distance = aLocation.distanceTo(oLastRecordedLocation);
 
         Log.d(LoggerTag.LOCATION, "(latitude, longitude) = (" + aLocation.getLatitude() + "," + aLocation.getLongitude() + ")");
         Log.d(LoggerTag.LOCATION, "(distance, limit) = (" + distance + "," + Const.DISTANCE_GAP + ")");
@@ -95,8 +91,10 @@ public class RecordObject {
     }
 
     public Location getLastLocation(){
-        assert !hasRecords() : "no last location";
+        return oLastRecordedLocation;
+    }
 
-        return oLocations.get(oRecordNumber);
+    public void setLastRecordedLocation(Location aLocation){
+        oLastRecordedLocation = aLocation;
     }
 }
