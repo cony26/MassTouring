@@ -47,7 +47,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private List<Integer> oRenderedIdList = new ArrayList<>();
 
     public BoundMapFragment(LifecycleOwner aLifeCycleOwner, SupportMapFragment aMapFragment){
-        Log.i(LoggerTag.SYSTEM_PROCESS, "BoundMapFragment:constructor");
         aMapFragment.getMapAsync(this);
         oMapFragment = aMapFragment;
         oMapFragment.getLifecycle().addObserver(this);

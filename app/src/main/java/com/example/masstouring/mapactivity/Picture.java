@@ -22,14 +22,12 @@ public class Picture implements ClusterItem {
     private final Uri oUri;
     private final int oTimeStamp;
     private final LatLng oLatLng;
-    private static int oFusedInt = 0;
     private static final BitmapFactory.Options oBitmapOption = new BitmapFactory.Options();
 
     public Picture(Uri aUri, int aTimeStamp, LatLng aLatLng){
         oUri = aUri;
         oTimeStamp = aTimeStamp;
         oLatLng = aLatLng;
-//        oLatLng = new LatLng(aLatLng.latitude, aLatLng.longitude + oFusedInt++*0.1);
     }
 
     /**
@@ -46,22 +44,6 @@ public class Picture implements ClusterItem {
     }
 
     public Bitmap getItemBitmapAsyncly(Context aContext, int aReqWidth, int aReqHeight, PictureClusterRenderer aClusterRenderer){
-
-//        try {
-//            if (oFutureBitmap != null) {
-//                bitmap = oFutureBitmap.get();
-//                oFutureBitmap = null;
-//                Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "get Future Bitmap");
-//            } else {
-//                oFutureBitmap = createBitmapAsyncly(aContext, aReqWidth, aReqHeight, aClusterManager, aClusterRenderer);
-//                bitmap = oFutureBitmap.get();
-//                Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "get tmp Bitmap");
-//            }
-//        }catch(InterruptedException | ExecutionException e){
-//            Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "Future loading error {}" , e);
-//            bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
-//        }
-
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
@@ -74,7 +56,7 @@ public class Picture implements ClusterItem {
 //                            aClusterManager.removeItem(Picture.this);
 //                            aClusterManager.addItem(Picture.this);
 //                            aClusterManager.cluster();
-                        Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "set Future Item Bitmap");
+                        Log.i(LoggerTag.CLUSTER, "set Future Item Bitmap");
                     }
                 });
 
