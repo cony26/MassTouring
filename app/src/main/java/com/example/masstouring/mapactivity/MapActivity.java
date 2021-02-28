@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.database.DatabaseInfoRepairer;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.SupportMapFragment;
 
@@ -84,6 +85,8 @@ public class MapActivity extends AppCompatActivity{
 
         setButtonClickListeners();
         subscribeLiveData();
+
+        cExecutors.execute(new DatabaseInfoRepairer(this));
     }
 
     @Override
