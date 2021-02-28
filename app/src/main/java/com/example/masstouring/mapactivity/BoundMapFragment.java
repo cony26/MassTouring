@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.common.MediaAccessUtil;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
 import com.example.masstouring.recordservice.RecordService;
@@ -29,7 +30,10 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.clustering.ClusterManager;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, ILocationUpdateCallback {
     private GoogleMap oMap;
@@ -40,6 +44,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private Polyline oLastPolyline = null;
     private PolylineOptions oPolylineOptions = null;
     private DatabaseHelper oDatabaseHelper;
+    private List<Integer> oRenderedIdList = new ArrayList<>();
 
     public BoundMapFragment(LifecycleOwner aLifeCycleOwner, SupportMapFragment aMapFragment){
         Log.i(LoggerTag.SYSTEM_PROCESS, "BoundMapFragment:constructor");
@@ -113,6 +118,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.getMarkerCollection().clear();
         oClusterManager.clearItems();
         oMap.clear();
+        oRenderedIdList.clear();
         oPolylineOptions = new PolylineOptions();
     }
 
@@ -154,5 +160,34 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.getMarkerCollection().clear();
         oClusterManager.clearItems();
         oMap.clear();
+        oRenderedIdList.clear();
     }
+
+    public void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
+        int id = aRecordItem.getId();
+        if(oRenderedIdList.contains(id))
+            return;
+
+        long startDateSecond = aRecordItem.getStartDate().toEpochSecond(Const.STORED_OFFSET);
+
+        long endDateSecond;
+        Map<Integer, String> timeStampMap = aRecordItem.getTimeStampMap();
+        if(aRecordItem.getEndDate() == null){
+            endDateSecond = LocalDateTime.parse(timeStampMap.get(timeStampMap.size() - 1), Const.DATE_FORMAT).toEpochSecond(Const.STORED_OFFSET);
+        } else {
+            endDateSecond = aRecordItem.getEndDate().toEpochSecond(Const.STORED_OFFSET);
+        }
+
+        MapActivity.cExecutors.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Picture> picturesList = MediaAccessUtil.loadPictures(oMapFragment.getContext(), aRecordItem, startDateSecond, endDateSecond);
+                drawMarkers(picturesList);
+            }
+        });
+
+        oRenderedIdList.add(id);
+    }
+
+
 }

@@ -127,7 +127,6 @@ public class MapActivity extends AppCompatActivity{
                 Optional.ofNullable(recordStartEvent.getContentIfNotHandled()).ifPresent(content -> {
                     Toast.makeText(MapActivity.this, content, Toast.LENGTH_SHORT).show();
                     oBoundMapFragment.initialize();
-                    oBoundRecordsView.clearRenderedList();
                 });
             }
         });

@@ -25,7 +25,7 @@ public class Picture implements ClusterItem {
     private static int oFusedInt = 0;
     private static final BitmapFactory.Options oBitmapOption = new BitmapFactory.Options();
 
-    Picture(Uri aUri, int aTimeStamp, LatLng aLatLng){
+    public Picture(Uri aUri, int aTimeStamp, LatLng aLatLng){
         oUri = aUri;
         oTimeStamp = aTimeStamp;
         oLatLng = aLatLng;
