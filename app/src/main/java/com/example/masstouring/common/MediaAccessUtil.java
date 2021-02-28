@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class MediaAccessUtil {
     public static List<Picture> loadPictures(Context aContext, RecordItem aRecordItem, long startDate, long endDate){
-        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "startDate:" + startDate + ", endDate:" + endDate);
+        Log.d(LoggerTag.MEDIA_ACCESS, String.format("loadPictures[startDate:endDate]=[%d,%d]", startDate, endDate));
 
         List<Picture> pictureList = new ArrayList<>();
         Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -51,7 +51,7 @@ public class MediaAccessUtil {
         }
 
         for(Picture picture : pictureList){
-            Log.d(LoggerTag.RECORD_RECYCLER_VIEW, picture.toString());
+            Log.d(LoggerTag.MEDIA_ACCESS, picture.toString());
         }
 
         return pictureList;

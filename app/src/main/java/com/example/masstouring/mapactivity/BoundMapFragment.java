@@ -115,7 +115,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     public void initialize(){
-        oClusterManager.getMarkerCollection().clear();
         oClusterManager.clearItems();
         oMap.clear();
         oRenderedIdList.clear();
@@ -125,9 +124,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     public void onResume(){
-        if(oMap != null){
-            instantiateClusterManagers();
-        }
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
@@ -146,10 +143,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);
         oMap.setOnMarkerClickListener(oClusterManager);
-//        oClusterManager.getMarkerCollection().clear();
-//        oClusterManager.clearItems();
-//        oMap.clear();
-//        oRenderedIdList.clear();
     }
 
     public void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
