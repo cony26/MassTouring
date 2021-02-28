@@ -44,6 +44,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
     private List<Polyline> oPrevPolylineList = new ArrayList<>();
+    private List<Integer> oRenderedIdList = new ArrayList<>();
     private static final int alpha = 0x80000000;
 
     public BoundRecordView(LifecycleOwner aLifeCycleOwner, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, Context aContext){
@@ -126,7 +127,11 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         oMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
         oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
 
-        addPictureMarkersOnMapAsyncly(aRecordItem);
+        int id = aRecordItem.getId();
+        if(!oRenderedIdList.contains(id)){
+            addPictureMarkersOnMapAsyncly(aRecordItem);
+            oRenderedIdList.add(id);
+        }
     }
 
     @Override
@@ -296,5 +301,9 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
     public void setMapFragment(BoundMapFragment aMapFragment) {
         oMapFragment = aMapFragment;
+    }
+
+    public void clearRenderedList(){
+        oRenderedIdList.clear();
     }
 }

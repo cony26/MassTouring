@@ -39,7 +39,7 @@ public class MapActivity extends AppCompatActivity{
     static final ExecutorService cExecutors = Executors.newFixedThreadPool(5);
     private Button oStartRecordingButton;
     private Button oMemoryButton;
-    private BoundRecordView oRecordsView;
+    private BoundRecordView oBoundRecordsView;
     private Toolbar oToolbar;
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
@@ -56,7 +56,7 @@ public class MapActivity extends AppCompatActivity{
     private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
         @Override
         public void onPositiveClick() {
-            oRecordsView.deleteSelectedItems();
+            oBoundRecordsView.deleteSelectedItems();
             oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
         }
 
@@ -77,8 +77,8 @@ public class MapActivity extends AppCompatActivity{
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
         oBoundMapFragment = new BoundMapFragment(this, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-        oRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, getApplicationContext());
-        oRecordsView.setMapFragment(oBoundMapFragment);
+        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, getApplicationContext());
+        oBoundRecordsView.setMapFragment(oBoundMapFragment);
 
         getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
 
@@ -127,6 +127,7 @@ public class MapActivity extends AppCompatActivity{
                 Optional.ofNullable(recordStartEvent.getContentIfNotHandled()).ifPresent(content -> {
                     Toast.makeText(MapActivity.this, content, Toast.LENGTH_SHORT).show();
                     oBoundMapFragment.initialize();
+                    oBoundRecordsView.clearRenderedList();
                 });
             }
         });
