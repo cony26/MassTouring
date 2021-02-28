@@ -143,12 +143,12 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     public void clearAll(){
-        oClusterManager.clearItems();
-        oClusterManager.cluster();
-        oPictureClusterRenderer.setOnClusterClickListener(null);
-        oPictureClusterRenderer.setOnClusterItemClickListener(null);
-        oClusterManager.getMarkerCollection().clear();
-        oPictureClusterRenderer.onRemove();
+//        oClusterManager.clearItems();
+//        oClusterManager.cluster();
+//        oPictureClusterRenderer.setOnClusterClickListener(null);
+//        oPictureClusterRenderer.setOnClusterItemClickListener(null);
+//        oClusterManager.getMarkerCollection().clear();
+//        oPictureClusterRenderer.onRemove();
     }
 
     private void instantiateClusterManagers(){
@@ -157,10 +157,10 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);
         oMap.setOnMarkerClickListener(oClusterManager);
-        oClusterManager.getMarkerCollection().clear();
-        oClusterManager.clearItems();
-        oMap.clear();
-        oRenderedIdList.clear();
+//        oClusterManager.getMarkerCollection().clear();
+//        oClusterManager.clearItems();
+//        oMap.clear();
+//        oRenderedIdList.clear();
     }
 
     public void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){

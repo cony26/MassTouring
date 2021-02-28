@@ -65,23 +65,6 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     }
 
     @Override
-    public void onRemove() {
-        Log.d(LoggerTag.CLUSTER, "onRemove");
-        super.onRemove();
-        oItemIconGenerator = null;
-        oItemImageView = null;
-        oClusterIconGenerator = null;
-        oClusterImageView = null;
-    }
-
-    @Override
-    public void onAdd() {
-        Log.d(LoggerTag.CLUSTER, "onAdd");
-        oClusterManager.getMarkerCollection().getMarkers().stream().forEach(e -> Log.d(LoggerTag.CLUSTER, e.toString()));
-        super.onAdd();
-    }
-
-    @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
         Bitmap bitmap = item.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx, this);
         oItemImageView.setImageBitmap(centerRectClip(bitmap, oSquarePx, oSquarePx));
