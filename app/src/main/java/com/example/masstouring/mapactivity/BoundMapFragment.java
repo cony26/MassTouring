@@ -74,13 +74,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                 }
             }
         });
-        oClusterManager = new ClusterManager<Picture>(oMapFragment.getContext(), oMap);
-        oPictureClusterRenderer = new PictureClusterRenderer(oMapFragment.getContext(), oMap, oClusterManager);
-        oClusterManager.setRenderer(oPictureClusterRenderer);
-        oMap.setOnCameraIdleListener(oClusterManager);
-        oMap.setOnMarkerClickListener(oClusterManager);
-        oClusterManager.getMarkerCollection().clear();
-        oClusterManager.clearItems();
+        instantiateClusterManagers();
         oMap.clear();
     }
 
@@ -137,7 +131,9 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     public void onResume(){
-
+        if(oMap != null){
+            instantiateClusterManagers();
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
@@ -148,5 +144,15 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oPictureClusterRenderer.setOnClusterItemClickListener(null);
         oClusterManager.getMarkerCollection().clear();
         oPictureClusterRenderer.onRemove();
+    }
+
+    private void instantiateClusterManagers(){
+        oClusterManager = new ClusterManager<Picture>(oMapFragment.getContext(), oMap);
+        oPictureClusterRenderer = new PictureClusterRenderer(oMapFragment.getContext(), oMap, oClusterManager);
+        oClusterManager.setRenderer(oPictureClusterRenderer);
+        oMap.setOnCameraIdleListener(oClusterManager);
+        oMap.setOnMarkerClickListener(oClusterManager);
+        oClusterManager.getMarkerCollection().clear();
+        oClusterManager.clearItems();
     }
 }
