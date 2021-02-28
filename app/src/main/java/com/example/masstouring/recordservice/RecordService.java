@@ -105,12 +105,16 @@ public class RecordService extends LifecycleService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
         super.onStartCommand(intent, flags, startId);
-        Optional.ofNullable(intent.getAction()).ifPresent(e -> {
-            if(e.equals(CANCEL_ACTION)){
-                oUnbindRequestCallback.ifPresent(callback -> callback.onStopRecordService());
-                stopService();
-            }
-        });
+
+        if(intent != null){
+            Optional.ofNullable(intent.getAction()).ifPresent(e -> {
+                if(e.equals(CANCEL_ACTION)){
+                    oUnbindRequestCallback.ifPresent(callback -> callback.onStopRecordService());
+                    stopService();
+                }
+            });
+        }
+
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         manager.createNotificationChannel(oNotificationChannel);
         startForeground(1, oNotification);
