@@ -11,7 +11,11 @@ import com.google.android.gms.maps.model.LatLng;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * The entity of Recording Object that is used only during recording.
+ */
 public class RecordObject {
     private final int oRecordId;
     private int oRecordNumber;

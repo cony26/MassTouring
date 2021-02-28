@@ -20,7 +20,6 @@ import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.MediaAccessUtil;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
-import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -41,8 +40,8 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private PictureClusterRenderer oPictureClusterRenderer = null;
     private SupportMapFragment oMapFragment;
     private MapActivtySharedViewModel aMapActivityViewModel;
-    private Polyline oLastPolyline = null;
-    private PolylineOptions oPolylineOptions = null;
+    private Polyline oRecordingLastPolyline = null;
+    private PolylineOptions oRecordingPolylineOptions = null;
     private DatabaseHelper oDatabaseHelper;
     private List<Integer> oRenderedIdList = new ArrayList<>();
 
@@ -95,35 +94,39 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             return;
 
         if(aMapActivityViewModel.isRecording()) {
-            if(oLastPolyline != null){
-                oLastPolyline.remove();
+            if(oRecordingLastPolyline != null){
+                oRecordingLastPolyline.remove();
             }
-            oPolylineOptions.add(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()));
-            oLastPolyline = oMap.addPolyline(oPolylineOptions);
+
+            if(oRecordingPolylineOptions != null){
+                oRecordingPolylineOptions.add(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()));
+                oRecordingLastPolyline = oMap.addPolyline(oRecordingPolylineOptions);
+            }
         }
         Log.d(LoggerTag.SYSTEM_PROCESS, "Location Updates");
     }
 
-    public void moveCameraIfRecording(RecordService aService){
-        if(aMapActivityViewModel.isRecording()){
-            int id = aService.getRecordObject().getRecordId();
-            oPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(id);
-            oLastPolyline = oMap.addPolyline(oPolylineOptions);
-            oDatabaseHelper.getLastLatLngFrom(id).ifPresent(e -> oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
+    public void restorePolyline(int aRecordId){
+        if(oRecordingPolylineOptions == null){
+            oRecordingPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(aRecordId);
+            oRecordingLastPolyline = oMap.addPolyline(oRecordingPolylineOptions);
         }
+    }
+
+    public void moveCameraToLastLocation(int aRecordId){
+        oDatabaseHelper.getLastLatLngFrom(aRecordId).ifPresent(e -> oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
     }
 
     public void initialize(){
         oClusterManager.clearItems();
         oMap.clear();
         oRenderedIdList.clear();
-        oPolylineOptions = new PolylineOptions();
+        oRecordingPolylineOptions = new PolylineOptions();
     }
 
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     public void onResume(){
-
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
