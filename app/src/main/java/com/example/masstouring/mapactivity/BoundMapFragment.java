@@ -122,17 +122,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oPolylineOptions = new PolylineOptions();
     }
 
-    public void drawMarkers(List<Picture> aPictureList){
-        for(Picture picture : aPictureList){
-            oClusterManager.addItem(picture);
-        }
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                oClusterManager.cluster();
-            }
-        });
-    }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     public void onResume(){
@@ -189,5 +178,15 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oRenderedIdList.add(id);
     }
 
-
+    public void drawMarkers(List<Picture> aPictureList){
+        for(Picture picture : aPictureList){
+            oClusterManager.addItem(picture);
+        }
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                oClusterManager.cluster();
+            }
+        });
+    }
 }
