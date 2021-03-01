@@ -114,8 +114,10 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             oMapFragment.removePolyline(id);
             oMapFragment.removePictureMarkersOnMapAsyncly(aRecordItem);
         }else{
-            LatLngBounds fitArea = createFitAreaFrom(locationMap);
-            oMapFragment.fitCameraTo(fitArea, 0);
+            if(oMapFragment.isNothingRendered()){
+                LatLngBounds fitArea = createFitAreaFrom(locationMap);
+                oMapFragment.fitCameraTo(fitArea, 0);
+            }
 
             List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
             oMapFragment.drawPolyline(polylineOptionsList, id);

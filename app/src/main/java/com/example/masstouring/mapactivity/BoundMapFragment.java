@@ -108,6 +108,10 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         return oRenderedIdList.contains(aId);
     }
 
+    public boolean isNothingRendered(){
+        return oRenderedIdList.isEmpty();
+    }
+
     public void drawPolyline(List<PolylineOptions> aPolylineOptions, int aId){
         List<Polyline> polylineList = new ArrayList<>();
         for(PolylineOptions polylineOptions : aPolylineOptions)
