@@ -86,10 +86,10 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         aHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                recordItem.setRendered(!recordItem.isRendered());
-                int color = recordItem.isRendered() ? Color.GRAY : oInitialColor;
+                int color = recordItem.isRendered() ? oInitialColor : Color.GRAY;
                 view.setBackgroundColor(color);
                 oCallback.onRecordItemClick(recordItem);
+                recordItem.setRendered(!recordItem.isRendered());
                 Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "record item clicked : " + recordItem.toString());
             }
         });

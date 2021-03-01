@@ -111,19 +111,16 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
         int id = aRecordItem.getId();
         if(aRecordItem.isRendered()){
+            oMapFragment.removePolyline(id);
+            oMapFragment.removePictureMarkersOnMapAsyncly(aRecordItem);
+        }else{
             LatLngBounds fitArea = createFitAreaFrom(locationMap);
             oMapFragment.fitCameraTo(fitArea, 0);
 
-            if(!oMapFragment.isRendered(id)){
-                List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
-                oMapFragment.drawPolyline(polylineOptionsList, id);
-                oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
-            }
-        }else{
-            oMapFragment.removePolyline(id);
-            oMapFragment.removePictureMarkersOnMapAsyncly(aRecordItem);
+            List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
+            oMapFragment.drawPolyline(polylineOptionsList, id);
+            oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
         }
-
 
         oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
     }
