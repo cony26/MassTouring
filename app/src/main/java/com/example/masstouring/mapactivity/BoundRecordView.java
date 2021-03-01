@@ -18,10 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -38,7 +36,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
-    private List<Polyline> oPrevPolylineList = new ArrayList<>();
     private static final int alpha = 0x80000000;
 
     public BoundRecordView(LifecycleOwner aLifeCycleOwner, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, Context aContext){
@@ -109,19 +106,17 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         if(locationMap.size() <= 1)
             return;
 
-        List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
         LatLngBounds fitArea = createFitAreaFrom(locationMap);
+        oMapFragment.fitCameraTo(fitArea, 0);
 
-        oPrevPolylineList.stream().forEach(polyline -> polyline.remove());
-        oPrevPolylineList.clear();
-
-        for(PolylineOptions polylineOptions : polylineOptionsList) {
-            oPrevPolylineList.add(oMapFragment.getMap().addPolyline(polylineOptions));
+        int id = aRecordItem.getId();
+        if(!oMapFragment.isRendered(aRecordItem.getId())){
+            List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
+            oMapFragment.drawPolyline(polylineOptionsList, id);
+            oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
         }
-        oMapFragment.getMap().moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
-        oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
 
-        oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
+        oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
     }
 
     @Override
