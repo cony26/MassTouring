@@ -78,7 +78,9 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
 
     void setItemBitmap(Bitmap aBitmap, Marker aMarker){
         oItemImageView.setImageBitmap(centerRectClip(aBitmap, oSquarePx, oSquarePx));
-        aMarker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
+        if(aMarker != null){
+            aMarker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
+        }
     }
 
     @Override
@@ -97,7 +99,9 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     private void setClusterBitmap(Bitmap aBitmap, Marker aMarker, int aClusterSize){
         oClusterImageView.setImageBitmap(aBitmap);
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(aClusterSize));
-        aMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+        if(aMarker != null){
+            aMarker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+        }
     }
 
     @Override
