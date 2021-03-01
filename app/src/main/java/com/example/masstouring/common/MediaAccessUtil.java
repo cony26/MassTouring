@@ -17,8 +17,18 @@ import java.util.List;
 import java.util.Map;
 
 public class MediaAccessUtil {
-    public static List<Picture> loadPictures(Context aContext, RecordItem aRecordItem, long startDate, long endDate){
-        Log.d(LoggerTag.MEDIA_ACCESS, String.format("loadPictures[startDate:endDate]=[%d,%d]", startDate, endDate));
+    public static List<Picture> loadPictures(Context aContext, RecordItem aRecordItem){
+        long startDateSecond = aRecordItem.getStartDate().toEpochSecond(Const.STORED_OFFSET);
+
+        long endDateSecond;
+        Map<Integer, String> timeStampMap = aRecordItem.getTimeStampMap();
+        if(aRecordItem.getEndDate() == null){
+            endDateSecond = LocalDateTime.parse(timeStampMap.get(timeStampMap.size() - 1), Const.DATE_FORMAT).toEpochSecond(Const.STORED_OFFSET);
+        } else {
+            endDateSecond = aRecordItem.getEndDate().toEpochSecond(Const.STORED_OFFSET);
+        }
+
+        Log.d(LoggerTag.MEDIA_ACCESS, String.format("loadPictures[startDate:endDate]=[%d,%d]", startDateSecond, endDateSecond));
 
         List<Picture> pictureList = new ArrayList<>();
         Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -26,7 +36,7 @@ public class MediaAccessUtil {
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DATE_ADDED
         };
-        String selection = MediaStore.Images.Media.DATE_ADDED + " >= " + startDate + " AND " + MediaStore.Images.Media.DATE_ADDED + " <= " + endDate;
+        String selection = MediaStore.Images.Media.DATE_ADDED + " >= " + startDateSecond + " AND " + MediaStore.Images.Media.DATE_ADDED + " <= " + endDateSecond;
         String[] selectionArgs = new String[]{};
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
 

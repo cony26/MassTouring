@@ -30,7 +30,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.clustering.ClusterManager;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -118,20 +117,10 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     public void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
-        long startDateSecond = aRecordItem.getStartDate().toEpochSecond(Const.STORED_OFFSET);
-
-        long endDateSecond;
-        Map<Integer, String> timeStampMap = aRecordItem.getTimeStampMap();
-        if(aRecordItem.getEndDate() == null){
-            endDateSecond = LocalDateTime.parse(timeStampMap.get(timeStampMap.size() - 1), Const.DATE_FORMAT).toEpochSecond(Const.STORED_OFFSET);
-        } else {
-            endDateSecond = aRecordItem.getEndDate().toEpochSecond(Const.STORED_OFFSET);
-        }
-
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
-                List<Picture> picturesList = MediaAccessUtil.loadPictures(oMapFragment.getContext(), aRecordItem, startDateSecond, endDateSecond);
+                List<Picture> picturesList = MediaAccessUtil.loadPictures(oMapFragment.getContext(), aRecordItem);
                 drawMarkers(picturesList);
             }
         });
@@ -139,10 +128,33 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oRenderedIdList.add(aRecordItem.getId());
     }
 
+    public void removePictureMarkersOnMapAsyncly(RecordItem aRecordItem){
+        MapActivity.cExecutors.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Picture> picturesList = MediaAccessUtil.loadPictures(oMapFragment.getContext(), aRecordItem);
+                removeMarkers(picturesList);
+            }
+        });
+
+        oRenderedIdList.remove((Object)aRecordItem.getId());
+    }
+
     private void drawMarkers(List<Picture> aPictureList){
         for(Picture picture : aPictureList){
             oClusterManager.addItem(picture);
         }
+        callClusterOnUiThread();
+    }
+
+    private void removeMarkers(List<Picture> aPictureList){
+        for(Picture picture : aPictureList){
+            oClusterManager.removeItem(picture);
+        }
+        callClusterOnUiThread();
+    }
+
+    private void callClusterOnUiThread(){
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -150,6 +162,12 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             }
         });
     }
+
+    public void removePolyline(int aId){
+        oRenderedPolylineMap.get(aId).stream().forEach(polyline -> polyline.remove());
+        oRenderedPolylineMap.remove(aId);
+    }
+
 
     public void restorePolyline(int aRecordId){
         if(oRecordingPolylineOptions == null){

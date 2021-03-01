@@ -17,6 +17,7 @@ import com.google.maps.android.clustering.ClusterItem;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.util.Objects;
 
 public class Picture implements ClusterItem {
     private final Uri oUri;
@@ -151,5 +152,20 @@ public class Picture implements ClusterItem {
                 .append("TimeStamp:").append(oTimeStamp).append(",")
                 .append("LatLng:").append(oLatLng.toString());
         return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Picture)) return false;
+        Picture picture = (Picture) o;
+        return oTimeStamp == picture.oTimeStamp &&
+                Objects.equals(oUri, picture.oUri) &&
+                Objects.equals(oLatLng, picture.oLatLng);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(oUri, oTimeStamp, oLatLng);
     }
 }

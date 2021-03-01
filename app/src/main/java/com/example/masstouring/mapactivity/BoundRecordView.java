@@ -80,6 +80,9 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             @Override
             public void run() {
                 List<RecordItem> data = oDatabaseHelper.getRecords();
+                data.stream()
+                        .filter(recordItem -> oMapFragment.isRendered(recordItem.getId()))
+                        .forEach(recordItem -> recordItem.setRendered(true));
                 while(oRecordsViewAdapter == null){
                     try{
                         Thread.sleep(500);
@@ -106,15 +109,21 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         if(locationMap.size() <= 1)
             return;
 
-        LatLngBounds fitArea = createFitAreaFrom(locationMap);
-        oMapFragment.fitCameraTo(fitArea, 0);
-
         int id = aRecordItem.getId();
-        if(!oMapFragment.isRendered(aRecordItem.getId())){
-            List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
-            oMapFragment.drawPolyline(polylineOptionsList, id);
-            oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
+        if(aRecordItem.isRendered()){
+            LatLngBounds fitArea = createFitAreaFrom(locationMap);
+            oMapFragment.fitCameraTo(fitArea, 0);
+
+            if(!oMapFragment.isRendered(id)){
+                List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
+                oMapFragment.drawPolyline(polylineOptionsList, id);
+                oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
+            }
+        }else{
+            oMapFragment.removePolyline(id);
+            oMapFragment.removePictureMarkersOnMapAsyncly(aRecordItem);
         }
+
 
         oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
     }

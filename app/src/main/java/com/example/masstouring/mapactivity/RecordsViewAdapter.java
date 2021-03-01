@@ -74,10 +74,21 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         String appendixText = Integer.toString(recordItem.getId());
         aHolder.oAppendixText.setText(appendixText);
 
-        aHolder.itemView.setBackgroundColor(recordItem.isSelected() ? Color.CYAN : oInitialColor);
+        int color = oInitialColor;
+        if(recordItem.isRendered()){
+            color = Color.GRAY;
+        }
+        if(recordItem.isSelected()){
+            color = Color.CYAN;
+        }
+        aHolder.itemView.setBackgroundColor(color);
+
         aHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                recordItem.setRendered(!recordItem.isRendered());
+                int color = recordItem.isRendered() ? Color.GRAY : oInitialColor;
+                view.setBackgroundColor(color);
                 oCallback.onRecordItemClick(recordItem);
                 Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "record item clicked : " + recordItem.toString());
             }
@@ -85,9 +96,8 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         aHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                int color = Color.CYAN;
                 recordItem.setSelected(true);
-                view.setBackgroundColor(color);
+                view.setBackgroundColor(Color.CYAN);
                 oCallback.onRecordItemLongClick();
                 return true;
             }

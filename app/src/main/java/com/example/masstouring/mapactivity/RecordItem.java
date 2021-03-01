@@ -17,6 +17,7 @@ public class RecordItem {
     private final Map<Integer, String> oTimeStampMap;
     private final Map<Integer, Double> oSpeedkmphMap;
     private boolean oSelected = false;
+    private boolean oRendered = false;
     public static final RecordItem EMPTY_RECORD = new RecordItem();
 
     public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap, Map aSpeedKmphMap){
@@ -82,6 +83,14 @@ public class RecordItem {
 
     public void setSelected(boolean aIsSelected) {
          oSelected = aIsSelected;
+    }
+
+    public void setRendered(boolean aIsRendered){
+        oRendered = aIsRendered;
+    }
+
+    public boolean isRendered(){
+        return oRendered;
     }
 
     @Override
