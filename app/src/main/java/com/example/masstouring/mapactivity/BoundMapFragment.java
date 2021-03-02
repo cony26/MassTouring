@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private GoogleMap oMap;
     private ClusterManager<Picture> oClusterManager;
     private PictureClusterRenderer oPictureClusterRenderer = null;
+    private ClusterDistributer oClusterDistributer;
     private SupportMapFragment oMapFragment;
     private MapActivtySharedViewModel aMapActivityViewModel;
     private Polyline oRecordingLastPolyline = null;
@@ -189,6 +191,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     public void initialize(){
+        oClusterDistributer.cleanUp();
         oClusterManager.clearItems();
         oClusterManager.cluster();
         oRenderedIdList.clear();
@@ -215,9 +218,17 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private void instantiateClusterManagers(){
         oClusterManager = new ClusterManager<Picture>(oMapFragment.getContext(), oMap);
         oPictureClusterRenderer = new PictureClusterRenderer(oMapFragment.getContext(), oMap, oClusterManager);
+        oClusterDistributer = new ClusterDistributer(oMapFragment.getContext(), oClusterManager);
         oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);
         oMap.setOnMarkerClickListener(oClusterManager);
+        oClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Picture>() {
+            @Override
+            public boolean onClusterClick(Cluster<Picture> cluster) {
+                oClusterDistributer.distribute();
+                return false;
+            }
+        });
     }
 
 }
