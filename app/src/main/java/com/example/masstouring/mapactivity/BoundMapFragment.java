@@ -6,6 +6,8 @@ import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Lifecycle;
@@ -225,7 +227,8 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Picture>() {
             @Override
             public boolean onClusterClick(Cluster<Picture> cluster) {
-                oClusterDistributer.distribute();
+                oClusterDistributer.distribute(cluster);
+                oMapFragment.getActivity().addContentView(oClusterDistributer.getClusterDistributedView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 return false;
             }
         });
