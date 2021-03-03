@@ -32,6 +32,10 @@ public class DatabaseInfoRepairer implements Runnable{
             try(SQLiteDatabase db = oDatabaseHelper.getReadableDatabase()){
                 Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
                 while(recordsStartInfoCursor.moveToNext()){
+                    if(recordsStartInfoCursor.isLast()){
+                        //TODO:This is temporary implementation for avoiding the overwrite of the recording endinfo
+                        break;
+                    }
                     int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
                     Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getName() + "=" + id, null, null, null, null);
                     if(recordsEndInfoCusor.getCount() == 0){
