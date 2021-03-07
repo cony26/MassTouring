@@ -25,8 +25,10 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.R;
+import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.database.DatabaseInfoRepairer;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -45,6 +47,7 @@ public class MapActivity extends AppCompatActivity{
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private RecordService oRecordService;
     private boolean oRecordServiceBound = false;
+    private DatabaseHelper oDatabaseHelper;
 
     private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
         @Override
@@ -65,18 +68,19 @@ public class MapActivity extends AppCompatActivity{
         checkPermissions();
         setContentView(R.layout.activity_maps);
         oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
+        oDatabaseHelper = new DatabaseHelper(getApplicationContext(), Const.DB_NAME);
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
         oMemoryButton = findViewById(R.id.btnMemory);
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
-        oBoundMapFragment = new BoundMapFragment(this, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel);
+        oBoundMapFragment = new BoundMapFragment(oMapActivitySharedViewModel, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map), oDatabaseHelper);
+        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, oDatabaseHelper);
         oBoundRecordsView.setMapFragment(oBoundMapFragment);
 
         setButtonClickListeners();
         subscribeLiveData();
 
-        cExecutors.execute(new DatabaseInfoRepairer(this));
+        cExecutors.execute(new DatabaseInfoRepairer(oDatabaseHelper));
     }
 
     @Override

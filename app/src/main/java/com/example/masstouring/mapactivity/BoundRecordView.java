@@ -1,6 +1,5 @@
 package com.example.masstouring.mapactivity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
@@ -10,7 +9,6 @@ import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -49,7 +47,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     };
 
-    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel){
+    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper){
         aAppCompatActivity.getLifecycle().addObserver(this);
         oRecordsView = aRecordView;
         oManager = new LinearLayoutManager(aRecordView.getContext());
@@ -60,9 +58,8 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
         aAppCompatActivity.getOnBackPressedDispatcher().addCallback(oOnBackPressedCallbackWhenViewVisible);
 
-        Context context = aAppCompatActivity.getApplicationContext();
-        oDatabaseHelper = new DatabaseHelper(context, Const.DB_NAME);
-        subscribe(aAppCompatActivity, context);
+        oDatabaseHelper = aDatabaseHelper;
+        subscribe(aAppCompatActivity);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -70,13 +67,13 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
     }
 
-    private void subscribe(LifecycleOwner aLifeCycleOwner, Context aContext){
-        oMapActivitySharedViewModel.getIsRecordsViewVisible().observe(aLifeCycleOwner, new Observer<Boolean>() {
+    private void subscribe(AppCompatActivity aAppCompatActivity){
+        oMapActivitySharedViewModel.getIsRecordsViewVisible().observe(aAppCompatActivity, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean isVisible) {
                 if(isVisible){
                     List<RecordItem> data = loadRecords();
-                    oRecordsViewAdapter = new RecordsViewAdapter(data, BoundRecordView.this, aContext);
+                    oRecordsViewAdapter = new RecordsViewAdapter(data, BoundRecordView.this, aAppCompatActivity.getApplicationContext());
                     oRecordsView.setAdapter(oRecordsViewAdapter);
                     oRecordsView.setVisibility(View.VISIBLE);
                     oOnBackPressedCallbackWhenViewVisible.setEnabled(true);

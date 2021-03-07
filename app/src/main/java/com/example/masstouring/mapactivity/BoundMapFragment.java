@@ -6,17 +6,13 @@ import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.MediaAccessUtil;
@@ -44,20 +40,20 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private PictureClusterRenderer oPictureClusterRenderer = null;
     private ClusterDistributer oClusterDistributer;
     private SupportMapFragment oMapFragment;
-    private MapActivtySharedViewModel aMapActivityViewModel;
+    private MapActivtySharedViewModel oMapActivityViewModel;
     private Polyline oRecordingLastPolyline = null;
     private PolylineOptions oRecordingPolylineOptions = null;
     private Map<Integer, List<Polyline>> oRenderedPolylineMap = new HashMap<>();
-    private DatabaseHelper oDatabaseHelper;
+    private final DatabaseHelper oDatabaseHelper;
     private List<Integer> oRenderedIdList = new ArrayList<>();
 
-    public BoundMapFragment(LifecycleOwner aLifeCycleOwner, SupportMapFragment aMapFragment){
+    public BoundMapFragment(MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment, DatabaseHelper aDatabaseHelper){
         aMapFragment.getMapAsync(this);
         oMapFragment = aMapFragment;
         oMapFragment.getLifecycle().addObserver(this);
         new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
-        aMapActivityViewModel = new ViewModelProvider(aMapFragment.getActivity()).get(MapActivtySharedViewModel.class);
-        oDatabaseHelper = new DatabaseHelper(aMapFragment.getContext(), Const.DB_NAME);
+        oMapActivityViewModel = aMapActivityViewModel;
+        oDatabaseHelper = aDatabaseHelper;
     }
 
     @Override
@@ -71,7 +67,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
-                aMapActivityViewModel.getIsTracePosition().setValue(true);
+                oMapActivityViewModel.getIsTracePosition().setValue(true);
                 return false;
             }
         });
@@ -79,7 +75,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             @Override
             public void onCameraMoveStarted(int i) {
                 if(i == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE){
-                    aMapActivityViewModel.getIsTracePosition().setValue(false);
+                    oMapActivityViewModel.getIsTracePosition().setValue(false);
                 }
             }
         });
@@ -88,14 +84,14 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     @Override
     public void onReceiveLocationUpdate(Location aLocation, boolean aNeedUpdate) {
-        if(aMapActivityViewModel.getIsTracePosition().getValue()) {
+        if(oMapActivityViewModel.getIsTracePosition().getValue()) {
             oMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
         }
 
         if(!aNeedUpdate)
             return;
 
-        if(aMapActivityViewModel.isRecording()) {
+        if(oMapActivityViewModel.isRecording()) {
             if(oRecordingLastPolyline != null){
                 oRecordingLastPolyline.remove();
             }

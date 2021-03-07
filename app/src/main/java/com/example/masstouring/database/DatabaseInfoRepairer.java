@@ -1,11 +1,9 @@
 package com.example.masstouring.database;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.mapactivity.RecordObject;
 
@@ -20,8 +18,8 @@ import java.util.List;
 public class DatabaseInfoRepairer implements Runnable{
     private DatabaseHelper oDatabaseHelper;
 
-    public DatabaseInfoRepairer(Context aContext){
-        oDatabaseHelper = new DatabaseHelper(aContext, Const.DB_NAME);
+    public DatabaseInfoRepairer(DatabaseHelper aDatabaseHelper){
+        oDatabaseHelper = aDatabaseHelper;
     }
 
     @Override
