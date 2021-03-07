@@ -1,6 +1,7 @@
 package com.example.masstouring.mapactivity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Handler;
@@ -214,9 +215,10 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     private void instantiateClusterManagers(){
-        oClusterManager = new ClusterManager<Picture>(oMapFragment.getContext(), oMap);
-        oPictureClusterRenderer = new PictureClusterRenderer(oMapFragment.getContext(), oMap, oClusterManager);
-        oClusterDistributer = new ClusterDistributer(oMapFragment.getContext(), oClusterManager);
+        Context context = oMapFragment.getContext();
+        oClusterManager = new ClusterManager<Picture>(context, oMap);
+        oPictureClusterRenderer = new PictureClusterRenderer(context, oMap, oClusterManager);
+        oClusterDistributer = new ClusterDistributer(context, oClusterManager);
         oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);
         oMap.setOnMarkerClickListener(oClusterManager);

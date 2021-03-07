@@ -1,6 +1,5 @@
 package com.example.masstouring.mapactivity;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,7 +16,6 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
 import com.google.android.gms.maps.model.LatLng;
@@ -67,13 +65,13 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
     }
 
-    private void subscribe(AppCompatActivity aAppCompatActivity){
-        oMapActivitySharedViewModel.getIsRecordsViewVisible().observe(aAppCompatActivity, new Observer<Boolean>() {
+    private void subscribe(LifecycleOwner aLifeCycleOwner){
+        oMapActivitySharedViewModel.getIsRecordsViewVisible().observe(aLifeCycleOwner, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean isVisible) {
                 if(isVisible){
                     List<RecordItem> data = loadRecords();
-                    oRecordsViewAdapter = new RecordsViewAdapter(data, BoundRecordView.this, aAppCompatActivity.getApplicationContext());
+                    oRecordsViewAdapter = new RecordsViewAdapter(data, BoundRecordView.this, oRecordsView.getContext());
                     oRecordsView.setAdapter(oRecordsViewAdapter);
                     oRecordsView.setVisibility(View.VISIBLE);
                     oOnBackPressedCallbackWhenViewVisible.setEnabled(true);

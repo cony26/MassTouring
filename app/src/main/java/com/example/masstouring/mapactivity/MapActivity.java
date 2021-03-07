@@ -68,7 +68,7 @@ public class MapActivity extends AppCompatActivity{
         checkPermissions();
         setContentView(R.layout.activity_maps);
         oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
-        oDatabaseHelper = new DatabaseHelper(getApplicationContext(), Const.DB_NAME);
+        oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
         oMemoryButton = findViewById(R.id.btnMemory);
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
