@@ -3,6 +3,8 @@ package com.example.masstouring.mapactivity;
 import android.location.Location;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
@@ -97,5 +99,18 @@ public class RecordObject {
 
     public void setLastRecordedLocation(Location aLocation){
         oLastRecordedLocation = aLocation;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        final String DELIMITER = ",";
+        StringBuilder builder = new StringBuilder();
+        builder.append("RecordId:").append(oRecordId).append(DELIMITER)
+                .append("oRecordNumber:").append(oRecordNumber).append(DELIMITER)
+                .append("startDate").append(oStartDate).append(DELIMITER)
+                .append("endDate:").append(oEndDate).append(DELIMITER)
+                .append("lastLatLnt:").append(oLastRecordedLocation);
+        return super.toString();
     }
 }

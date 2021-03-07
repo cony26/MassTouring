@@ -60,6 +60,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void recordStartInfo(RecordObject aObj){
         try(SQLiteDatabase db = getWritableDatabase()){
             putRecordsStartInfo(db, aObj.getRecordId(), aObj.getStartDate());
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to recording recordStartInfo from RecordObject:" + aObj, e);
         }
     }
 
@@ -71,6 +73,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void recordEndInfo(RecordObject aObj){
         try(SQLiteDatabase db = getWritableDatabase()){
             putRecordsEndInfo(db, aObj.getRecordId(), aObj.getEndDate(), aObj.getRecordNumber());
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to recording recordEndInfo from RecordObject:" + aObj, e);
         }
     }
 
@@ -107,8 +111,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 recordingInfoCursor.moveToNext();
                 return (int)Tables.RECORDING_INFO.get(recordingInfoCursor, RecordingInfo.ID);
             }
-        }catch(SQLException e){
-            Log.e(LoggerTag.DATABASE_PROCESS, "error on getting Recording Info");
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "error on getting Recording Info", e);
             return Const.INVALID_ID;
         }
     }
@@ -122,6 +126,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try (SQLiteDatabase db = getWritableDatabase()) {
             Location loc = aObj.getLastLocation();
             putPositions(db, aObj.getRecordId(), aObj.getRecordNumber(), loc.getLatitude(), loc.getLongitude(), LocalDateTime.now().format(Const.DATE_FORMAT), loc.getSpeed());
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to recording Positions from RecordObject:" + aObj, e);
         }
     }
 
@@ -161,6 +167,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try(SQLiteDatabase db = getReadableDatabase()){
             Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
             return recordsStartInfoCursor.getCount();
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to loading RecordSize:", e);
+            return 0;
         }
     }
 
@@ -197,6 +206,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 builder.append("id:").append(id).append(", startDate:").append(startInfo).append(", endDate:").append(endInfo);
                 data.add(new RecordItem(id, startInfo, endInfo, locationMap, timeStampMap, speedkmph));
             }
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to loading Records:", e);
         }
 
         for(RecordItem item : data){
@@ -233,7 +244,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 recordObject.setLastRecordedLocation(location);
             }
         }catch(SQLException | CursorIndexOutOfBoundsException e){
-            Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring RecordObject from ID:" + aId + " " + e);
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring RecordObject from ID:" + aId, e);
         }
 
         StringBuilder builder = new StringBuilder();
@@ -252,9 +263,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
                 polylineOptions.add(new LatLng(latitude, longitude));
             }
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring PolylineOptions from ID:" + aId, e);
         }
 
-        Log.d(LoggerTag.DATABASE_PROCESS, "restore Polyline Option From Id");
+        Log.d(LoggerTag.DATABASE_PROCESS, "restore PolylineOptions From Id");
         return polylineOptions;
     }
 
@@ -268,6 +281,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 double longitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
                 latLng = new LatLng(latitude, longitude);
             }
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to getting last LatLng from ID:" + aId, e);
         }
 
         Log.d(LoggerTag.DATABASE_PROCESS, "get Last LatLng From Id");
