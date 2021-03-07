@@ -117,7 +117,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int getRecordSize(){
         try(SQLiteDatabase db = getReadableDatabase()){
             Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
-            return recordsStartInfoCursor.getCount() - 1;
+            return recordsStartInfoCursor.getCount();
         }
     }
 
