@@ -49,6 +49,11 @@ public class DatabaseInfoRepairer implements Runnable{
 
                 try(SQLiteDatabase db = oDatabaseHelper.getReadableDatabase()){
                     Cursor positionCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + id, null, null, null, null);
+                    if(positionCursor.getCount() <= 1) {
+                        oDatabaseHelper.deleteRecord(id);
+                        continue;
+                    }
+
                     positionCursor.moveToLast();
                     int order = (int)Tables.POSITIONS.get(positionCursor, Positions.ORDER);
                     String date = (String)Tables.POSITIONS.get(positionCursor, Positions.TIMESTAMP);
@@ -60,7 +65,7 @@ public class DatabaseInfoRepairer implements Runnable{
                 oDatabaseHelper.recordEndInfo(recordObject);
             }
         }catch(Exception e){
-            Log.e(LoggerTag.DATABASE_PROCESS, "failed to repair database:{}",e);
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to repair database:",e);
         }
     }
 }

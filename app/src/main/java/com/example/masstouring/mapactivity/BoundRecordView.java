@@ -41,6 +41,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         @Override
         public void handleOnBackPressed() {
             oMapActivitySharedViewModel.getIsRecordsViewVisible().setValue(false);
+            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
             Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when records view visible");
         }
     };
