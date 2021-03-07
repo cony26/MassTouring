@@ -1,5 +1,6 @@
 package com.example.masstouring.mapactivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
@@ -7,6 +8,9 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -37,18 +41,28 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
     private static final int alpha = 0x80000000;
+    private final OnBackPressedCallback oOnBackPressedCallbackWhenViewVisible = new OnBackPressedCallback(false) {
+        @Override
+        public void handleOnBackPressed() {
+            oMapActivitySharedViewModel.getIsRecordsViewVisible().setValue(false);
+            Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when records view visible");
+        }
+    };
 
-    public BoundRecordView(LifecycleOwner aLifeCycleOwner, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, Context aContext){
-        aLifeCycleOwner.getLifecycle().addObserver(this);
+    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel){
+        aAppCompatActivity.getLifecycle().addObserver(this);
         oRecordsView = aRecordView;
         oManager = new LinearLayoutManager(aRecordView.getContext());
         oMapActivitySharedViewModel = aViewModel;
-        oDatabaseHelper = new DatabaseHelper(aContext, Const.DB_NAME);
         oManager.setOrientation(LinearLayoutManager.VERTICAL);
         oRecordsView.setLayoutManager(oManager);
         oRecordsView.setVisibility(View.GONE);
 
-        subscribe(aLifeCycleOwner, aContext);
+        aAppCompatActivity.getOnBackPressedDispatcher().addCallback(oOnBackPressedCallbackWhenViewVisible);
+
+        Context context = aAppCompatActivity.getApplicationContext();
+        oDatabaseHelper = new DatabaseHelper(context, Const.DB_NAME);
+        subscribe(aAppCompatActivity, context);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -65,8 +79,10 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
                     oRecordsViewAdapter = new RecordsViewAdapter(data, BoundRecordView.this, aContext);
                     oRecordsView.setAdapter(oRecordsViewAdapter);
                     oRecordsView.setVisibility(View.VISIBLE);
+                    oOnBackPressedCallbackWhenViewVisible.setEnabled(true);
                 }else{
                     oRecordsView.setVisibility(View.GONE);
+                    oOnBackPressedCallbackWhenViewVisible.setEnabled(false);
                 }
             }
         });

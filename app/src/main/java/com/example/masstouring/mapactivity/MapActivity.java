@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -46,13 +45,6 @@ public class MapActivity extends AppCompatActivity{
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private RecordService oRecordService;
     private boolean oRecordServiceBound = false;
-    private OnBackPressedCallback oOnBackPressedCallback = new OnBackPressedCallback(false) {
-        @Override
-        public void handleOnBackPressed() {
-            oMemoryButton.performClick();
-            Log.d(LoggerTag.SYSTEM_PROCESS,"handleOnBackPressed");
-        }
-    };
 
     private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
         @Override
@@ -78,10 +70,8 @@ public class MapActivity extends AppCompatActivity{
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
         oBoundMapFragment = new BoundMapFragment(this, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, getApplicationContext());
+        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel);
         oBoundRecordsView.setMapFragment(oBoundMapFragment);
-
-        getOnBackPressedDispatcher().addCallback(oOnBackPressedCallback);
 
         setButtonClickListeners();
         subscribeLiveData();
@@ -107,8 +97,6 @@ public class MapActivity extends AppCompatActivity{
         stopServiceIfNotRecording();
         unbindServiceGracefully();
     }
-
-
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -227,10 +215,8 @@ public class MapActivity extends AppCompatActivity{
                 if(isRecordsViewVisible.getValue()) {
                     isRecordsViewVisible.setValue(false);
                     oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
-                    oOnBackPressedCallback.setEnabled(false);
                 }else{
                     isRecordsViewVisible.setValue(true);
-                    oOnBackPressedCallback.setEnabled(true);
                 }
             }
         });
