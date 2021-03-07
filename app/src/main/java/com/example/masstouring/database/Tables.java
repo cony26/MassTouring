@@ -27,6 +27,13 @@ public enum Tables implements ITable{
             setPrimaryKeys(new IColumn[]{RecordsEndInfo.ID});
             setColumns(new IColumn[]{RecordsEndInfo.ID, RecordsEndInfo.END_TIME, RecordsEndInfo.ORDER_SIZE});
         }
+    },
+    RECORDING_INFO("recording_info"){
+        @Override
+        public void registerColumns() {
+            setPrimaryKeys(new IColumn[]{RecordingInfo.ID});
+            setColumns(new IColumn[]{RecordingInfo.ID});
+        }
     };
 
     private String oName;
@@ -71,7 +78,7 @@ public enum Tables implements ITable{
         StringBuilder builder = new StringBuilder();
         builder.append("INSERT INTO ").append(oName).append(" (");
         for(int i = 0; i < oColumns.length; i++){
-            builder.append(oColumns[i].getName());
+            builder.append(oColumns[i].getQuatedName());
             if(i < oColumns.length - 1){
                 builder.append(",");
             }else{
@@ -97,7 +104,7 @@ public enum Tables implements ITable{
         StringBuilder builder = new StringBuilder();
         builder.append("[");
         for(int i = 0; i < oColumns.length; i++){
-            builder.append(oColumns[i].getName())
+            builder.append(oColumns[i].getQuatedName())
                     .append(":")
                     .append(aObjects[i]);
             if(i < oColumns.length - 1){
@@ -114,11 +121,11 @@ public enum Tables implements ITable{
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE ").append(oName).append(" (");
         for(IColumn column : oColumns){
-            builder.append(column.getWithType()).append(", ");
+            builder.append(column.getQuatedNameWithType()).append(", ");
         }
         builder.append("PRIMARY KEY (");
         for(int i = 0; i < oPrimaryKeys.length; i++){
-            builder.append(oPrimaryKeys[i].getName());
+            builder.append(oPrimaryKeys[i].getQuatedName());
             if(i < oPrimaryKeys.length - 1){
                 builder.append(",");
             }else{
@@ -136,7 +143,7 @@ public enum Tables implements ITable{
 
         builder.append(oName).append("\n");
         for(int i = 0; i < oColumns.length; i++) {
-            builder.append(oColumns[i].getName());
+            builder.append(oColumns[i].getQuatedName());
             if(i < oColumns.length - 1){
                 builder.append("|");
             }else{

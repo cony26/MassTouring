@@ -73,6 +73,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public boolean setRecordingInfo(RecordObject aObj){
+        try(SQLiteDatabase db = getWritableDatabase()){
+            int id = aObj.getRecordId();
+            db.execSQL(Tables.RECORDING_INFO.getInsertSQL(id));
+            Tables.RECORDING_INFO.insertLog(id);
+            Log.d(LoggerTag.DATABASE_PROCESS, "record recording info");
+            return true;
+        }catch(SQLException e){
+            Log.d(LoggerTag.DATABASE_PROCESS, "failed to record recording info");
+            return false;
+        }
+    }
+
+    public boolean resetRecordingInfo(){
+        try (SQLiteDatabase db = getWritableDatabase()) {
+            db.delete(Tables.RECORDING_INFO.getName(), "1" /* delete all*/, null);
+            Log.d(LoggerTag.DATABASE_PROCESS, "reset recording info");
+            return true;
+        }catch(SQLException e){
+            Log.d(LoggerTag.DATABASE_PROCESS, "failed to reset recording info");
+            return false;
+        }
+    }
+
     private void putPositions(SQLiteDatabase sqLiteDatabase, int aId, int aOrder, double aLat, double aLon, String aDate, double aSpeedMps){
         sqLiteDatabase.execSQL(Tables.POSITIONS.getInsertSQL(aId, aOrder, aLat, aLon, aDate, aSpeedMps));
         Tables.POSITIONS.insertLog(aId, aOrder, aLat, aLon, aDate, aSpeedMps);
@@ -85,14 +109,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void deleteRecord(int oId){
+    public void deleteRecord(int aId){
         try (SQLiteDatabase db = getWritableDatabase()) {
-            db.delete(Tables.RECORDS_STARTINFO.getName(), RecordsStartInfo.ID.getName() + "=" + oId, null);
-            db.delete(Tables.POSITIONS.getName(), Positions.ID.getName() + "=" + oId, null);
-            db.delete(Tables.RECORDS_ENDINFO.getName(), RecordsEndInfo.ID.getName() + "=" + oId, null);
-            Log.d(LoggerTag.DATABASE_PROCESS, "deleted successfully, ID:" + oId);
+            db.delete(Tables.RECORDS_STARTINFO.getName(), RecordsStartInfo.ID.getQuatedName() + "=" + aId, null);
+            db.delete(Tables.POSITIONS.getName(), Positions.ID.getQuatedName() + "=" + aId, null);
+            db.delete(Tables.RECORDS_ENDINFO.getName(), RecordsEndInfo.ID.getQuatedName() + "=" + aId, null);
+            Log.d(LoggerTag.DATABASE_PROCESS, "deleted successfully, ID:" + aId);
         }catch(SQLException e){
-            Log.d(LoggerTag.DATABASE_PROCESS, "failed to delete ID:" + oId);
+            Log.d(LoggerTag.DATABASE_PROCESS, "failed to delete ID:" + aId);
         }
     }
 
@@ -100,7 +124,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Set<Integer> ids = new HashSet<>();
         int uniqueId = 0;
         try (SQLiteDatabase db = getReadableDatabase()) {
-            Cursor cs = db.query(Tables.RECORDS_STARTINFO.getName(), new String[]{RecordsStartInfo.ID.getName()}, null, null, null, null, null);
+            Cursor cs = db.query(Tables.RECORDS_STARTINFO.getName(), new String[]{RecordsStartInfo.ID.getQuatedName()}, null, null, null, null, null);
             while(cs.moveToNext()) {
                 ids.add(cs.getInt(0));
             }
@@ -130,7 +154,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
 
                 String endInfo = Const.NO_INFO;
-                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getName() + "=" + id, null, null, null, null);
+                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + id, null, null, null, null);
                 recordsEndInfoCusor.moveToNext();
                 if(!recordsEndInfoCusor.isAfterLast()){
                     endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
@@ -139,7 +163,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Map<Integer, LatLng> locationMap = new HashMap<>();
                 Map<Integer, String> timeStampMap = new HashMap<>();
                 Map<Integer, Double> speedkmph = new HashMap<>();
-                Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + id, null, null, null, null);
+                Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + id, null, null, null, null);
                 while(positionsCursor.moveToNext()){
                     double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
                     double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
@@ -167,12 +191,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public RecordObject restoreRecordObjectFromId(int aId){
         RecordObject recordObject = RecordObject.createRecordObjectForRestore(aId);
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getName() + "=" + aId, null, null, null, null);
+            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
 
             String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
             recordObject.setStartDate(startInfo);
 
-            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + aId, null, null, null, null);
+            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
             while(positionsCursor.moveToNext()){
                 if(positionsCursor.isLast()){
                     int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
@@ -198,7 +222,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public PolylineOptions restorePolylineOptionsFrom(int aId){
         PolylineOptions polylineOptions = new PolylineOptions();
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + aId, null, null, null, null);
+            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
             while(positionsCursor.moveToNext()){
                 double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
                 double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
@@ -213,7 +237,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Optional<LatLng> getLastLatLngFrom(int aId){
         LatLng latLng = null;
         try(SQLiteDatabase db = getReadableDatabase()) {
-            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + aId, null, null, null, null);
+            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
             positionsCursor.moveToLast();
             if(!positionsCursor.isAfterLast()) {
                 double latitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);

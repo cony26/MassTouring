@@ -106,6 +106,9 @@ public class RecordService extends LifecycleService {
         Log.i(LoggerTag.SYSTEM_PROCESS, "onStartCommand RecordService");
         super.onStartCommand(intent, flags, startId);
 
+        if(intent == null){
+            Log.w(LoggerTag.SYSTEM_PROCESS, "START_STICKY:start recovery process if recording");
+        }
         if(intent != null){
             Optional.ofNullable(intent.getAction()).ifPresent(e -> {
                 if(e.equals(CANCEL_ACTION)){
@@ -134,6 +137,7 @@ public class RecordService extends LifecycleService {
             oRecordObject = new RecordObject(oDatabaseHelper);
             oDatabaseHelper.recordStartInfo(oRecordObject);
             oRecordState = RecordState.RECORDING;
+            oDatabaseHelper.setRecordingInfo(oRecordObject);
         }
         Log.d(LoggerTag.RECORD_SERVICE_PROCESS, "RecordService start Recording");
     }
@@ -145,6 +149,7 @@ public class RecordService extends LifecycleService {
             oDatabaseHelper.recordEndInfo(oRecordObject);
             oRecordObject = null;
             oRecordState = RecordState.STOP;
+            oDatabaseHelper.resetRecordingInfo();
         }
         Log.d(LoggerTag.RECORD_SERVICE_PROCESS, "RecordService stop Recording");
     }

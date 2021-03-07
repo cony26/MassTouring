@@ -18,17 +18,8 @@ public enum Positions implements IColumn{
     }
 
     @Override
-    public String getWithType(){
-        StringBuilder builder = new StringBuilder();
-        builder.append("`").append(oName).append("` ").append(oType);
-        return builder.toString();
-    }
-
-    @Override
-    public String getName(){
-        StringBuilder builder = new StringBuilder();
-        builder.append("`").append(oName).append("`");
-        return builder.toString();
+    public String getName() {
+        return oName;
     }
 
     @Override

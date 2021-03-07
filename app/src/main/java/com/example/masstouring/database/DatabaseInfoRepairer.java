@@ -35,7 +35,7 @@ public class DatabaseInfoRepairer implements Runnable{
                         break;
                     }
                     int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
-                    Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getName() + "=" + id, null, null, null, null);
+                    Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + id, null, null, null, null);
                     if(recordsEndInfoCusor.getCount() == 0){
                         needRepairIdList.add(id);
                     }
@@ -48,7 +48,7 @@ public class DatabaseInfoRepairer implements Runnable{
                 RecordObject recordObject = RecordObject.createRecordObjectForRestore(id);
 
                 try(SQLiteDatabase db = oDatabaseHelper.getReadableDatabase()){
-                    Cursor positionCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getName() + "=" + id, null, null, null, null);
+                    Cursor positionCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + id, null, null, null, null);
                     if(positionCursor.getCount() <= 1) {
                         oDatabaseHelper.deleteRecord(id);
                         continue;

@@ -1,12 +1,22 @@
 package com.example.masstouring.database;
 
 public interface IColumn {
-    public abstract String getWithType();
+    default String getQuatedNameWithType(){
+        StringBuilder builder = new StringBuilder();
+        builder.append("`").append(getName()).append("` ").append(getType());
+        return builder.toString();
+    };
 
-    public abstract String getName();
+    default String getQuatedName(){
+        StringBuilder builder = new StringBuilder();
+        builder.append("`").append(getName()).append("`");
+        return builder.toString();
+    };
 
-    public abstract String getType();
+    public String getName();
 
-    public abstract int getIndex();
+    public String getType();
+
+    public int getIndex();
 
 }
