@@ -2,6 +2,7 @@ package com.example.masstouring.database;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -81,7 +82,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d(LoggerTag.DATABASE_PROCESS, "record recording info");
             return true;
         }catch(SQLException e){
-            Log.d(LoggerTag.DATABASE_PROCESS, "failed to record recording info");
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to record recording info");
             return false;
         }
     }
@@ -92,8 +93,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d(LoggerTag.DATABASE_PROCESS, "reset recording info");
             return true;
         }catch(SQLException e){
-            Log.d(LoggerTag.DATABASE_PROCESS, "failed to reset recording info");
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to reset recording info");
             return false;
+        }
+    }
+
+    public int getRecordingInfo(){
+        try (SQLiteDatabase db = getReadableDatabase()) {
+            Cursor recordingInfoCursor = db.query(Tables.RECORDING_INFO.getName(), null, null, null, null, null, null);
+            if(recordingInfoCursor.getCount() == 0){
+                return Const.INVALID_ID;
+            }else{
+                recordingInfoCursor.moveToNext();
+                return (int)Tables.RECORDING_INFO.get(recordingInfoCursor, RecordingInfo.ID);
+            }
+        }catch(SQLException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "error on getting Recording Info");
+            return Const.INVALID_ID;
         }
     }
 
@@ -116,10 +132,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.delete(Tables.RECORDS_ENDINFO.getName(), RecordsEndInfo.ID.getQuatedName() + "=" + aId, null);
             Log.d(LoggerTag.DATABASE_PROCESS, "deleted successfully, ID:" + aId);
         }catch(SQLException e){
-            Log.d(LoggerTag.DATABASE_PROCESS, "failed to delete ID:" + aId);
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to delete ID:" + aId);
         }
     }
 
+    /**
+     * @return integer that is grater or equal to 0 that is maximum value of existing IDs.
+     */
     public int getUniqueID() {
         Set<Integer> ids = new HashSet<>();
         int uniqueId = 0;
@@ -192,24 +211,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         RecordObject recordObject = RecordObject.createRecordObjectForRestore(aId);
         try(SQLiteDatabase db = getReadableDatabase()){
             Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
-
+            recordsStartInfoCursor.moveToNext();
             String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
             recordObject.setStartDate(startInfo);
 
             Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            while(positionsCursor.moveToNext()){
-                if(positionsCursor.isLast()){
-                    int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
-                    recordObject.setRecordNumber(order);
+            if(positionsCursor.getCount() == 0){
+                recordObject.setRecordNumber(-1);
+                recordObject.setLastRecordedLocation(null);
+            }else{
+                positionsCursor.moveToLast();
 
-                    double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                    double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-                    Location location = new Location("");
-                    location.setLatitude(latitude);
-                    location.setLongitude(longitude);
-                    recordObject.setLastRecordedLocation(location);
-                }
+                int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
+                recordObject.setRecordNumber(order);
+
+                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                Location location = new Location("");
+                location.setLatitude(latitude);
+                location.setLongitude(longitude);
+                recordObject.setLastRecordedLocation(location);
             }
+        }catch(SQLException | CursorIndexOutOfBoundsException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring RecordObject from ID:" + aId + " " + e);
         }
 
         StringBuilder builder = new StringBuilder();

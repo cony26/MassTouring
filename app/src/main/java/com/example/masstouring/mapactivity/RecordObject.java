@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 /**
  * The entity of Recording Object that is used only during recording.
+ * {@link #oRecordNumber} begins from 0, so first recorded {@link com.example.masstouring.database.Positions#ORDER} is 0.
  */
 public class RecordObject {
     private final int oRecordId;

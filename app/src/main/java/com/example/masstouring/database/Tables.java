@@ -102,6 +102,7 @@ public enum Tables implements ITable{
     @Override
     public void insertLog(Object... aObjects) {
         StringBuilder builder = new StringBuilder();
+        builder.append(oName);
         builder.append("[");
         for(int i = 0; i < oColumns.length; i++){
             builder.append(oColumns[i].getQuatedName())

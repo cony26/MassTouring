@@ -108,6 +108,11 @@ public class RecordService extends LifecycleService {
 
         if(intent == null){
             Log.w(LoggerTag.SYSTEM_PROCESS, "START_STICKY:start recovery process if recording");
+            int id = oDatabaseHelper.getRecordingInfo();
+            if(id != Const.INVALID_ID){
+                oRecordState = RecordState.RECORDING;
+                oRecordObject = oDatabaseHelper.restoreRecordObjectFromId(id);
+            }
         }
         if(intent != null){
             Optional.ofNullable(intent.getAction()).ifPresent(e -> {

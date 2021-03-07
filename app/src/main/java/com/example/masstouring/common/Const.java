@@ -25,6 +25,7 @@ public class Const {
     //DB
     public static final String DB_NAME = "MassTouring.sqlite";
     public static final int DB_VERSION = 2;
+    public static final int INVALID_ID = -1;
 
     //Notification
     public static final String RECORD_SERVICE_NOTIFICATION_CHANNEL_ID = "RecordService";
