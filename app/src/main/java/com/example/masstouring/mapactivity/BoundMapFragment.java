@@ -227,9 +227,12 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Picture>() {
             @Override
             public boolean onClusterClick(Cluster<Picture> cluster) {
-                oClusterDistributer.cleanUp();
-                oMapFragment.getActivity().addContentView(oClusterDistributer.getClusterDistributedView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                oClusterDistributer.distribute(cluster);
+                if(oClusterDistributer.isDistributedRendered()){
+                    oClusterDistributer.cleanUp();
+                }else{
+                    oMapFragment.getActivity().addContentView(oClusterDistributer.getClusterDistributedView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                    oClusterDistributer.distribute(cluster);
+                }
                 return false;
             }
         });

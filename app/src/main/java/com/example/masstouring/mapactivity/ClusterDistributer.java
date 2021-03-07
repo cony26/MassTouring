@@ -15,6 +15,7 @@ public class ClusterDistributer{
     private final Context oContext;
     private final ClusterManager<Picture> oClusterManager;
     private final ClusterDistributedView oClusterDistributedView;
+    private boolean oDistributedRendered = false;
 
     ClusterDistributer(Context aContext, ClusterManager<Picture> aClusterManager){
         oClusterDistributedView = new ClusterDistributedView(aContext);
@@ -35,6 +36,8 @@ public class ClusterDistributer{
 
         //draw each items on the calculated position
         oClusterDistributedView.drawItems(aBitmap);
+
+        oDistributedRendered = true;
     }
 
     public void cleanUp(){
@@ -42,6 +45,11 @@ public class ClusterDistributer{
         if(parent != null){
             parent.removeView(oClusterDistributedView);
         }
+        oDistributedRendered = false;
+    }
+
+    public boolean isDistributedRendered(){
+        return oDistributedRendered;
     }
 
     View getClusterDistributedView(){
