@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -52,6 +53,8 @@ public class ClusterDistributedView extends SurfaceView {
 
             }
         });
+        getHolder().setFormat(PixelFormat.TRANSPARENT);
+        setZOrderOnTop(true);
     }
 
     public void drawItems(List<Bitmap> aBitmapList){
@@ -61,12 +64,12 @@ public class ClusterDistributedView extends SurfaceView {
                 SurfaceHolder holder = getHolder();
                 Canvas canvas = holder.lockCanvas();
                 while(canvas == null){
+                    Log.i(LoggerTag.CLUSTER, "can't lock canvas. wait getting lock...");
                     try{
-                        Thread.sleep(500);
+                        Thread.sleep(50);
                     }catch(InterruptedException e){
-
+                        Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
                     }
-                    Log.e(LoggerTag.CLUSTER, "can't lock canvas");
                     canvas = holder.lockCanvas();
                 }
                 Matrix matrix = new Matrix();
