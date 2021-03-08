@@ -15,12 +15,13 @@ public class ClusterDistributer{
     private final Context oContext;
     private final ClusterManager<Picture> oClusterManager;
     private final ClusterDistributedView oClusterDistributedView;
-    private boolean oDistributedRendered = false;
+    private final MapActivtySharedViewModel oMapActivitySharedViewModel;
 
-    ClusterDistributer(Context aContext, ClusterManager<Picture> aClusterManager){
+    ClusterDistributer(Context aContext, ClusterManager<Picture> aClusterManager, MapActivtySharedViewModel aViewModel){
         oClusterDistributedView = new ClusterDistributedView(aContext);
         oContext = aContext;
         oClusterManager = aClusterManager;
+        oMapActivitySharedViewModel = aViewModel;
     }
 
     public void distribute(Cluster<Picture> aCluster){
@@ -37,7 +38,7 @@ public class ClusterDistributer{
         //draw each items on the calculated position
         oClusterDistributedView.drawItems(aBitmap);
 
-        oDistributedRendered = true;
+        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
     }
 
     public void cleanUp(){
@@ -45,11 +46,7 @@ public class ClusterDistributer{
         if(parent != null){
             parent.removeView(oClusterDistributedView);
         }
-        oDistributedRendered = false;
-    }
-
-    public boolean isDistributedRendered(){
-        return oDistributedRendered;
+        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
     }
 
     View getClusterDistributedView(){

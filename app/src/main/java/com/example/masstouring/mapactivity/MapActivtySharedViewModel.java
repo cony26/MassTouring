@@ -12,6 +12,7 @@ public class MapActivtySharedViewModel extends ViewModel {
     private MutableLiveData<RecordEndEvent> oRecordEndEvent = new MutableLiveData<>();
     private MutableLiveData<Boolean> oIsRecordsViewVisible = new MutableLiveData<>(false);
     private MutableLiveData<Integer> oToolbarVisiblity = new MutableLiveData<>(View.GONE);
+    private MutableLiveData<Boolean> oIsClusterDistributed = new MutableLiveData<>(false);
 
     public MutableLiveData<Boolean> getIsTracePosition() {
         return oIsTracePosition;
@@ -32,4 +33,5 @@ public class MapActivtySharedViewModel extends ViewModel {
     public MutableLiveData<RecordEndEvent> getRecordEndEvent(){
         return oRecordEndEvent;
     }
+    public MutableLiveData<Boolean> getIsClusterDistributed(){return oIsClusterDistributed;}
 }
