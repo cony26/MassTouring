@@ -48,6 +48,7 @@ public class MapActivity extends AppCompatActivity{
     private RecordService oRecordService;
     private boolean oRecordServiceBound = false;
     private DatabaseHelper oDatabaseHelper;
+    private BackPressedCallbackRegister oBackPressedCallbackRegister;
 
     private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
         @Override
@@ -73,8 +74,9 @@ public class MapActivity extends AppCompatActivity{
         oMemoryButton = findViewById(R.id.btnMemory);
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
-        oBoundMapFragment = new BoundMapFragment(this, oMapActivitySharedViewModel, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map), oDatabaseHelper);
-        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, oDatabaseHelper);
+        oBackPressedCallbackRegister = new BackPressedCallbackRegister(this);
+        oBoundMapFragment = new BoundMapFragment(this, oMapActivitySharedViewModel, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map), oDatabaseHelper, oBackPressedCallbackRegister);
+        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, oDatabaseHelper, oBackPressedCallbackRegister);
         oBoundRecordsView.setMapFragment(oBoundMapFragment);
 
         setButtonClickListeners();

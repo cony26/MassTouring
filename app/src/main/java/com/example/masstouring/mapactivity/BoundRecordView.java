@@ -37,7 +37,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
     private static final int alpha = 0x80000000;
-    private final OnBackPressedCallback oOnBackPressedCallbackWhenViewVisible = new OnBackPressedCallback(false) {
+    private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenViewVisible = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.RECORD_VIEW) {
         @Override
         public void handleOnBackPressed() {
             oMapActivitySharedViewModel.getIsRecordsViewVisible().setValue(false);
@@ -45,7 +45,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     };
 
-    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper){
+    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegister aBackPressedCallbackRegister){
         aAppCompatActivity.getLifecycle().addObserver(this);
         oRecordsView = aRecordView;
         oManager = new LinearLayoutManager(aRecordView.getContext());
@@ -54,10 +54,9 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         oRecordsView.setLayoutManager(oManager);
         oRecordsView.setVisibility(View.GONE);
 
-        aAppCompatActivity.getOnBackPressedDispatcher().addCallback(oOnBackPressedCallbackWhenViewVisible);
-
         oDatabaseHelper = aDatabaseHelper;
         subscribe(aAppCompatActivity);
+        aBackPressedCallbackRegister.register(oOnBackPressedCallbackWhenViewVisible, PrioritizedOnBackPressedCallback.RECORD_VIEW);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)

@@ -50,7 +50,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private Map<Integer, List<Polyline>> oRenderedPolylineMap = new HashMap<>();
     private final DatabaseHelper oDatabaseHelper;
     private List<Integer> oRenderedIdList = new ArrayList<>();
-    private final OnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new OnBackPressedCallback(false) {
+    private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED) {
         @Override
         public void handleOnBackPressed() {
             if(oMapActivityViewModel.getIsClusterDistributed().getValue()){
@@ -60,15 +60,15 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         }
     };
 
-    public BoundMapFragment(AppCompatActivity aAppCompatActivity, MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment, DatabaseHelper aDatabaseHelper){
+    public BoundMapFragment(AppCompatActivity aAppCompatActivity, MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegister aBackPressedCallBackRegister){
         aMapFragment.getMapAsync(this);
         oMapFragment = aMapFragment;
         oMapFragment.getLifecycle().addObserver(this);
         new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
-        aAppCompatActivity.getOnBackPressedDispatcher().addCallback(oOnBackPressedCallbackWhenClusterDistributed);
         oMapActivityViewModel = aMapActivityViewModel;
         oDatabaseHelper = aDatabaseHelper;
         subscribeLiveData();
+        aBackPressedCallBackRegister.register(oOnBackPressedCallbackWhenClusterDistributed, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED);
     }
 
     private void subscribeLiveData(){
