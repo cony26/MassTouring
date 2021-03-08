@@ -116,6 +116,9 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
     @Override
     public void onRecordItemClick(RecordItem aRecordItem) {
+        if(aRecordItem == RecordItem.EMPTY_RECORD){
+            return ;
+        }
         Map locationMap = aRecordItem.getLocationMap();
         if(locationMap.size() <= 1)
             return;
