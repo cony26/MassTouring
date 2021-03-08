@@ -96,7 +96,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
                         .forEach(recordItem -> recordItem.setRendered(true));
                 while(oRecordsViewAdapter == null){
                     try{
-                        Thread.sleep(500);
+                        Thread.sleep(100);
                     }catch(InterruptedException e){
                         Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "interrupted");
                     }
