@@ -68,7 +68,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMapActivityViewModel = aMapActivityViewModel;
         oDatabaseHelper = aDatabaseHelper;
         subscribeLiveData();
-        aBackPressedCallBackRegister.register(oOnBackPressedCallbackWhenClusterDistributed, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED);
+        aBackPressedCallBackRegister.register(oOnBackPressedCallbackWhenClusterDistributed);
     }
 
     private void subscribeLiveData(){

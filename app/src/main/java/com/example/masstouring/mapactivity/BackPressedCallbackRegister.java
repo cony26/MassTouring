@@ -12,7 +12,7 @@ public class BackPressedCallbackRegister {
         oAppCompatActivity = aAppCompatActivity;
     }
 
-    public void register(PrioritizedOnBackPressedCallback aOnBackPressedCallback, int aPriority){
+    public void register(PrioritizedOnBackPressedCallback aOnBackPressedCallback){
         oOnBackPressedCallbackList.add(aOnBackPressedCallback);
         update();
     }
