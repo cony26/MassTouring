@@ -79,8 +79,6 @@ public class DatabaseInfoRepairer implements Runnable{
             }
         }
 
-        Log.i(LoggerTag.DATABASE_PROCESS, "size of needRepairEndInfoIdList:" + needRepairEndInfoIdList.size());
-
         for(int id : needRepairEndInfoIdList){
             RecordObject recordObject = RecordObject.createRecordObjectForRestore(id);
 
@@ -95,6 +93,7 @@ public class DatabaseInfoRepairer implements Runnable{
             }
 
             oDatabaseHelper.recordEndInfo(recordObject);
+            Log.i(LoggerTag.DATABASE_PROCESS, "successfully repaired ID:" + id);
         }
     }
 }
