@@ -97,7 +97,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.d(LoggerTag.DATABASE_PROCESS, "reset recording info");
             return true;
         }catch(SQLException e){
-            Log.e(LoggerTag.DATABASE_PROCESS, "failed to reset recording info");
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to reset recording info", e);
             return false;
         }
     }
@@ -131,14 +131,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void deleteRecord(int aId){
+    public void deleteRecord(int... aIds){
         try (SQLiteDatabase db = getWritableDatabase()) {
-            db.delete(Tables.RECORDS_STARTINFO.getName(), RecordsStartInfo.ID.getQuatedName() + "=" + aId, null);
-            db.delete(Tables.POSITIONS.getName(), Positions.ID.getQuatedName() + "=" + aId, null);
-            db.delete(Tables.RECORDS_ENDINFO.getName(), RecordsEndInfo.ID.getQuatedName() + "=" + aId, null);
-            Log.d(LoggerTag.DATABASE_PROCESS, "deleted successfully, ID:" + aId);
+            for(int id : aIds){
+                db.delete(Tables.RECORDS_STARTINFO.getName(), RecordsStartInfo.ID.getQuatedName() + "=" + id, null);
+                db.delete(Tables.POSITIONS.getName(), Positions.ID.getQuatedName() + "=" + id, null);
+                db.delete(Tables.RECORDS_ENDINFO.getName(), RecordsEndInfo.ID.getQuatedName() + "=" + id, null);
+                Log.d(LoggerTag.DATABASE_PROCESS, "deleted successfully, ID:" + id);
+            }
         }catch(SQLException e){
-            Log.e(LoggerTag.DATABASE_PROCESS, "failed to delete ID:" + aId);
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to delete ID:", e);
         }
     }
 

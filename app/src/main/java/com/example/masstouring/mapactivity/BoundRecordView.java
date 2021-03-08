@@ -222,9 +222,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
     public void deleteSelectedItems(){
         List<Integer> list = oRecordsViewAdapter.getSelectedItemIdList();
-        for(int id : list){
-            oDatabaseHelper.deleteRecord(id);
-        }
+        oDatabaseHelper.deleteRecord(list.stream().mapToInt(id -> id).toArray());
         oRecordsViewAdapter.setData(oDatabaseHelper.getRecords());
         oRecordsViewAdapter.notifyDataSetChanged();
     }
