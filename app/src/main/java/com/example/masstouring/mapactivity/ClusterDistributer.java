@@ -29,14 +29,14 @@ public class ClusterDistributer{
 
         //get item bitmap
 
-        List<Bitmap> aBitmap = aCluster.getItems().stream()
+        List<Bitmap> bitmapList = aCluster.getItems().stream()
                 .map(picture -> picture.getBitmapSyncly(oContext, 200,200))
                 .collect(Collectors.toList());
 
         //calculate the layout of each item for distribution
 
         //draw each items on the calculated position
-        oClusterDistributedView.drawItems(aBitmap);
+        oClusterDistributedView.drawItems(bitmapList);
 
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
     }
