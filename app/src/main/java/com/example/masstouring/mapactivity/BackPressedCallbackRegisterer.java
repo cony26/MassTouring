@@ -30,6 +30,7 @@ public class BackPressedCallbackRegisterer {
 
         OnBackPressedDispatcher dispatcher = oAppCompatActivity.getOnBackPressedDispatcher();
 
+        //For performance, the removed/added callbacks are limited as possible.
         if(sortedNumber == listSize){
             dispatcher.addCallback(oOnBackPressedCallbackList.get(listSize - 1));
         }else{
