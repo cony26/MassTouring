@@ -9,7 +9,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.ViewGroup;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.Lifecycle;
@@ -60,7 +59,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         }
     };
 
-    public BoundMapFragment(AppCompatActivity aAppCompatActivity, MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegister aBackPressedCallBackRegister){
+    public BoundMapFragment(AppCompatActivity aAppCompatActivity, MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegisterer aBackPressedCallBackRegisterer){
         aMapFragment.getMapAsync(this);
         oMapFragment = aMapFragment;
         oMapFragment.getLifecycle().addObserver(this);
@@ -68,7 +67,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMapActivityViewModel = aMapActivityViewModel;
         oDatabaseHelper = aDatabaseHelper;
         subscribeLiveData();
-        aBackPressedCallBackRegister.register(oOnBackPressedCallbackWhenClusterDistributed);
+        aBackPressedCallBackRegisterer.register(oOnBackPressedCallbackWhenClusterDistributed);
     }
 
     private void subscribeLiveData(){

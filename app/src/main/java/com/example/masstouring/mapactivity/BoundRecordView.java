@@ -6,7 +6,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
@@ -45,7 +44,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     };
 
-    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegister aBackPressedCallbackRegister){
+    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegisterer aBackPressedCallbackRegisterer){
         aAppCompatActivity.getLifecycle().addObserver(this);
         oRecordsView = aRecordView;
         oManager = new LinearLayoutManager(aRecordView.getContext());
@@ -56,7 +55,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
         oDatabaseHelper = aDatabaseHelper;
         subscribe(aAppCompatActivity);
-        aBackPressedCallbackRegister.register(oOnBackPressedCallbackWhenViewVisible);
+        aBackPressedCallbackRegisterer.register(oOnBackPressedCallbackWhenViewVisible);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
