@@ -46,6 +46,7 @@ public class ClusterDistributer{
         if(parent != null){
             parent.removeView(oClusterDistributedView);
         }
+        oClusterDistributedView.setPaintable(false);
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
     }
 
