@@ -49,14 +49,14 @@ public class ClusterDistributer{
         int size = bitmapList.size();
         int halfSize = size / 2;
         for(int i = 0; i < halfSize; i++){
-           int r = 200;
+           int r = 300;
            double theta = Math.PI / 3 * i;
            Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
            distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, true, bitmapList.get(i), rect));
         }
 
         for(int i = halfSize; i < size; i++){
-            int r = 400;
+            int r = 500;
             double theta = Math.PI / 6 * (i - halfSize);
             Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
             distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, false, bitmapList.get(i), rect));
