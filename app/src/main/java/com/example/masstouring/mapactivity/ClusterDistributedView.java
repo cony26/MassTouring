@@ -8,6 +8,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -63,13 +65,11 @@ public class ClusterDistributedView extends SurfaceView {
         oPaintable = aPaintable;
     }
 
-    public void drawItems(List<Bitmap> aBitmapList){
+    public void drawItems(List<Bitmap> aBitmapList, List<Rect> aPositionRectList){
         oPaintable = true;
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
-                int x = 0;
-                int y = 0;
                 SurfaceHolder holder = getHolder();
                 while(oPaintable){
                     Canvas canvas = holder.lockCanvas();
@@ -82,22 +82,23 @@ public class ClusterDistributedView extends SurfaceView {
                         }
                         canvas = holder.lockCanvas();
                     }
+
                     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
-                    Matrix matrix = new Matrix();
-                    for(Bitmap bitmap : aBitmapList){
-                        canvas.drawBitmap(bitmap, matrix, p);
-                        canvas.translate(x + 100,y + 100);
+//                    Matrix matrix = new Matrix();
+//                    matrix.mapRect(new RectF(200,200,400,400));
+                    int size = aBitmapList.size();
+                    for(int i = 0; i < size; i++){
+                        canvas.drawBitmap(aBitmapList.get(i), null, aPositionRectList.get(i), p);
                     }
                     holder.unlockCanvasAndPost(canvas);
 
+                    //fps
                     try{
                         Thread.sleep(30);
                     }catch(InterruptedException e){
                         Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
                     }
-                    x += 50;
-                    y += 50;
                 }
             }
         });
