@@ -1,15 +1,12 @@
 package com.example.masstouring.mapactivity;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -17,12 +14,14 @@ import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
+import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 
 import java.util.List;
 
 public class ClusterDistributedView extends SurfaceView {
-    Paint p;
+    private Paint p;
+    private List<DistributedItem> oDistributedItems;
     private boolean oPaintable = false;
 
     public ClusterDistributedView(Context context) {
@@ -42,7 +41,6 @@ public class ClusterDistributedView extends SurfaceView {
 
     private void init(){
         p = new Paint();
-        p.setColor(Color.CYAN);
         getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
@@ -65,43 +63,51 @@ public class ClusterDistributedView extends SurfaceView {
         oPaintable = aPaintable;
     }
 
-    public void drawItems(List<Bitmap> aBitmapList, List<Rect> aPositionRectList){
+    public void drawItems(List<DistributedItem> aDistributedItems){
         oPaintable = true;
+        oDistributedItems = aDistributedItems;
+
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 SurfaceHolder holder = getHolder();
                 while(oPaintable){
-                    Canvas canvas = holder.lockCanvas();
-                    while(canvas == null){
-                        Log.i(LoggerTag.CLUSTER, "can't lock canvas. wait getting lock...");
-                        try{
-                            Thread.sleep(10);
-                        }catch(InterruptedException e){
-                            Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
-                        }
-                        canvas = holder.lockCanvas();
-                    }
-
+                    Canvas canvas = lockAndGetCanvas(holder);
                     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
-//                    Matrix matrix = new Matrix();
-//                    matrix.mapRect(new RectF(200,200,400,400));
-                    int size = aBitmapList.size();
-                    for(int i = 0; i < size; i++){
-                        canvas.drawBitmap(aBitmapList.get(i), null, aPositionRectList.get(i), p);
+                    for(DistributedItem item : oDistributedItems){
+                        item.updateRect(Const.MOVING_RATE_PIXEL_PER_FPS);
+                        canvas.drawBitmap(item.getBitmap(), null, item.getRect(), p);
                     }
-                    holder.unlockCanvasAndPost(canvas);
 
-                    //fps
-                    try{
-                        Thread.sleep(30);
-                    }catch(InterruptedException e){
-                        Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
-                    }
+                    holder.unlockCanvasAndPost(canvas);
+                    waitForFpsTime();
                 }
             }
         });
 
+    }
+
+    private Canvas lockAndGetCanvas(SurfaceHolder aSurfaceHolder){
+        Canvas canvas = aSurfaceHolder.lockCanvas();
+        while(canvas == null){
+            Log.i(LoggerTag.CLUSTER, "can't lock canvas. wait getting lock...");
+            try{
+                Thread.sleep(Const.FPS_MILLIS);
+            }catch(InterruptedException e){
+                Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
+            }
+            canvas = aSurfaceHolder.lockCanvas();
+        }
+
+        return canvas;
+    }
+
+    private void waitForFpsTime(){
+        try{
+            Thread.sleep(Const.FPS_MILLIS);
+        }catch(InterruptedException e){
+            Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
+        }
     }
 }

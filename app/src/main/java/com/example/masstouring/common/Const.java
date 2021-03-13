@@ -30,17 +30,7 @@ public class Const {
     //Notification
     public static final String RECORD_SERVICE_NOTIFICATION_CHANNEL_ID = "RecordService";
 
-    //RecordService Transfer
-    public static final String LOCATION_UPDATE_ACTION_ID = "RecordService Action";
-    public static final String LOCATION_KEY = "location";
-    public static final String UPDATE_KEY = "need update";
-
-    public static final String REPLY_CURRENT_STATE_ACTION_ID = "Reply Current State";
-
-    //MapActivity Transfer
-    public static final String CURRENT_STATE = "CURRENT_STATE";
-    public static final String RECORDING_ID = "RECORDING_ID";
-
-    //Delete Confirmation Dialog
-    public static final String SELECTED_ID_LIST = "Selected Id List";
+    //Animation
+    public static final int FPS_MILLIS = 1000 / 30;
+    public static final int MOVING_RATE_PIXEL_PER_FPS = 10;
 }

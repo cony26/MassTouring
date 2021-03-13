@@ -44,27 +44,25 @@ public class ClusterDistributer{
         int viewCenterX = parent.getMeasuredWidth() / 2;
         int viewCenterY = parent.getMeasuredHeight() / 2;
 
-        List<Rect> distributedRectList = new ArrayList<>();
+        List<DistributedItem> distributedItems = new ArrayList<>();
         int size = bitmapList.size();
         int halfSize = size / 2;
         for(int i = 0; i < halfSize; i++){
            int r = 200;
            double theta = Math.PI / 6 * i;
-            distributedRectList.add(createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta));
+           Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
+           distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, true, bitmapList.get(i), rect));
         }
 
         for(int i = halfSize; i < size; i++){
             int r = 400;
             double theta = Math.PI / 6 * (i - halfSize);
-            distributedRectList.add(createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta));
-        }
-
-        for(Rect rect : distributedRectList){
-            Log.e(LoggerTag.CLUSTER, String.format("(left, top, right, bottom) = (%d, %d, %d, %d)", rect.left, rect.top, rect.right, rect.bottom));
+            Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
+            distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, false, bitmapList.get(i), rect));
         }
 
         //draw each items on the calculated position
-        oClusterDistributedView.drawItems(bitmapList, distributedRectList);
+        oClusterDistributedView.drawItems(distributedItems);
 
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
     }
