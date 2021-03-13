@@ -9,6 +9,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -23,6 +24,7 @@ public class ClusterDistributedView extends SurfaceView {
     private Paint p;
     private List<DistributedItem> oDistributedItems;
     private boolean oPaintable = false;
+    private DistributedItem oTouchedItem = null;
 
     public ClusterDistributedView(Context context) {
         super(context);
@@ -121,5 +123,54 @@ public class ClusterDistributedView extends SurfaceView {
 
     public List<DistributedItem> getDistributedItems(){
         return oDistributedItems;
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                return distributedItemIsTouched((int)event.getX(), (int)event.getY());
+            case MotionEvent.ACTION_UP:
+                performClick();
+                if(isSameItem((int)event.getX(), (int)event.getY())){
+                    //show the image;
+                }
+                oTouchedItem = null;
+                return true;
+            default:
+                return super.onTouchEvent(event);
+        }
+    }
+
+    private boolean distributedItemIsTouched(int aX, int aY){
+        oTouchedItem = null;
+
+        for(DistributedItem item : oDistributedItems){
+            if(item.getRect().contains(aX, aY)){
+                oTouchedItem = item;
+                break;
+            }
+        }
+
+        return oTouchedItem != null;
+    }
+
+    private boolean isSameItem(int aX, int aY){
+        for(DistributedItem item : oDistributedItems){
+            if(item.getRect().contains(aX, aY)){
+                if(oTouchedItem == item){
+                    Log.i(LoggerTag.CLUSTER, "Distributed View is Touched:" + item.toString());
+                    return true;
+                };
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean performClick() {
+        super.performClick();
+        return true;
     }
 }
