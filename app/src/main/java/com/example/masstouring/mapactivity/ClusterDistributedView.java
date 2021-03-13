@@ -77,6 +77,14 @@ public class ClusterDistributedView extends SurfaceView {
 
                     for(DistributedItem item : oDistributedItems){
                         item.updateRect(Const.MOVING_RATE_PIXEL_PER_FPS);
+                        Rect rect = item.getRect();
+                        int padding = 10;
+                        p.setColor(Color.BLUE);
+                        p.setAlpha(155);
+                        p.setStrokeWidth(padding);
+                        canvas.drawRect(rect.left - padding, rect.top - padding, rect.right + padding, rect.bottom + padding, p);
+//                        canvas.drawLine(item.getCenterX(), item.getCenterY(), rect.centerX(), rect.centerY(), p);
+                        p.setAlpha(255);
                         canvas.drawBitmap(item.getBitmap(), null, item.getRect(), p);
                     }
 

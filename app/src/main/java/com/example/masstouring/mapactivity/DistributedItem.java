@@ -22,6 +22,14 @@ public class DistributedItem {
         oRect = aRect;
     }
 
+    public int getCenterX(){
+        return oCenterX;
+    }
+
+    public int getCenterY(){
+        return oCenterY;
+    }
+
     public int getRadius() {
         return oRadius;
     }

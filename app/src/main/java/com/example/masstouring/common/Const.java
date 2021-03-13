@@ -31,6 +31,6 @@ public class Const {
     public static final String RECORD_SERVICE_NOTIFICATION_CHANNEL_ID = "RecordService";
 
     //Animation
-    public static final int FPS_MILLIS = 1000 / 60;
-    public static final int MOVING_RATE_PIXEL_PER_FPS = 10;
+    public static final int FPS_MILLIS = 1000 / 30;
+    public static final int MOVING_RATE_PIXEL_PER_FPS = 5;
 }

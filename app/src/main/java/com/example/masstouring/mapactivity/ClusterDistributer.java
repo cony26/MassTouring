@@ -50,7 +50,7 @@ public class ClusterDistributer{
         int halfSize = size / 2;
         for(int i = 0; i < halfSize; i++){
            int r = 200;
-           double theta = Math.PI / 4 * i;
+           double theta = Math.PI / 3 * i;
            Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
            distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, true, bitmapList.get(i), rect));
         }
