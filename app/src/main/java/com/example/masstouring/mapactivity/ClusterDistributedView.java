@@ -65,6 +65,10 @@ public class ClusterDistributedView extends SurfaceView {
         oPaintable = aPaintable;
     }
 
+    private boolean isPaintable(){
+        return oPaintable;
+    }
+
     public void drawItems(List<DistributedItem> aDistributedItems){
         oPaintable = true;
         oDistributedItems = aDistributedItems;
@@ -73,7 +77,7 @@ public class ClusterDistributedView extends SurfaceView {
             @Override
             public void run() {
                 SurfaceHolder holder = getHolder();
-                while(oPaintable){
+                while(isPaintable()){
                     Canvas canvas = lockAndGetCanvas(holder);
                     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
