@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 
+import androidx.annotation.NonNull;
+
 public class DistributedItem {
     private int oCenterX;
     private int oCenterY;
@@ -60,5 +62,18 @@ public class DistributedItem {
     public void updateCenterPoint(Point aPoint){
         oCenterX = aPoint.x;
         oCenterY = aPoint.y;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("centerX:").append(oCenterX).append(",")
+                .append("centerY:").append(oCenterY).append(",")
+                .append("radius:").append(oRadius).append(",")
+                .append("theta:").append(oTheta).append(",")
+                .append("CW:").append(oCW).append(",")
+                .append("Rect:").append(oRect);
+        return builder.toString();
     }
 }
