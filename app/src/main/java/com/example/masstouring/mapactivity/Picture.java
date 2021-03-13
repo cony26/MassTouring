@@ -92,7 +92,7 @@ public class Picture implements ClusterItem {
             oMatrix.postRotate(oOrientation);
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), oMatrix, true);
         }catch(IOException | NullPointerException e){
-            Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap load error {}" , e);
+            Log.e(LoggerTag.MEDIA_ACCESS, "bitmap load error {}" , e);
             bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
         }
 
