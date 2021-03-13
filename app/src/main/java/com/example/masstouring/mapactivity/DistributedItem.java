@@ -1,6 +1,7 @@
 package com.example.masstouring.mapactivity;
 
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.Rect;
 
 public class DistributedItem {
@@ -19,22 +20,6 @@ public class DistributedItem {
         oCW = aCW;
         oBitmap = aBitmap;
         oRect = aRect;
-    }
-
-    public int getCenterX() {
-        return oCenterX;
-    }
-
-    public void setCenterX(int aCenterX) {
-        oCenterX = aCenterX;
-    }
-
-    public int getCenterY() {
-        return oCenterY;
-    }
-
-    public void setCenterY(int aCenterY) {
-        oCenterY = aCenterY;
     }
 
     public int getRadius() {
@@ -62,5 +47,10 @@ public class DistributedItem {
         int w = oBitmap.getWidth();
         int h = oBitmap.getHeight();
         oRect.offsetTo(centerX - w / 2, centerY - h / 2);
+    }
+
+    public void updateCenterPoint(Point aPoint){
+        oCenterX = aPoint.x;
+        oCenterY = aPoint.y;
     }
 }

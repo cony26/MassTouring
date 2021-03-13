@@ -110,4 +110,8 @@ public class ClusterDistributedView extends SurfaceView {
             Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
         }
     }
+
+    public List<DistributedItem> getDistributedItems(){
+        return oDistributedItems;
+    }
 }

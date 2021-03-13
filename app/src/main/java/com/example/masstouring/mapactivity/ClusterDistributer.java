@@ -2,13 +2,13 @@ package com.example.masstouring.mapactivity;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.masstouring.R;
-import com.example.masstouring.common.LoggerTag;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 
@@ -22,6 +22,7 @@ public class ClusterDistributer{
     private final ClusterDistributedView oClusterDistributedView;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final int oClusterSquarePx;
+    private Cluster<Picture> oCluster;
 
     ClusterDistributer(Context aContext, ClusterManager<Picture> aClusterManager, MapActivtySharedViewModel aViewModel){
         oClusterDistributedView = new ClusterDistributedView(aContext);
@@ -32,7 +33,7 @@ public class ClusterDistributer{
     }
 
     public void distribute(Cluster<Picture> aCluster){
-        //get cluster size
+        oCluster = aCluster;
 
         //get item bitmap
         List<Bitmap> bitmapList = aCluster.getItems().stream()
@@ -49,7 +50,7 @@ public class ClusterDistributer{
         int halfSize = size / 2;
         for(int i = 0; i < halfSize; i++){
            int r = 200;
-           double theta = Math.PI / 6 * i;
+           double theta = Math.PI / 4 * i;
            Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
            distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, true, bitmapList.get(i), rect));
         }
@@ -86,5 +87,11 @@ public class ClusterDistributer{
 
     View getClusterDistributedView(){
         return oClusterDistributedView;
+    }
+
+    public void updateClusterScreenPosition(GoogleMap aMap){
+        Point point = aMap.getProjection().toScreenLocation(oCluster.getPosition());
+        oClusterDistributedView.getDistributedItems().stream()
+                .forEach(item -> item.updateCenterPoint(point));
     }
 }

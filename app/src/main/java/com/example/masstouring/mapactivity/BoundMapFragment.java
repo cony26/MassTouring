@@ -106,6 +106,14 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                 }
             }
         });
+        oMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+            @Override
+            public void onCameraMove() {
+                if(oMapActivityViewModel.getIsClusterDistributed().getValue()){
+                    oClusterDistributer.updateClusterScreenPosition(oMap);
+                }
+            }
+        });
         instantiateClusterManagers();
     }
 
