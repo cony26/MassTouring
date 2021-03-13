@@ -3,6 +3,7 @@ package com.example.masstouring.mapactivity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,12 +24,15 @@ public class Picture implements ClusterItem {
     private final Uri oUri;
     private final int oTimeStamp;
     private final LatLng oLatLng;
+    private final int oOrientation;
     private static final BitmapFactory.Options oBitmapOption = new BitmapFactory.Options();
+    private static final Matrix oMatrix = new Matrix();
 
-    public Picture(Uri aUri, int aTimeStamp, LatLng aLatLng){
+    public Picture(Uri aUri, int aTimeStamp, LatLng aLatLng, int aOrientation){
         oUri = aUri;
         oTimeStamp = aTimeStamp;
         oLatLng = aLatLng;
+        oOrientation = aOrientation;
     }
 
     /**
@@ -76,14 +80,17 @@ public class Picture implements ClusterItem {
         ){
             oBitmapOption.inJustDecodeBounds = true;
             oBitmapOption.inSampleSize = 1;
-            bitmap = BitmapFactory.decodeStream(boundsStream, null, oBitmapOption);
+            BitmapFactory.decodeStream(boundsStream, null, oBitmapOption);
 
             oBitmapOption.inSampleSize = calculateInSampleSize(oBitmapOption, aReqWidth, aReqHeight);
             oBitmapOption.inJustDecodeBounds = false;
             bitmap = BitmapFactory.decodeStream(actualStream, null, oBitmapOption);
 
-            double scaleFactor = calculateScaleFactor(bitmap, aReqWidth, aReqHeight);
-            bitmap = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth() * scaleFactor), (int)(bitmap.getHeight() * scaleFactor), true);
+            float scaleFactor = calculateScaleFactor(bitmap, aReqWidth, aReqHeight);
+            oMatrix.reset();
+            oMatrix.postScale(scaleFactor, scaleFactor);
+            oMatrix.postRotate(oOrientation);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), oMatrix, true);
         }catch(IOException | NullPointerException e){
             Log.e(LoggerTag.RECORD_RECYCLER_VIEW, "bitmap load error {}" , e);
             bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
@@ -112,12 +119,12 @@ public class Picture implements ClusterItem {
 
     /** scale bitmap to match the bigger one so that bitmap doesn't have the padding.
      */
-    private static double calculateScaleFactor(Bitmap bitmap, int reqWidth, int reqHeight){
+    private static float calculateScaleFactor(Bitmap bitmap, int reqWidth, int reqHeight){
         int height = bitmap.getHeight();
         int width = bitmap.getWidth();
 
-        double heightRatio = (double)reqHeight / height;
-        double widthRatio = (double)reqWidth / width;
+        float heightRatio = (float)reqHeight / height;
+        float widthRatio = (float)reqWidth / width;
 
         return heightRatio > widthRatio ? heightRatio : widthRatio;
     }

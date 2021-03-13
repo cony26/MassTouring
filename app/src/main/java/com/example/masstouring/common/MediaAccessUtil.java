@@ -17,6 +17,13 @@ import java.util.List;
 import java.util.Map;
 
 public class MediaAccessUtil {
+    /**
+     * load pictures from Media Storage between {@link RecordItem#getStartDate()} and {@link RecordItem#getEndDate()}.<br>
+     * The position, {@link LatLng}, of {@link Picture} is fetched with the nearest recorded point in time.
+     * @param aContext
+     * @param aRecordItem
+     * @return list of {@link Picture}
+     */
     public static List<Picture> loadPictures(Context aContext, RecordItem aRecordItem){
         long startDateSecond = aRecordItem.getStartDate().toEpochSecond(Const.STORED_OFFSET);
 
@@ -34,7 +41,8 @@ public class MediaAccessUtil {
         Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projection = new String[]{
                 MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATE_ADDED
+                MediaStore.Images.Media.DATE_ADDED,
+                MediaStore.Images.Media.ORIENTATION
         };
         String selection = MediaStore.Images.Media.DATE_ADDED + " >= " + startDateSecond + " AND " + MediaStore.Images.Media.DATE_ADDED + " <= " + endDateSecond;
         String[] selectionArgs = new String[]{};
@@ -49,14 +57,16 @@ public class MediaAccessUtil {
         )){
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
             int dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED);
+            int orientationColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.ORIENTATION);
 
             while(cursor.moveToNext()){
                 long id = cursor.getLong(idColumn);
                 int date = cursor.getInt(dateAddedColumn);
+                int orientation = cursor.getInt(orientationColumn);
 
                 Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
                 LatLng nearestLatLng = fetchNearestLatLng(aRecordItem.getTimeStampMap(), aRecordItem.getLocationMap(), date);
-                pictureList.add(new Picture(contentUri, date, nearestLatLng));
+                pictureList.add(new Picture(contentUri, date, nearestLatLng, orientation));
             }
         }
 
