@@ -7,7 +7,6 @@ import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -53,7 +52,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         @Override
         public void handleOnBackPressed() {
             if(oMapActivityViewModel.getIsClusterDistributed().getValue()){
-                oClusterDistributer.cleanUp();
+                oClusterDistributer.detachDistributedView();
             }
             Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when cluster distributed");
         }
@@ -224,7 +223,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     public void initialize(){
-        oClusterDistributer.cleanUp();
+        oClusterDistributer.detachDistributedView();
         oClusterManager.clearItems();
         oClusterManager.cluster();
         oRenderedIdList.clear();
@@ -259,12 +258,8 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Picture>() {
             @Override
             public boolean onClusterClick(Cluster<Picture> cluster) {
-                if(oMapActivityViewModel.getIsClusterDistributed().getValue()){
-                    oClusterDistributer.cleanUp();
-                }else{
-                    oMapFragment.getActivity().addContentView(oClusterDistributer.getClusterDistributedView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                    oClusterDistributer.distribute(cluster);
-                }
+                oClusterDistributer.attachDistributedViewIfNeeded(oMapFragment.getActivity());
+                oClusterDistributer.onClusterClick(cluster);
                 return false;
             }
         });

@@ -15,7 +15,6 @@ import android.view.SurfaceView;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
@@ -109,7 +108,6 @@ public class ClusterDistributedView extends SurfaceView {
                 }
             }
         });
-
     }
 
     private Canvas lockAndGetCanvas(SurfaceHolder aSurfaceHolder){

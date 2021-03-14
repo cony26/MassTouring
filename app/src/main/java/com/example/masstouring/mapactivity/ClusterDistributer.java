@@ -1,11 +1,13 @@
 package com.example.masstouring.mapactivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.masstouring.R;
 import com.google.android.gms.maps.GoogleMap;
@@ -16,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ClusterDistributer{
+public class ClusterDistributer implements ClusterManager.OnClusterClickListener<Picture>{
     private final Context oContext;
     private final ClusterManager<Picture> oClusterManager;
     private final ClusterDistributedView oClusterDistributedView;
@@ -30,6 +32,32 @@ public class ClusterDistributer{
         oClusterManager = aClusterManager;
         oMapActivitySharedViewModel = aViewModel;
         oClusterSquarePx = (int)aContext.getResources().getDimension(R.dimen.cluster_item_image);
+    }
+
+    public void attachDistributedViewIfNeeded(Activity aActivity){
+        ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();
+        if(parent == null){
+            aActivity.addContentView(oClusterDistributedView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+    }
+
+    public void detachDistributedView(){
+        ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();
+        if(parent != null){
+            parent.removeView(oClusterDistributedView);
+        }
+        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
+    }
+
+    @Override
+    public boolean onClusterClick(Cluster<Picture> cluster) {
+        if(oMapActivitySharedViewModel.getIsClusterDistributed().getValue()) {
+            clearDistribution(oCluster);
+        }
+
+        distribute(cluster);
+
+        return false;
     }
 
     public void distribute(Cluster<Picture> aCluster){
@@ -69,6 +97,11 @@ public class ClusterDistributer{
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
     }
 
+    public void clearDistribution(Cluster aCluster){
+        //stop
+        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
+    }
+
     private Rect createRectOnCircle(Bitmap aBitmap, int aCircleCenterX, int aCircleCenterY, int aRadius, double aTheta){
         int centerX = (int) (aRadius * Math.cos(aTheta)) + aCircleCenterX;
         int centerY = (int) (aRadius * Math.sin(aTheta)) + aCircleCenterY;
@@ -77,21 +110,13 @@ public class ClusterDistributer{
         return new Rect(centerX - w / 2, centerY - h / 2, centerX + w / 2, centerY + h /2);
     }
 
-    public void cleanUp(){
-        ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();
-        if(parent != null){
-            parent.removeView(oClusterDistributedView);
-        }
-        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
-    }
-
-    ClusterDistributedView getClusterDistributedView(){
-        return oClusterDistributedView;
-    }
-
     public void updateClusterScreenPosition(GoogleMap aMap){
         Point point = aMap.getProjection().toScreenLocation(oCluster.getPosition());
         oClusterDistributedView.getDistributedItems().stream()
                 .forEach(item -> item.updateCenterPoint(point));
+    }
+
+    public Cluster<Picture> getCluster(){
+        return oCluster;
     }
 }
