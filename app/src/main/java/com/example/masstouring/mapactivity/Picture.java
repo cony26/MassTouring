@@ -42,11 +42,24 @@ public class Picture implements ClusterItem {
      * @param aReqWidth target width of bitmap
      * @param aReqHeight target height of bitmap
      * @return Bitmap load bitmap from storage based on its URI synchronously.<br>
-     *     Bitmap is scaled to {@code aReqWidth} or {@code aReqHeight} as much as possible so that the required area is filled with bitmap.
+     *     Bitmap is scaled as much as possible so that the required area is filled with bitmap.
      *     (That is, the bitmap sticks out from the required area.)
      */
     public Bitmap getBitmapSynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight) {
         return loadBitmapScaledOver(aContext, aReqWidth, aReqHeight);
+    }
+
+    /**
+     * Do not invoke this method from ui thread. This is synchronous method.
+     *
+     * @param aContext application context
+     * @param aReqWidth target width of bitmap
+     * @param aReqHeight target height of bitmap
+     * @return Bitmap load bitmap from storage based on its URI synchronously.<br>
+     *     Bitmap is scaled as much as possible so that bitmap is within the required area.
+     */
+    public Bitmap getBitmapSynclyScaledWithin(Context aContext, int aReqWidth, int aReqHeight) {
+        return loadBitmapScaledWithin(aContext, aReqWidth, aReqHeight);
     }
 
     public Bitmap getItemBitmapAsynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight, PictureClusterRenderer aClusterRenderer){
@@ -79,6 +92,16 @@ public class Picture implements ClusterItem {
         try(BufferedInputStream boundsStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
             BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
         ){
+            if(oOrientation == 90 || oOrientation == 270){
+                int tmp = aReqHeight;
+                aReqHeight = aReqWidth;
+                aReqWidth = tmp;
+            }else if(oOrientation == 0 || oOrientation == 180){
+                //leave it
+            }else{
+                Log.e(LoggerTag.MEDIA_ACCESS, "unexpected orientation:" + oOrientation);
+            }
+
             oBitmapOption.inJustDecodeBounds = true;
             oBitmapOption.inSampleSize = 1;
             BitmapFactory.decodeStream(boundsStream, null, oBitmapOption);
@@ -87,7 +110,45 @@ public class Picture implements ClusterItem {
             oBitmapOption.inJustDecodeBounds = false;
             bitmap = BitmapFactory.decodeStream(actualStream, null, oBitmapOption);
 
-            float scaleFactor = calculateScaleFactor(bitmap, aReqWidth, aReqHeight);
+            float scaleFactor = calculateScaleFactorScaledOver(bitmap, aReqWidth, aReqHeight);
+            oMatrix.reset();
+            oMatrix.postScale(scaleFactor, scaleFactor);
+            oMatrix.postRotate(oOrientation);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), oMatrix, true);
+        }catch(IOException | NullPointerException e){
+            Log.e(LoggerTag.MEDIA_ACCESS, "bitmap load error {}" , e);
+            bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
+        }
+
+        return bitmap;
+    }
+
+    private Bitmap loadBitmapScaledWithin(Context aContext, int aReqWidth, int aReqHeight){
+        Bitmap bitmap = null;
+        try(BufferedInputStream boundsStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
+            BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
+        ){
+            if(oOrientation == 90 || oOrientation == 270){
+                int tmp = aReqHeight;
+                aReqHeight = aReqWidth;
+                aReqWidth = tmp;
+            }else if(oOrientation == 0 || oOrientation == 180){
+                //leave it
+            }else{
+                Log.e(LoggerTag.MEDIA_ACCESS, "unexpected orientation:" + oOrientation);
+            }
+
+            oBitmapOption.inJustDecodeBounds = true;
+            oBitmapOption.inSampleSize = 1;
+            BitmapFactory.decodeStream(boundsStream, null, oBitmapOption);
+
+            oBitmapOption.inSampleSize = calculateInSampleSize(oBitmapOption, aReqWidth, aReqHeight);
+            oBitmapOption.inJustDecodeBounds = false;
+            bitmap = BitmapFactory.decodeStream(actualStream, null, oBitmapOption);
+
+            Log.e(LoggerTag.MEDIA_ACCESS, String.format("[JustDecode](w,h)=(%d,%d)", bitmap.getWidth(), bitmap.getHeight()));
+
+            float scaleFactor = calculateScaleFactorScaledWithin(bitmap, aReqWidth, aReqHeight);
             oMatrix.reset();
             oMatrix.postScale(scaleFactor, scaleFactor);
             oMatrix.postRotate(oOrientation);
@@ -120,7 +181,7 @@ public class Picture implements ClusterItem {
 
     /** scale bitmap to match the bigger one so that bitmap doesn't have the padding.
      */
-    private static float calculateScaleFactor(Bitmap bitmap, int reqWidth, int reqHeight){
+    private static float calculateScaleFactorScaledOver(Bitmap bitmap, int reqWidth, int reqHeight){
         int height = bitmap.getHeight();
         int width = bitmap.getWidth();
 
@@ -128,6 +189,16 @@ public class Picture implements ClusterItem {
         float widthRatio = (float)reqWidth / width;
 
         return heightRatio > widthRatio ? heightRatio : widthRatio;
+    }
+
+    private static float calculateScaleFactorScaledWithin(Bitmap bitmap, int reqWidth, int reqHeight){
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+
+        float heightRatio = (float)reqHeight / height;
+        float widthRatio = (float)reqWidth / width;
+
+        return heightRatio > widthRatio ? widthRatio : heightRatio;
     }
 
     public int getTimeStamp() {
