@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
@@ -25,6 +26,7 @@ public class ClusterDistributedView extends SurfaceView {
     private List<DistributedItem> oDistributedItems;
     private boolean oPaintable = false;
     private DistributedItem oTouchedItem = null;
+    private FocusedItem oFocusedItem = null;
 
     public ClusterDistributedView(Context context) {
         super(context);
@@ -94,6 +96,8 @@ public class ClusterDistributedView extends SurfaceView {
                         canvas.drawBitmap(item.getBitmap(), null, item.getRect(), p);
                     }
 
+                    paintFocusedItem(canvas);
+
                     holder.unlockCanvasAndPost(canvas);
                     waitForFpsTime();
                 }
@@ -137,7 +141,8 @@ public class ClusterDistributedView extends SurfaceView {
                 return distributedItemIsTouched((int)event.getX(), (int)event.getY());
             case MotionEvent.ACTION_UP:
                 performClick();
-                if(isSameItem((int)event.getX(), (int)event.getY())){
+                if(clickedItemIsSameWithTouchedItem((int)event.getX(), (int)event.getY())){
+                    oFocusedItem.update(oTouchedItem, getContext());
                     //show the image;
                 }
                 oTouchedItem = null;
@@ -160,8 +165,8 @@ public class ClusterDistributedView extends SurfaceView {
         return oTouchedItem != null;
     }
 
-    private boolean isSameItem(int aX, int aY){
-        if(oTouchedItem.getRect().contains(aX,aY)){
+    private boolean clickedItemIsSameWithTouchedItem(int aX, int aY) {
+        if (oTouchedItem.getRect().contains(aX, aY)) {
             Log.i(LoggerTag.CLUSTER, "Distributed View is Touched:" + oTouchedItem.toString());
             return true;
         }
@@ -169,9 +174,16 @@ public class ClusterDistributedView extends SurfaceView {
         return false;
     }
 
+    private void paintFocusedItem(Canvas aCanvas){
+        if(oFocusedItem.isEnable()){
+            aCanvas.drawBitmap(oFocusedItem.getBitmap(), null, oFocusedItem.getFocusedWindowRect(), p);
+        }
+    }
+
     @Override
-    public boolean performClick() {
-        super.performClick();
-        return true;
+    protected void onAttachedToWindow() {
+        ViewGroup parent = (ViewGroup)getParent();
+        oFocusedItem = new FocusedItem(parent.getMeasuredWidth(), parent.getMeasuredHeight());
+        super.onAttachedToWindow();
     }
 }

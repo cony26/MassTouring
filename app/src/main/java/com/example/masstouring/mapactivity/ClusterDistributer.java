@@ -34,9 +34,10 @@ public class ClusterDistributer{
 
     public void distribute(Cluster<Picture> aCluster){
         oCluster = aCluster;
+        List<Picture> pictureList = new ArrayList<>(oCluster.getItems());
 
         //get item bitmap
-        List<Bitmap> bitmapList = aCluster.getItems().stream()
+        List<Bitmap> bitmapList = pictureList.stream()
                 .map(picture -> picture.getBitmapSyncly(oContext, oClusterSquarePx / 2,oClusterSquarePx / 2))
                 .collect(Collectors.toList());
 
@@ -52,14 +53,14 @@ public class ClusterDistributer{
            int r = 300;
            double theta = Math.PI / 3 * i;
            Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
-           distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, true, bitmapList.get(i), rect));
+           distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, true, bitmapList.get(i), rect, pictureList.get(i)));
         }
 
         for(int i = halfSize; i < size; i++){
             int r = 500;
             double theta = Math.PI / 6 * (i - halfSize);
             Rect rect = createRectOnCircle(bitmapList.get(i), viewCenterX, viewCenterY, r, theta);
-            distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, false, bitmapList.get(i), rect));
+            distributedItems.add(new DistributedItem(viewCenterX, viewCenterY, r, theta, false, bitmapList.get(i), rect, pictureList.get(i)));
         }
 
         //draw each items on the calculated position

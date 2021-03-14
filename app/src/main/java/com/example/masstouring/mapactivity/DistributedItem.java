@@ -11,10 +11,11 @@ public class DistributedItem {
     private int oCenterY;
     private int oRadius;
     private double oTheta;
-    private boolean oCW;
-    private Bitmap oBitmap;
-    private Rect oRect;
-    DistributedItem(int aCenterX, int aCenterY, int aRadius, double aTheta, boolean aCW, Bitmap aBitmap, Rect aRect){
+    private final boolean oCW;
+    private final Bitmap oBitmap;
+    private final Rect oRect;
+    private final Picture oPicture;
+    DistributedItem(int aCenterX, int aCenterY, int aRadius, double aTheta, boolean aCW, Bitmap aBitmap, Rect aRect, Picture aPicture){
         oCenterX = aCenterX;
         oCenterY = aCenterY;
         oRadius = aRadius;
@@ -22,6 +23,7 @@ public class DistributedItem {
         oCW = aCW;
         oBitmap = aBitmap;
         oRect = aRect;
+        oPicture = aPicture;
     }
 
     public int getCenterX(){
@@ -46,6 +48,10 @@ public class DistributedItem {
 
     public Rect getRect() {
         return oRect;
+    }
+
+    public Picture getPicture(){
+        return oPicture;
     }
 
     public void updateRect(int aDistance){
