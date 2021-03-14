@@ -15,6 +15,7 @@ import android.view.SurfaceView;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
@@ -70,10 +71,6 @@ public class ClusterDistributedView extends SurfaceView {
         getHolder().setFormat(PixelFormat.TRANSPARENT);
         setZOrderOnTop(true);
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedWhenFocused);
-    }
-
-    public void setPaintable(boolean aPaintable){
-        oPaintable = aPaintable;
     }
 
     private boolean isPaintable(){
@@ -194,5 +191,20 @@ public class ClusterDistributedView extends SurfaceView {
         ViewGroup parent = (ViewGroup)getParent();
         oFocusedItem = new FocusedItem(parent.getMeasuredWidth(), parent.getMeasuredHeight());
         super.onAttachedToWindow();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        if(hasWindowFocus){
+        }else{
+            oPaintable = false;
+        }
+        super.onWindowFocusChanged(hasWindowFocus);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        oPaintable = false;
+        super.onDetachedFromWindow();
     }
 }

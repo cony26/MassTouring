@@ -246,7 +246,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 //        oPictureClusterRenderer.setOnClusterItemClickListener(null);
 //        oClusterManager.getMarkerCollection().clear();
 //        oPictureClusterRenderer.onRemove();
-        oClusterDistributer.getClusterDistributedView().setPaintable(false);
     }
 
     private void instantiateClusterManagers(){
