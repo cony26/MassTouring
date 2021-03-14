@@ -55,7 +55,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
         oDatabaseHelper = aDatabaseHelper;
         subscribe(aAppCompatActivity);
-        BackPressedCallbackRegisterer.getInstance(aAppCompatActivity).register(oOnBackPressedCallbackWhenViewVisible);
+        BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenViewVisible);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)

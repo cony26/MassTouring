@@ -5,6 +5,9 @@ import android.util.Log;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.masstouring.common.LoggerTag;
 
@@ -12,12 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BackPressedCallbackRegisterer {
+public class BackPressedCallbackRegisterer implements LifecycleObserver {
     private final AppCompatActivity oAppCompatActivity;
     private List<PrioritizedOnBackPressedCallback> oOnBackPressedCallbackList = new ArrayList<>();
     private static BackPressedCallbackRegisterer oRegisterer = null;
 
     private BackPressedCallbackRegisterer(AppCompatActivity aAppCompatActivity){
+        aAppCompatActivity.getLifecycle().addObserver(this);
         oAppCompatActivity = aAppCompatActivity;
     }
 
@@ -31,15 +35,10 @@ public class BackPressedCallbackRegisterer {
         return oRegisterer;
     }
 
-    /**
-     * @param aAppCompatActivity
-     * @return instance of {@link BackPressedCallbackRegisterer}
-     */
-    public synchronized static BackPressedCallbackRegisterer getInstance(AppCompatActivity aAppCompatActivity){
+    public static void instantiate(AppCompatActivity aAppCompatActivity){
         if(oRegisterer == null){
             oRegisterer = new BackPressedCallbackRegisterer(aAppCompatActivity);
         }
-        return oRegisterer;
     }
 
     public void register(PrioritizedOnBackPressedCallback aOnBackPressedCallback){
@@ -47,7 +46,8 @@ public class BackPressedCallbackRegisterer {
         update();
     }
 
-    public static void clear(){
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private static void clear(){
         oRegisterer = null;
     }
 
