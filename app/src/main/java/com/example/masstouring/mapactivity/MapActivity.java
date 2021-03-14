@@ -100,6 +100,7 @@ public class MapActivity extends AppCompatActivity{
         super.onPause();
         stopServiceIfNotRecording();
         unbindServiceGracefully();
+        BackPressedCallbackRegisterer.getInstance(this).clear();
     }
 
     @Override

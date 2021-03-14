@@ -47,6 +47,10 @@ public class BackPressedCallbackRegisterer {
         update();
     }
 
+    public static void clear(){
+        oRegisterer = null;
+    }
+
     private void update(){
         List<PrioritizedOnBackPressedCallback> sortedList = oOnBackPressedCallbackList.stream()
                 .sorted((a,b) -> a.compareTo(b))

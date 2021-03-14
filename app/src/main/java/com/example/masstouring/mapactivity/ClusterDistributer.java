@@ -86,7 +86,7 @@ public class ClusterDistributer{
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
     }
 
-    View getClusterDistributedView(){
+    ClusterDistributedView getClusterDistributedView(){
         return oClusterDistributedView;
     }
 

@@ -33,7 +33,6 @@ public class FocusedItem {
         int halfHeight = oBitmap.getHeight() / 2;
         oFocusedWindowRect = new Rect(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
         oEnable = true;
-        Log.e(LoggerTag.CLUSTER, String.format("(x,y)=(%d,%d), (w,h)=(%d,%d)", centerX, centerY, halfWidth*2, halfHeight*2));
     }
 
     public Rect getFocusedWindowRect() {
