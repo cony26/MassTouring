@@ -23,7 +23,7 @@ public class FocusedItem {
 
     public void update(DistributedItem aOriginalItem, Context aContext) {
         oOriginalItem = aOriginalItem;
-        oBitmap = oOriginalItem.getPicture().getBitmapSyncly(aContext, oMaxWidth, oMaxHeight);
+        oBitmap = oOriginalItem.getPicture().getBitmapSynclyScaledOver(aContext, oMaxWidth, oMaxHeight);
         int centerX = oMaxWidth / 2;
         int centerY = oMaxHeight / 2;
         int halfWidth = oBitmap.getWidth();

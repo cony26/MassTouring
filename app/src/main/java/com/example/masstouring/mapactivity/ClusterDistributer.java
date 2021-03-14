@@ -38,7 +38,7 @@ public class ClusterDistributer{
 
         //get item bitmap
         List<Bitmap> bitmapList = pictureList.stream()
-                .map(picture -> picture.getBitmapSyncly(oContext, oClusterSquarePx / 2,oClusterSquarePx / 2))
+                .map(picture -> picture.getBitmapSynclyScaledOver(oContext, oClusterSquarePx / 2,oClusterSquarePx / 2))
                 .collect(Collectors.toList());
 
         //calculate the layout of each item for distribution

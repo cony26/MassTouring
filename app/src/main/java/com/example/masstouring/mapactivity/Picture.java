@@ -42,17 +42,18 @@ public class Picture implements ClusterItem {
      * @param aReqWidth target width of bitmap
      * @param aReqHeight target height of bitmap
      * @return Bitmap load bitmap from storage based on its URI synchronously.<br>
-     *     Bitmap is scaled to {@code aReqWidth} or {@code aReqHeight} so that bitmap doesn't have padding.
+     *     Bitmap is scaled to {@code aReqWidth} or {@code aReqHeight} as much as possible so that the required area is filled with bitmap.
+     *     (That is, the bitmap sticks out from the required area.)
      */
-    public Bitmap getBitmapSyncly(Context aContext, int aReqWidth, int aReqHeight) {
-        return loadBitmap(aContext, aReqWidth, aReqHeight);
+    public Bitmap getBitmapSynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight) {
+        return loadBitmapScaledOver(aContext, aReqWidth, aReqHeight);
     }
 
-    public Bitmap getItemBitmapAsyncly(Context aContext, int aReqWidth, int aReqHeight, PictureClusterRenderer aClusterRenderer){
+    public Bitmap getItemBitmapAsynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight, PictureClusterRenderer aClusterRenderer){
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
-                Bitmap bitmap = loadBitmap(aContext, aReqWidth, aReqHeight);
+                Bitmap bitmap = loadBitmapScaledOver(aContext, aReqWidth, aReqHeight);
 
                 new Handler(Looper.getMainLooper()).post(new Runnable(){
                     @Override
@@ -73,7 +74,7 @@ public class Picture implements ClusterItem {
         return bitmap;
     }
 
-    private Bitmap loadBitmap(Context aContext, int aReqWidth, int aReqHeight){
+    private Bitmap loadBitmapScaledOver(Context aContext, int aReqWidth, int aReqHeight){
         Bitmap bitmap = null;
         try(BufferedInputStream boundsStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
             BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));

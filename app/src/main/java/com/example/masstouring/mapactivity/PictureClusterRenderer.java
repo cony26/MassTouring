@@ -66,14 +66,14 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
 
     @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
-        Bitmap tmpBitmap = item.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx, this);
+        Bitmap tmpBitmap = item.getItemBitmapAsynclyScaledOver(oContext, oSquarePx, oSquarePx, this);
         oItemImageView.setImageBitmap(centerRectClip(tmpBitmap, oSquarePx, oSquarePx));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
 
     @Override
     protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
-        clusterItem.getItemBitmapAsyncly(oContext, oSquarePx, oSquarePx,  this);
+        clusterItem.getItemBitmapAsynclyScaledOver(oContext, oSquarePx, oSquarePx,  this);
     }
 
     void setItemBitmap(Bitmap aBitmap, Marker aMarker){
@@ -148,7 +148,7 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
             case 2:
                 // a : b
                 bitmapList = cluster.getItems().stream()
-                        .map(picture -> picture.getBitmapSyncly(oContext, oSquarePx / 2, oSquarePx))
+                        .map(picture -> picture.getBitmapSynclyScaledOver(oContext, oSquarePx / 2, oSquarePx))
                         .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx))
                         .collect(Collectors.toList());
 
@@ -160,14 +160,14 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
                 //   c
                 bitmapList = cluster.getItems().stream()
                         .limit(2)
-                        .map(picture -> picture.getBitmapSyncly(oContext, oSquarePx / 2, oSquarePx / 2))
+                        .map(picture -> picture.getBitmapSynclyScaledOver(oContext, oSquarePx / 2, oSquarePx / 2))
                         .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx / 2))
                         .collect(Collectors.toList());
 
                 Bitmap c = cluster.getItems().stream()
                         .skip(2)
                         .limit(1)
-                        .map(picture -> picture.getBitmapSyncly(oContext, oSquarePx, oSquarePx /2))
+                        .map(picture -> picture.getBitmapSynclyScaledOver(oContext, oSquarePx, oSquarePx /2))
                         .map(bitmap -> centerRectClip(bitmap, oSquarePx, oSquarePx / 2))
                         .findFirst()
                         .get();
@@ -181,7 +181,7 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
                 // c : d
                 bitmapList = cluster.getItems().stream()
                         .limit(4)
-                        .map(picture -> picture.getBitmapSyncly(oContext, oSquarePx / 2, oSquarePx / 2))
+                        .map(picture -> picture.getBitmapSynclyScaledOver(oContext, oSquarePx / 2, oSquarePx / 2))
                         .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx / 2))
                         .collect(Collectors.toList());
 
@@ -196,14 +196,14 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
                 // c : d
                 bitmapList = cluster.getItems().stream()
                         .limit(4)
-                        .map(picture -> picture.getBitmapSyncly(oContext, oSquarePx / 2, oSquarePx / 2))
+                        .map(picture -> picture.getBitmapSynclyScaledOver(oContext, oSquarePx / 2, oSquarePx / 2))
                         .map(bitmap -> centerRectClip(bitmap, oSquarePx / 2, oSquarePx / 2))
                         .collect(Collectors.toList());
 
                 Bitmap e = cluster.getItems().stream()
                         .skip(4)
                         .limit(1)
-                        .map(picture -> picture.getBitmapSyncly(oContext, oSquarePx / 2, oSquarePx / 2))
+                        .map(picture -> picture.getBitmapSynclyScaledOver(oContext, oSquarePx / 2, oSquarePx / 2))
                         .map(bitmap -> centerCircleClip(bitmap, oSquarePx / 4))
                         .findFirst()
                         .get();
