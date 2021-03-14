@@ -117,8 +117,6 @@ public class Picture implements ClusterItem {
             oBitmapOption.inJustDecodeBounds = false;
             bitmap = BitmapFactory.decodeStream(actualStream, null, oBitmapOption);
 
-            Log.e(LoggerTag.MEDIA_ACCESS, String.format("[JustDecode](w,h)=(%d,%d)", bitmap.getWidth(), bitmap.getHeight()));
-
             float scaleFactor = aScaleFactorOperator.apply(bitmap).apply(aReqWidth).apply(aReqHeight);
             oMatrix.reset();
             oMatrix.postScale(scaleFactor, scaleFactor);
