@@ -66,17 +66,17 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
 
     @Override
     protected void onBeforeClusterItemRendered(@NonNull Picture item, @NonNull MarkerOptions markerOptions) {
-        Bitmap tmpBitmap = item.getItemBitmapAsynclyScaledOver(oContext, oSquarePx, oSquarePx, this);
+        Bitmap tmpBitmap = item.getItemBitmapAsynclyScaledOver(oContext, oSquarePx, oSquarePx, oOnCompletedLoadItemBitmapCallback);
         oItemImageView.setImageBitmap(centerRectClip(tmpBitmap, oSquarePx, oSquarePx));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
     }
 
     @Override
     protected void onClusterItemUpdated(@NonNull Picture clusterItem, @NonNull Marker marker) {
-        clusterItem.getItemBitmapAsynclyScaledOver(oContext, oSquarePx, oSquarePx,  this);
+        clusterItem.getItemBitmapAsynclyScaledOver(oContext, oSquarePx, oSquarePx, oOnCompletedLoadItemBitmapCallback);
     }
 
-    void setItemBitmap(Bitmap aBitmap, Marker aMarker){
+    private void setItemBitmap(Bitmap aBitmap, Marker aMarker){
         oItemImageView.setImageBitmap(centerRectClip(aBitmap, oSquarePx, oSquarePx));
         if(aMarker != null){
             aMarker.setIcon(BitmapDescriptorFactory.fromBitmap(oItemIconGenerator.makeIcon()));
@@ -240,4 +240,14 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
         return mixBitmap;
     }
 
+    private Picture.OnCompletedLoadBitmapCallback oOnCompletedLoadItemBitmapCallback = new Picture.OnCompletedLoadBitmapCallback() {
+        @Override
+        public void execute(Bitmap aBitmap, Picture aPicture) {
+            setItemBitmap(aBitmap, getMarker(aPicture));
+//                            aClusterManager.removeItem(Picture.this);
+//                            aClusterManager.addItem(Picture.this);
+//                            aClusterManager.cluster();
+            Log.i(LoggerTag.CLUSTER, "set Future Item Bitmap");
+        }
+    };
 }

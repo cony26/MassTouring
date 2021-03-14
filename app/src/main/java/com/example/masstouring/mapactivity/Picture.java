@@ -19,10 +19,7 @@ import com.google.maps.android.clustering.ClusterItem;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class Picture implements ClusterItem {
     private final Uri oUri;
@@ -66,7 +63,7 @@ public class Picture implements ClusterItem {
         return loadBitmap(aContext, aReqWidth, aReqHeight, SCALE_WITHIN_OPERATOR);
     }
 
-    public Bitmap getItemBitmapAsynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight, PictureClusterRenderer aClusterRenderer){
+    public Bitmap getItemBitmapAsynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight, OnCompletedLoadBitmapCallback aCallback){
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
@@ -75,11 +72,7 @@ public class Picture implements ClusterItem {
                 new Handler(Looper.getMainLooper()).post(new Runnable(){
                     @Override
                     public void run() {
-                        aClusterRenderer.setItemBitmap(bitmap, aClusterRenderer.getMarker(Picture.this));
-//                            aClusterManager.removeItem(Picture.this);
-//                            aClusterManager.addItem(Picture.this);
-//                            aClusterManager.cluster();
-                        Log.i(LoggerTag.CLUSTER, "set Future Item Bitmap");
+                        aCallback.execute(bitmap, Picture.this);
                     }
                 });
 
@@ -89,6 +82,10 @@ public class Picture implements ClusterItem {
         Bitmap bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
 
         return bitmap;
+    }
+
+    public interface OnCompletedLoadBitmapCallback {
+        void execute(Bitmap aBitmap, Picture aPicture);
     }
 
     private static final Function<Bitmap, Function<Integer, Function<Integer, Float>>> SCALE_OVER_OPERATOR =
