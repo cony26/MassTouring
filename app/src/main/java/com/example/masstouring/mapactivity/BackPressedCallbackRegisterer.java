@@ -1,8 +1,12 @@
 package com.example.masstouring.mapactivity;
 
+import android.util.Log;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.masstouring.common.LoggerTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +15,31 @@ import java.util.stream.Collectors;
 public class BackPressedCallbackRegisterer {
     private final AppCompatActivity oAppCompatActivity;
     private List<PrioritizedOnBackPressedCallback> oOnBackPressedCallbackList = new ArrayList<>();
-    BackPressedCallbackRegisterer(AppCompatActivity aAppCompatActivity){
+    private static BackPressedCallbackRegisterer oRegisterer = null;
+
+    private BackPressedCallbackRegisterer(AppCompatActivity aAppCompatActivity){
         oAppCompatActivity = aAppCompatActivity;
+    }
+
+    /**
+     * @return instance of {@link BackPressedCallbackRegisterer} may be null
+     */
+    public static BackPressedCallbackRegisterer getInstance() {
+        if(oRegisterer == null){
+            Log.e(LoggerTag.SYSTEM_PROCESS, "BackPressedCallbackRegisterer is callled before initialization.");
+        }
+        return oRegisterer;
+    }
+
+    /**
+     * @param aAppCompatActivity
+     * @return instance of {@link BackPressedCallbackRegisterer}
+     */
+    public synchronized static BackPressedCallbackRegisterer getInstance(AppCompatActivity aAppCompatActivity){
+        if(oRegisterer == null){
+            oRegisterer = new BackPressedCallbackRegisterer(aAppCompatActivity);
+        }
+        return oRegisterer;
     }
 
     public void register(PrioritizedOnBackPressedCallback aOnBackPressedCallback){

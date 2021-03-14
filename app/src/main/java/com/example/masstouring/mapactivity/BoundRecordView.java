@@ -44,7 +44,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     };
 
-    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegisterer aBackPressedCallbackRegisterer){
+    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper){
         aAppCompatActivity.getLifecycle().addObserver(this);
         oRecordsView = aRecordView;
         oManager = new LinearLayoutManager(aRecordView.getContext());
@@ -55,7 +55,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
         oDatabaseHelper = aDatabaseHelper;
         subscribe(aAppCompatActivity);
-        aBackPressedCallbackRegisterer.register(oOnBackPressedCallbackWhenViewVisible);
+        BackPressedCallbackRegisterer.getInstance(aAppCompatActivity).register(oOnBackPressedCallbackWhenViewVisible);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)

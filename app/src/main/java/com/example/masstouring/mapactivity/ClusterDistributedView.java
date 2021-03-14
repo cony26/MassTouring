@@ -27,6 +27,14 @@ public class ClusterDistributedView extends SurfaceView {
     private boolean oPaintable = false;
     private DistributedItem oTouchedItem = null;
     private FocusedItem oFocusedItem = null;
+    private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
+        @Override
+        public void handleOnBackPressed() {
+            oFocusedItem.setEnable(false);
+            oOnBackPressedWhenFocused.setEnabled(false);
+            Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when distributed item is focused");
+        }
+    };
 
     public ClusterDistributedView(Context context) {
         super(context);
@@ -61,6 +69,7 @@ public class ClusterDistributedView extends SurfaceView {
         });
         getHolder().setFormat(PixelFormat.TRANSPARENT);
         setZOrderOnTop(true);
+        BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedWhenFocused);
     }
 
     public void setPaintable(boolean aPaintable){
@@ -143,7 +152,7 @@ public class ClusterDistributedView extends SurfaceView {
                 performClick();
                 if(clickedItemIsSameWithTouchedItem((int)event.getX(), (int)event.getY())){
                     oFocusedItem.update(oTouchedItem, getContext());
-                    //show the image;
+                    oOnBackPressedWhenFocused.setEnabled(true);
                 }
                 oTouchedItem = null;
                 return true;

@@ -10,6 +10,7 @@ public abstract class PrioritizedOnBackPressedCallback extends OnBackPressedCall
     private final int oPriority;
     public final static int RECORD_VIEW = 10;
     public final static int CLUSTER_DISTRIBUTED = 100;
+    public final static int CLUSTER_DISTRIBUTED_ITEM_FOCUSED = 1000;
 
     public PrioritizedOnBackPressedCallback(boolean aEnabled, int aPriority) {
         super(aEnabled);

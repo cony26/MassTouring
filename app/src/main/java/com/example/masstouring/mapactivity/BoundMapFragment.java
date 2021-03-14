@@ -59,7 +59,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         }
     };
 
-    public BoundMapFragment(AppCompatActivity aAppCompatActivity, MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment, DatabaseHelper aDatabaseHelper, BackPressedCallbackRegisterer aBackPressedCallBackRegisterer){
+    public BoundMapFragment(AppCompatActivity aAppCompatActivity, MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment, DatabaseHelper aDatabaseHelper){
         aMapFragment.getMapAsync(this);
         oMapFragment = aMapFragment;
         oMapFragment.getLifecycle().addObserver(this);
@@ -67,7 +67,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMapActivityViewModel = aMapActivityViewModel;
         oDatabaseHelper = aDatabaseHelper;
         subscribeLiveData();
-        aBackPressedCallBackRegisterer.register(oOnBackPressedCallbackWhenClusterDistributed);
+        BackPressedCallbackRegisterer.getInstance(aAppCompatActivity).register(oOnBackPressedCallbackWhenClusterDistributed);
     }
 
     private void subscribeLiveData(){
