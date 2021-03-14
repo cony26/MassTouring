@@ -161,14 +161,11 @@ public class ClusterDistributedView extends SurfaceView {
     }
 
     private boolean isSameItem(int aX, int aY){
-        for(DistributedItem item : oDistributedItems){
-            if(item.getRect().contains(aX, aY)){
-                if(oTouchedItem == item){
-                    Log.i(LoggerTag.CLUSTER, "Distributed View is Touched:" + item.toString());
-                    return true;
-                };
-            }
+        if(oTouchedItem.getRect().contains(aX,aY)){
+            Log.i(LoggerTag.CLUSTER, "Distributed View is Touched:" + oTouchedItem.toString());
+            return true;
         }
+
         return false;
     }
 
