@@ -19,6 +19,10 @@ import com.google.maps.android.clustering.ClusterItem;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class Picture implements ClusterItem {
     private final Uri oUri;
@@ -46,7 +50,7 @@ public class Picture implements ClusterItem {
      *     (That is, the bitmap sticks out from the required area.)
      */
     public Bitmap getBitmapSynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight) {
-        return loadBitmapScaledOver(aContext, aReqWidth, aReqHeight);
+        return loadBitmap(aContext, aReqWidth, aReqHeight, SCALE_OVER_OPERATOR);
     }
 
     /**
@@ -59,14 +63,14 @@ public class Picture implements ClusterItem {
      *     Bitmap is scaled as much as possible so that bitmap is within the required area.
      */
     public Bitmap getBitmapSynclyScaledWithin(Context aContext, int aReqWidth, int aReqHeight) {
-        return loadBitmapScaledWithin(aContext, aReqWidth, aReqHeight);
+        return loadBitmap(aContext, aReqWidth, aReqHeight, SCALE_WITHIN_OPERATOR);
     }
 
     public Bitmap getItemBitmapAsynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight, PictureClusterRenderer aClusterRenderer){
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
-                Bitmap bitmap = loadBitmapScaledOver(aContext, aReqWidth, aReqHeight);
+                Bitmap bitmap = loadBitmap(aContext, aReqWidth, aReqHeight, SCALE_OVER_OPERATOR);
 
                 new Handler(Looper.getMainLooper()).post(new Runnable(){
                     @Override
@@ -87,43 +91,13 @@ public class Picture implements ClusterItem {
         return bitmap;
     }
 
-    private Bitmap loadBitmapScaledOver(Context aContext, int aReqWidth, int aReqHeight){
-        Bitmap bitmap = null;
-        try(BufferedInputStream boundsStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
-            BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
-        ){
-            if(oOrientation == 90 || oOrientation == 270){
-                int tmp = aReqHeight;
-                aReqHeight = aReqWidth;
-                aReqWidth = tmp;
-            }else if(oOrientation == 0 || oOrientation == 180){
-                //leave it
-            }else{
-                Log.e(LoggerTag.MEDIA_ACCESS, "unexpected orientation:" + oOrientation);
-            }
+    private static final Function<Bitmap, Function<Integer, Function<Integer, Float>>> SCALE_OVER_OPERATOR =
+            bitmap -> aReqWidth -> aReqHeight -> calculateScaleFactorScaledOver(bitmap, aReqWidth, aReqHeight);
 
-            oBitmapOption.inJustDecodeBounds = true;
-            oBitmapOption.inSampleSize = 1;
-            BitmapFactory.decodeStream(boundsStream, null, oBitmapOption);
+    private static final Function<Bitmap, Function<Integer, Function<Integer, Float>>> SCALE_WITHIN_OPERATOR =
+            bitmap -> aReqWidth -> aReqHeight -> calculateScaleFactorScaledWithin(bitmap, aReqWidth, aReqHeight);
 
-            oBitmapOption.inSampleSize = calculateInSampleSize(oBitmapOption, aReqWidth, aReqHeight);
-            oBitmapOption.inJustDecodeBounds = false;
-            bitmap = BitmapFactory.decodeStream(actualStream, null, oBitmapOption);
-
-            float scaleFactor = calculateScaleFactorScaledOver(bitmap, aReqWidth, aReqHeight);
-            oMatrix.reset();
-            oMatrix.postScale(scaleFactor, scaleFactor);
-            oMatrix.postRotate(oOrientation);
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), oMatrix, true);
-        }catch(IOException | NullPointerException e){
-            Log.e(LoggerTag.MEDIA_ACCESS, "bitmap load error {}" , e);
-            bitmap = Bitmap.createBitmap(aReqWidth, aReqHeight, Bitmap.Config.ARGB_8888);
-        }
-
-        return bitmap;
-    }
-
-    private Bitmap loadBitmapScaledWithin(Context aContext, int aReqWidth, int aReqHeight){
+    private Bitmap loadBitmap(Context aContext, int aReqWidth, int aReqHeight, Function<Bitmap, Function<Integer, Function<Integer, Float>>> aScaleFactorOperator){
         Bitmap bitmap = null;
         try(BufferedInputStream boundsStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
             BufferedInputStream actualStream = new BufferedInputStream(aContext.getContentResolver().openInputStream(oUri));
@@ -148,7 +122,7 @@ public class Picture implements ClusterItem {
 
             Log.e(LoggerTag.MEDIA_ACCESS, String.format("[JustDecode](w,h)=(%d,%d)", bitmap.getWidth(), bitmap.getHeight()));
 
-            float scaleFactor = calculateScaleFactorScaledWithin(bitmap, aReqWidth, aReqHeight);
+            float scaleFactor = aScaleFactorOperator.apply(bitmap).apply(aReqWidth).apply(aReqHeight);
             oMatrix.reset();
             oMatrix.postScale(scaleFactor, scaleFactor);
             oMatrix.postRotate(oOrientation);
@@ -179,8 +153,6 @@ public class Picture implements ClusterItem {
         return inSampleSize * 2;
     }
 
-    /** scale bitmap to match the bigger one so that bitmap doesn't have the padding.
-     */
     private static float calculateScaleFactorScaledOver(Bitmap bitmap, int reqWidth, int reqHeight){
         int height = bitmap.getHeight();
         int width = bitmap.getWidth();
