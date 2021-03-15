@@ -3,9 +3,6 @@ package com.example.masstouring.mapactivity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.util.Log;
-
-import com.example.masstouring.common.LoggerTag;
 
 public class FocusedItem {
     private DistributedItem oOriginalItem = null;
@@ -13,7 +10,7 @@ public class FocusedItem {
     private Bitmap oBitmap;
     private final int oMaxWidth;
     private final int oMaxHeight;
-    private boolean oEnable = false;
+    private boolean oEnabled = false;
 
     FocusedItem(int aMaxWidth, int aMaxHeight){
         oMaxWidth = aMaxWidth;
@@ -32,7 +29,7 @@ public class FocusedItem {
         int halfWidth = oBitmap.getWidth() / 2;
         int halfHeight = oBitmap.getHeight() / 2;
         oFocusedWindowRect = new Rect(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
-        oEnable = true;
+        oEnabled = true;
     }
 
     public Rect getFocusedWindowRect() {
@@ -47,11 +44,11 @@ public class FocusedItem {
         oBitmap = aBitmap;
     }
 
-    public boolean isEnable(){
-        return oEnable;
+    public boolean isEnabled(){
+        return oEnabled;
     }
 
     public void setEnable(boolean aEnable){
-        oEnable = aEnable;
+        oEnabled = aEnable;
     }
 }

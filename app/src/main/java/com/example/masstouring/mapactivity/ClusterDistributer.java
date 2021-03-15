@@ -7,8 +7,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.ViewGroup;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.masstouring.R;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.maps.android.clustering.Cluster;
@@ -53,16 +51,18 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         if(parent != null){
             parent.removeView(oClusterDistributedView);
         }
+        oClusterDistributedView.clearClusterDistributedDrawable();
+        oClusterDistributedView.requestShutdownDrawingTask();
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
     }
 
     @Override
     public boolean onClusterClick(Cluster<Picture> cluster) {
-        if(oMapActivitySharedViewModel.getIsClusterDistributed().getValue()) {
-            clearDistribution(oCluster);
+        if(oClusterDistributedView.hasClusterDistributedDrawable(cluster)){
+            oClusterDistributedView.removeClusterDistributedDrawable(cluster);
+        }else{
+            distribute(cluster);
         }
-
-        distribute(cluster);
 
         return false;
     }
@@ -99,14 +99,9 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         }
 
         //draw each items on the calculated position
-        oClusterDistributedView.drawItems(distributedItems);
+        oClusterDistributedView.addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, oCluster));
 
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
-    }
-
-    public void clearDistribution(Cluster aCluster){
-        //stop
-        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
     }
 
     private Rect createRectOnCircle(Bitmap aBitmap, int aCircleCenterX, int aCircleCenterY, int aRadius, double aTheta){
@@ -118,9 +113,12 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     }
 
     public void updateClusterScreenPosition(GoogleMap aMap){
-        Point point = aMap.getProjection().toScreenLocation(oCluster.getPosition());
-        oClusterDistributedView.getDistributedItems().stream()
-                .forEach(item -> item.updateCenterPoint(point));
+        List<ClusterDistributedDrawable> list = oClusterDistributedView.getClusterDistributedDrawableList();
+        for(ClusterDistributedDrawable drawable : list){
+            Point point = aMap.getProjection().toScreenLocation(drawable.getCluster().getPosition());
+            drawable.getDistributedItems().stream()
+                    .forEach(item -> item.updateCenterPoint(point));
+        }
     }
 
     public Cluster<Picture> getCluster(){

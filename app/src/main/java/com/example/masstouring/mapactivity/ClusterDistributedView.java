@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -18,15 +17,16 @@ import androidx.annotation.NonNull;
 
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
+import com.google.maps.android.clustering.Cluster;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClusterDistributedView extends SurfaceView {
-    private Paint p;
-    private List<DistributedItem> oDistributedItems;
-    private boolean oPaintable = false;
+    private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new ArrayList<>();
     private DistributedItem oTouchedItem = null;
     private FocusedItem oFocusedItem = null;
+    private ClusterDistributedDrawTask oDrawTask;
     private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
         @Override
         public void handleOnBackPressed() {
@@ -52,10 +52,11 @@ public class ClusterDistributedView extends SurfaceView {
     }
 
     private void init(){
-        p = new Paint();
         getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, ClusterDistributedView.this);
+                MapActivity.cExecutors.execute(oDrawTask);
             }
 
             @Override
@@ -72,71 +73,49 @@ public class ClusterDistributedView extends SurfaceView {
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedWhenFocused);
     }
 
-    private boolean isPaintable(){
-        return oPaintable;
+
+    public void addClusterDistributedDrawable(ClusterDistributedDrawable aClusterDistributedDrawable){
+        oClusterDistributedDrawableList.add(aClusterDistributedDrawable);
     }
 
-    public void drawItems(List<DistributedItem> aDistributedItems){
-        oPaintable = true;
-        oDistributedItems = aDistributedItems;
+    public boolean removeClusterDistributedDrawable(Cluster aCluster){
+        List<ClusterDistributedDrawable> deleteList = new ArrayList<>();
 
-        MapActivity.cExecutors.execute(new Runnable() {
-            @Override
-            public void run() {
-                SurfaceHolder holder = getHolder();
-                while(isPaintable()){
-                    Canvas canvas = lockAndGetCanvas(holder);
-                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-
-                    for(DistributedItem item : oDistributedItems){
-                        item.updateRect(Const.MOVING_RATE_PIXEL_PER_FPS);
-                        Rect rect = item.getRect();
-                        int padding = 10;
-                        p.setColor(Color.BLUE);
-                        p.setAlpha(155);
-                        p.setStrokeWidth(padding);
-                        canvas.drawRect(rect.left - padding, rect.top - padding, rect.right + padding, rect.bottom + padding, p);
-//                        canvas.drawLine(item.getCenterX(), item.getCenterY(), rect.centerX(), rect.centerY(), p);
-                        p.setAlpha(255);
-                        canvas.drawBitmap(item.getBitmap(), null, item.getRect(), p);
-                    }
-
-                    paintFocusedItem(canvas);
-
-                    holder.unlockCanvasAndPost(canvas);
-                    waitForFpsTime();
-                }
+        for(ClusterDistributedDrawable drawable: oClusterDistributedDrawableList){
+            if(drawable.getCluster().equals(aCluster)){
+                deleteList.add(drawable);
             }
-        });
-    }
-
-    private Canvas lockAndGetCanvas(SurfaceHolder aSurfaceHolder){
-        Canvas canvas = aSurfaceHolder.lockCanvas();
-        while(canvas == null){
-            Log.i(LoggerTag.CLUSTER, "can't lock canvas. wait getting lock...");
-            try{
-                Thread.sleep(Const.FPS_MILLIS);
-            }catch(InterruptedException e){
-                Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
-            }
-            canvas = aSurfaceHolder.lockCanvas();
         }
 
-        return canvas;
-    }
-
-    private void waitForFpsTime(){
-        try{
-            Thread.sleep(Const.FPS_MILLIS);
-        }catch(InterruptedException e){
-            Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
+        if(deleteList.isEmpty()){
+            return false;
+        }else{
+            deleteList.stream().forEach(oClusterDistributedDrawableList::remove);
+            return true;
         }
     }
 
-    public List<DistributedItem> getDistributedItems(){
-        return oDistributedItems;
+    public void clearClusterDistributedDrawable(){
+        oClusterDistributedDrawableList.clear();
     }
 
+    public void requestShutdownDrawingTask(){
+        oDrawTask.requestShutDown();
+        oDrawTask.interrupt();
+    }
+
+    public List<ClusterDistributedDrawable> getClusterDistributedDrawableList(){
+        return oClusterDistributedDrawableList;
+    }
+
+    public boolean hasClusterDistributedDrawable(Cluster<Picture> aCluster){
+        return oClusterDistributedDrawableList.stream()
+                .anyMatch(drawable -> drawable.getCluster().equals(aCluster));
+    }
+
+    FocusedItem getFocusedItem(){
+        return oFocusedItem;
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -159,8 +138,9 @@ public class ClusterDistributedView extends SurfaceView {
     private boolean distributedItemIsTouched(int aX, int aY){
         oTouchedItem = null;
 
-        for(DistributedItem item : oDistributedItems){
-            if(item.getRect().contains(aX, aY)){
+        for(ClusterDistributedDrawable drawable : oClusterDistributedDrawableList){
+            DistributedItem item = drawable.findDistributedItem(aX, aY);
+            if(item != null){
                 oTouchedItem = item;
                 break;
             }
@@ -178,12 +158,6 @@ public class ClusterDistributedView extends SurfaceView {
         return false;
     }
 
-    private void paintFocusedItem(Canvas aCanvas){
-        if(oFocusedItem.isEnable()){
-            aCanvas.drawBitmap(oFocusedItem.getBitmap(), null, oFocusedItem.getFocusedWindowRect(), p);
-        }
-    }
-
     @Override
     protected void onAttachedToWindow() {
         ViewGroup parent = (ViewGroup)getParent();
@@ -195,14 +169,91 @@ public class ClusterDistributedView extends SurfaceView {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         if(hasWindowFocus){
         }else{
-            oPaintable = false;
+
         }
         super.onWindowFocusChanged(hasWindowFocus);
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        oPaintable = false;
+
         super.onDetachedFromWindow();
+    }
+
+    private static class ClusterDistributedDrawTask extends Thread{
+        private boolean oShutdownRequested = false;
+        private final SurfaceHolder oSurfaceHolder;
+        private final ClusterDistributedView oClusterDistributedView;
+        private final Paint p = new Paint();
+        ClusterDistributedDrawTask(SurfaceHolder aSurfaceHolder, ClusterDistributedView aClusterDistributedView){
+            oSurfaceHolder = aSurfaceHolder;
+            oClusterDistributedView = aClusterDistributedView;
+        }
+
+        @Override
+        public void run() {
+            try{
+                doWork(oSurfaceHolder);
+            }catch(InterruptedException e){
+                Log.d(LoggerTag.CLUSTER, "interrupted. shutdown ClusterDistributedView.");
+            }finally {
+                //detach this view.
+            }
+
+        }
+
+        private void doWork(SurfaceHolder aSurfaceHolder) throws InterruptedException{
+            while(!isShutdownRequested()){
+                Canvas canvas = lockAndGetCanvas(aSurfaceHolder);
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
+                for(ClusterDistributedDrawable drawable: oClusterDistributedView.getClusterDistributedDrawableList()){
+                    drawable.draw(canvas);
+                }
+
+                paintFocusedItem(canvas);
+
+                aSurfaceHolder.unlockCanvasAndPost(canvas);
+                waitForFpsTime();
+            }
+        }
+
+        private Canvas lockAndGetCanvas(SurfaceHolder aSurfaceHolder){
+            Canvas canvas = aSurfaceHolder.lockCanvas();
+            while(canvas == null){
+                Log.i(LoggerTag.CLUSTER, "can't lock canvas. wait getting lock...");
+                try{
+                    Thread.sleep(Const.FPS_MILLIS);
+                }catch(InterruptedException e){
+                    Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
+                }
+                canvas = aSurfaceHolder.lockCanvas();
+            }
+
+            return canvas;
+        }
+
+        private void paintFocusedItem(Canvas aCanvas){
+            FocusedItem item = oClusterDistributedView.getFocusedItem();
+            if(item.isEnabled()){
+                aCanvas.drawBitmap(item.getBitmap(), null, item.getFocusedWindowRect(), p);
+            }
+        }
+
+        private void waitForFpsTime(){
+            try{
+                Thread.sleep(Const.FPS_MILLIS);
+            }catch(InterruptedException e){
+                Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
+            }
+        }
+
+        private boolean isShutdownRequested(){
+            return oShutdownRequested;
+        }
+
+        public void requestShutDown(){
+            oShutdownRequested = true;
+        }
     }
 }
