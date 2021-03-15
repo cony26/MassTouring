@@ -102,7 +102,6 @@ public class ClusterDistributedView extends SurfaceView {
 
     public void requestShutdownDrawingTask(){
         oDrawTask.requestShutDown();
-        oDrawTask.interrupt();
     }
 
     public List<ClusterDistributedDrawable> getClusterDistributedDrawableList(){
@@ -182,7 +181,7 @@ public class ClusterDistributedView extends SurfaceView {
     }
 
     private static class ClusterDistributedDrawTask extends Thread{
-        private boolean oShutdownRequested = false;
+        private volatile boolean oShutdownRequested = false;
         private final SurfaceHolder oSurfaceHolder;
         private final ClusterDistributedView oClusterDistributedView;
         private final Paint p = new Paint();
@@ -193,8 +192,11 @@ public class ClusterDistributedView extends SurfaceView {
 
         @Override
         public void run() {
+            Log.d(LoggerTag.CLUSTER, "ClusterDistributedDrawTask is started");
             try{
-                doWork(oSurfaceHolder);
+                while(!isShutdownRequested()){
+                    doWork(oSurfaceHolder);
+                }
             }catch(InterruptedException e){
                 Log.d(LoggerTag.CLUSTER, "interrupted. shutdown ClusterDistributedView.");
             }finally {
@@ -205,30 +207,25 @@ public class ClusterDistributedView extends SurfaceView {
         }
 
         private void doWork(SurfaceHolder aSurfaceHolder) throws InterruptedException{
-            while(!isShutdownRequested()){
-                Canvas canvas = lockAndGetCanvas(aSurfaceHolder);
-                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            Canvas canvas = lockAndGetCanvas(aSurfaceHolder);
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
-                for(ClusterDistributedDrawable drawable: oClusterDistributedView.getClusterDistributedDrawableList()){
-                    drawable.draw(canvas);
-                }
-
-                paintFocusedItem(canvas);
-
-                aSurfaceHolder.unlockCanvasAndPost(canvas);
-                waitForFpsTime();
+            for(ClusterDistributedDrawable drawable: oClusterDistributedView.getClusterDistributedDrawableList()){
+                drawable.draw(canvas);
             }
+
+            paintFocusedItem(canvas);
+
+            aSurfaceHolder.unlockCanvasAndPost(canvas);
+
+            Thread.sleep(Const.FPS_MILLIS);
         }
 
-        private Canvas lockAndGetCanvas(SurfaceHolder aSurfaceHolder){
+        private Canvas lockAndGetCanvas(SurfaceHolder aSurfaceHolder) throws InterruptedException{
             Canvas canvas = aSurfaceHolder.lockCanvas();
             while(canvas == null){
                 Log.i(LoggerTag.CLUSTER, "can't lock canvas. wait getting lock...");
-                try{
-                    Thread.sleep(Const.FPS_MILLIS);
-                }catch(InterruptedException e){
-                    Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
-                }
+                Thread.sleep(Const.FPS_MILLIS);
                 canvas = aSurfaceHolder.lockCanvas();
             }
 
@@ -242,20 +239,13 @@ public class ClusterDistributedView extends SurfaceView {
             }
         }
 
-        private void waitForFpsTime(){
-            try{
-                Thread.sleep(Const.FPS_MILLIS);
-            }catch(InterruptedException e){
-                Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
-            }
-        }
-
         private boolean isShutdownRequested(){
             return oShutdownRequested;
         }
 
         public void requestShutDown(){
             oShutdownRequested = true;
+            interrupt();
         }
     }
 }
