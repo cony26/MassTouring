@@ -169,14 +169,14 @@ public class ClusterDistributedView extends SurfaceView {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         if(hasWindowFocus){
         }else{
-
+            requestShutdownDrawingTask();
         }
         super.onWindowFocusChanged(hasWindowFocus);
     }
 
     @Override
     protected void onDetachedFromWindow() {
-
+        requestShutdownDrawingTask();
         super.onDetachedFromWindow();
     }
 
