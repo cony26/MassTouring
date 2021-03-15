@@ -34,13 +34,20 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         oClusterSquarePx = (int)aContext.getResources().getDimension(R.dimen.cluster_item_image);
     }
 
-    public void attachDistributedViewIfNeeded(Activity aActivity){
+    /**
+     * attach DistributedView to {@code aActivity} if DistributedView is not yet attached.
+     * @param aActivity to attach DistributedView to
+     */
+    public void attachDistributedView(Activity aActivity){
         ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();
         if(parent == null){
             aActivity.addContentView(oClusterDistributedView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
     }
 
+    /**
+     * detach DistributedView to {@code aActivity} if attached.
+     */
     public void detachDistributedView(){
         ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();
         if(parent != null){

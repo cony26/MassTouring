@@ -258,7 +258,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Picture>() {
             @Override
             public boolean onClusterClick(Cluster<Picture> cluster) {
-                oClusterDistributer.attachDistributedViewIfNeeded(oMapFragment.getActivity());
+                oClusterDistributer.attachDistributedView(oMapFragment.getActivity());
                 oClusterDistributer.onClusterClick(cluster);
                 return false;
             }
