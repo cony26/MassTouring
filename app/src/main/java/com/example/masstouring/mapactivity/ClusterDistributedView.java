@@ -194,7 +194,7 @@ public class ClusterDistributedView extends SurfaceView {
         public void run() {
             Log.d(LoggerTag.CLUSTER, "ClusterDistributedDrawTask is started");
             try{
-                while(!isShutdownRequested()){
+                while(!oShutdownRequested){
                     doWork(oSurfaceHolder);
                 }
             }catch(InterruptedException e){
@@ -237,10 +237,6 @@ public class ClusterDistributedView extends SurfaceView {
             if(item.isEnabled()){
                 aCanvas.drawBitmap(item.getBitmap(), null, item.getFocusedWindowRect(), p);
             }
-        }
-
-        private boolean isShutdownRequested(){
-            return oShutdownRequested;
         }
 
         public void requestShutDown(){
