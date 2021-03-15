@@ -21,6 +21,7 @@ import com.google.maps.android.clustering.Cluster;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ClusterDistributedView extends SurfaceView {
     private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new ArrayList<>();
@@ -197,6 +198,7 @@ public class ClusterDistributedView extends SurfaceView {
             }catch(InterruptedException e){
                 Log.d(LoggerTag.CLUSTER, "interrupted. shutdown ClusterDistributedView.");
             }finally {
+                Log.i(LoggerTag.CLUSTER, "ClusterDistributedDrawTask is shutdown");
                 //detach this view.
             }
 
