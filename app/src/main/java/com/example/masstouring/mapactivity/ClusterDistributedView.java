@@ -200,7 +200,6 @@ public class ClusterDistributedView extends SurfaceView {
                 Log.d(LoggerTag.CLUSTER, "interrupted. shutdown ClusterDistributedView.");
             }finally {
                 Log.i(LoggerTag.CLUSTER, "ClusterDistributedDrawTask is shutdown");
-                //detach this view.
             }
 
         }
