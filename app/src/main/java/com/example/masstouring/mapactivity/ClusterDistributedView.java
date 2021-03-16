@@ -236,6 +236,7 @@ public class ClusterDistributedView extends SurfaceView {
             }
 
             if(oFocusedItem.isEnabled()){
+                aCanvas.drawColor(Color.BLACK);
                 aCanvas.drawBitmap(oFocusedItem.getBitmap(), null, oFocusedItem.getFocusedWindowRect(), p);
             }
         }
