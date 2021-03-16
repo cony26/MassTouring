@@ -26,7 +26,7 @@ public class ClusterDistributedView extends SurfaceView {
     private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new ArrayList<>();
     private DistributedItem oTouchedItem = null;
     private FocusedItem oFocusedItem = null;
-    private ClusterDistributedDrawTask oDrawTask;
+    private ClusterDistributedDrawTask oDrawTask = null;
     private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
         @Override
         public void handleOnBackPressed() {
@@ -100,7 +100,9 @@ public class ClusterDistributedView extends SurfaceView {
     }
 
     public void requestShutdownDrawingTask(){
-        oDrawTask.requestShutDown();
+        if(oDrawTask != null){
+            oDrawTask.requestShutDown();
+        }
     }
 
     public List<ClusterDistributedDrawable> getClusterDistributedDrawableList(){

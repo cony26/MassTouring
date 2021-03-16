@@ -65,7 +65,7 @@ public class MapActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new LifeCycleLogger(this, getClass().getSimpleName());
-        BackPressedCallbackRegisterer.instantiate(this);
+        BackPressedCallbackRegisterer.initialize(this);
         checkPermissions();
         setContentView(R.layout.activity_maps);
         oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);

@@ -22,7 +22,6 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     private final ClusterDistributedView oClusterDistributedView;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final int oClusterSquarePx;
-    private Cluster<Picture> oCluster;
 
     ClusterDistributer(Context aContext, ClusterManager<Picture> aClusterManager, MapActivtySharedViewModel aViewModel){
         oClusterDistributedView = new ClusterDistributedView(aContext);
@@ -68,8 +67,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     }
 
     public void distribute(Cluster<Picture> aCluster){
-        oCluster = aCluster;
-        List<Picture> pictureList = new ArrayList<>(oCluster.getItems());
+        List<Picture> pictureList = new ArrayList<>(aCluster.getItems());
 
         //get item bitmap
         List<Bitmap> bitmapList = pictureList.stream()
@@ -99,7 +97,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         }
 
         //draw each items on the calculated position
-        oClusterDistributedView.addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, oCluster));
+        oClusterDistributedView.addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, aCluster));
 
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
     }
@@ -119,9 +117,5 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
             drawable.getDistributedItems().stream()
                     .forEach(item -> item.updateCenterPoint(point));
         }
-    }
-
-    public Cluster<Picture> getCluster(){
-        return oCluster;
     }
 }

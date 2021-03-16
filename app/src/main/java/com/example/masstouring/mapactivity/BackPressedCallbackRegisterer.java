@@ -35,10 +35,8 @@ public class BackPressedCallbackRegisterer implements LifecycleObserver {
         return oRegisterer;
     }
 
-    public static void instantiate(AppCompatActivity aAppCompatActivity){
-        if(oRegisterer == null){
-            oRegisterer = new BackPressedCallbackRegisterer(aAppCompatActivity);
-        }
+    public static void initialize(AppCompatActivity aAppCompatActivity){
+        oRegisterer = new BackPressedCallbackRegisterer(aAppCompatActivity);
     }
 
     public void register(PrioritizedOnBackPressedCallback aOnBackPressedCallback){
