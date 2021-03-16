@@ -21,7 +21,6 @@ import com.google.maps.android.clustering.Cluster;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class ClusterDistributedView extends SurfaceView {
     private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new ArrayList<>();
@@ -56,7 +55,7 @@ public class ClusterDistributedView extends SurfaceView {
         getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, ClusterDistributedView.this);
+                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, oClusterDistributedDrawableList, oFocusedItem);
                 MapActivity.cExecutors.execute(oDrawTask);
             }
 
@@ -90,10 +89,10 @@ public class ClusterDistributedView extends SurfaceView {
 
         if(deleteList.isEmpty()){
             return false;
-        }else{
-            deleteList.stream().forEach(oClusterDistributedDrawableList::remove);
-            return true;
         }
+
+        deleteList.stream().forEach(oClusterDistributedDrawableList::remove);
+        return true;
     }
 
     public void clearClusterDistributedDrawable(){
@@ -111,10 +110,6 @@ public class ClusterDistributedView extends SurfaceView {
     public boolean hasClusterDistributedDrawable(Cluster<Picture> aCluster){
         return oClusterDistributedDrawableList.stream()
                 .anyMatch(drawable -> drawable.getCluster().equals(aCluster));
-    }
-
-    FocusedItem getFocusedItem(){
-        return oFocusedItem;
     }
 
     @Override
@@ -183,11 +178,13 @@ public class ClusterDistributedView extends SurfaceView {
     private static class ClusterDistributedDrawTask extends Thread{
         private volatile boolean oShutdownRequested = false;
         private final SurfaceHolder oSurfaceHolder;
-        private final ClusterDistributedView oClusterDistributedView;
         private final Paint p = new Paint();
-        ClusterDistributedDrawTask(SurfaceHolder aSurfaceHolder, ClusterDistributedView aClusterDistributedView){
+        private final FocusedItem oFocusedItem;
+        private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList;
+        ClusterDistributedDrawTask(SurfaceHolder aSurfaceHolder, List<ClusterDistributedDrawable> aClusterDistributedDrawableList, FocusedItem aFocusedItem){
             oSurfaceHolder = aSurfaceHolder;
-            oClusterDistributedView = aClusterDistributedView;
+            oClusterDistributedDrawableList = aClusterDistributedDrawableList;
+            oFocusedItem = aFocusedItem;
         }
 
         @Override
@@ -195,7 +192,7 @@ public class ClusterDistributedView extends SurfaceView {
             Log.d(LoggerTag.CLUSTER, "ClusterDistributedDrawTask is started");
             try{
                 while(!oShutdownRequested){
-                    doWork(oSurfaceHolder);
+                    doWork();
                 }
             }catch(InterruptedException e){
                 Log.d(LoggerTag.CLUSTER, "interrupted. shutdown ClusterDistributedView.");
@@ -206,17 +203,17 @@ public class ClusterDistributedView extends SurfaceView {
 
         }
 
-        private void doWork(SurfaceHolder aSurfaceHolder) throws InterruptedException{
-            Canvas canvas = lockAndGetCanvas(aSurfaceHolder);
+        private void doWork() throws InterruptedException{
+            Canvas canvas = lockAndGetCanvas(oSurfaceHolder);
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
-            for(ClusterDistributedDrawable drawable: oClusterDistributedView.getClusterDistributedDrawableList()){
+            for(ClusterDistributedDrawable drawable: oClusterDistributedDrawableList){
                 drawable.draw(canvas);
             }
 
             paintFocusedItem(canvas);
 
-            aSurfaceHolder.unlockCanvasAndPost(canvas);
+            oSurfaceHolder.unlockCanvasAndPost(canvas);
 
             Thread.sleep(Const.FPS_MILLIS);
         }
@@ -233,9 +230,12 @@ public class ClusterDistributedView extends SurfaceView {
         }
 
         private void paintFocusedItem(Canvas aCanvas){
-            FocusedItem item = oClusterDistributedView.getFocusedItem();
-            if(item.isEnabled()){
-                aCanvas.drawBitmap(item.getBitmap(), null, item.getFocusedWindowRect(), p);
+            if(oFocusedItem == null){
+                return;
+            }
+
+            if(oFocusedItem.isEnabled()){
+                aCanvas.drawBitmap(oFocusedItem.getBitmap(), null, oFocusedItem.getFocusedWindowRect(), p);
             }
         }
 
