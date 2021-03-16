@@ -1,19 +1,24 @@
 package com.example.masstouring.mapactivity;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsetsController;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
@@ -123,6 +128,11 @@ public class ClusterDistributedView extends SurfaceView {
                 performClick();
                 if(clickedItemIsSameWithTouchedItem((int)event.getX(), (int)event.getY())){
                     oFocusedItem.update(oTouchedItem, getContext());
+                    if(Build.VERSION.SDK_INT >= 30){
+                        getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                    }else{
+                        setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+                    }
                     oOnBackPressedWhenFocused.setEnabled(true);
                 }
                 oTouchedItem = null;
