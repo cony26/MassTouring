@@ -1,6 +1,5 @@
 package com.example.masstouring.mapactivity;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -18,7 +17,6 @@ import android.view.ViewGroup;
 import android.view.WindowInsetsController;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
@@ -37,6 +35,11 @@ public class ClusterDistributedView extends SurfaceView {
         public void handleOnBackPressed() {
             oFocusedItem.setEnable(false);
             oOnBackPressedWhenFocused.setEnabled(false);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                getWindowInsetsController().show(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+            }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                setSystemUiVisibility(View.VISIBLE);
+            }
             Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when distributed item is focused");
         }
     };
@@ -128,9 +131,9 @@ public class ClusterDistributedView extends SurfaceView {
                 performClick();
                 if(clickedItemIsSameWithTouchedItem((int)event.getX(), (int)event.getY())){
                     oFocusedItem.update(oTouchedItem, getContext());
-                    if(Build.VERSION.SDK_INT >= 30){
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
                         getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-                    }else{
+                    }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
                         setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
                     }
                     oOnBackPressedWhenFocused.setEnabled(true);
