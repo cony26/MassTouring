@@ -85,6 +85,7 @@ public class ClusterDistributedView extends SurfaceView {
 
     public void addClusterDistributedDrawable(ClusterDistributedDrawable aClusterDistributedDrawable){
         oClusterDistributedDrawableList.add(aClusterDistributedDrawable);
+        Log.i(LoggerTag.CLUSTER, "added aClusterDistributedDrawable:" + aClusterDistributedDrawable.toString() + ", clusterDistributedDrawableList:" + oClusterDistributedDrawableList);
     }
 
     public boolean removeUnnecessaryClusterDistributedDrawable(){
@@ -118,7 +119,7 @@ public class ClusterDistributedView extends SurfaceView {
 
         for(ClusterDistributedDrawable drawable : aDeletedList){
             oClusterDistributedDrawableList.remove(drawable);
-            Log.i(LoggerTag.CLUSTER, "removed ClusterDistributedDrawable");
+            Log.i(LoggerTag.CLUSTER, "removed ClusterDistributedDrawable:" + drawable.toString());
         }
         return true;
     }

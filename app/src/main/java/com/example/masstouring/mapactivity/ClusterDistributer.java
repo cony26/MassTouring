@@ -83,7 +83,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
             }
         }
 
-        oClusterDistributedView.removeDistributedItems(renderedDistributedItems);
+        oClusterDistributedView.removeDistributedItems(distributedItems);
 
         Point point = aGoogleMap.getProjection().toScreenLocation(aCluster.getPosition());
         calculateDistribution(distributedItems, point.x, point.y);

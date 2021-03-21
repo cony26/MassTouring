@@ -93,17 +93,13 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
 
         for(IClusterUpdatedListener listener : oClusterUpdatedListener){
-
             listener.onClusterCreated(cluster, oGoogleMap);
         }
-        Log.e(LoggerTag.CLUSTER, "onBeforeClusterRendered");
     }
 
     @Override
     protected void onClusterUpdated(@NonNull Cluster<Picture> cluster, @NonNull Marker marker) {
         layoutBitmapsAsyncly(cluster);
-
-        Log.e(LoggerTag.CLUSTER, "onClusterUpdated");
     }
 
     private void setClusterBitmap(Bitmap aBitmap, Marker aMarker, int aClusterSize){
