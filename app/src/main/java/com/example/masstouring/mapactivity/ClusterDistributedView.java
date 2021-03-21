@@ -67,19 +67,6 @@ public class ClusterDistributedView extends SurfaceView {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()){
-            case MotionEvent.ACTION_DOWN:
-                return oClusterDistributer.onActionDown(event);
-            case MotionEvent.ACTION_UP:
-                performClick();
-                return oClusterDistributer.onActionUp(event);
-            default:
-                return super.onTouchEvent(event);
-        }
-    }
-
-    @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
     }

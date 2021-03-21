@@ -3,25 +3,25 @@ package com.example.masstouring.mapactivity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.view.View;
+import android.view.ViewGroup;
 
 public class FocusedItem {
     private DistributedItem oOriginalItem = null;
     private Rect oFocusedWindowRect;
     private Bitmap oBitmap;
-    private final int oMaxWidth;
-    private final int oMaxHeight;
+    private int oMaxWidth;
+    private int oMaxHeight;
     private boolean oEnabled = false;
-
-    FocusedItem(int aMaxWidth, int aMaxHeight){
-        oMaxWidth = aMaxWidth;
-        oMaxHeight = aMaxHeight;
-    }
 
     public DistributedItem getDistributedItem() {
         return oOriginalItem;
     }
 
-    public void update(DistributedItem aOriginalItem, Context aContext) {
+    public void update(DistributedItem aOriginalItem, Context aContext, View aView) {
+        oMaxWidth = aView.getMeasuredWidth();
+        oMaxHeight = aView.getMeasuredHeight();
+
         oOriginalItem = aOriginalItem;
         oBitmap = oOriginalItem.getPicture().getBitmapSynclyScaledWithin(aContext, oMaxWidth, oMaxHeight);
         int centerX = oMaxWidth / 2;

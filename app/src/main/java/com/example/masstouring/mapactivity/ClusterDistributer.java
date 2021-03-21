@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class ClusterDistributer implements ClusterManager.OnClusterClickListener<Picture>, PictureClusterRenderer.IClusterUpdatedListener, IClusterDistributer {
     private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new CopyOnWriteArrayList<>();
     private DistributedItem oTouchedItem = null;
-    private FocusedItem oFocusedItem = null;
+    private final FocusedItem oFocusedItem = new FocusedItem();
     private final Context oContext;
     private final ClusterDistributedView oClusterDistributedView;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
@@ -45,8 +45,34 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         }
     };
 
+    private final View.OnTouchListener oOnTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch (motionEvent.getAction()){
+                case MotionEvent.ACTION_DOWN:
+                    return distributedItemIsTouched((int)motionEvent.getX(), (int)motionEvent.getY());
+                case MotionEvent.ACTION_UP:
+                    view.performClick();
+                    if(clickedItemIsSameWithTouchedItem((int)motionEvent.getX(), (int)motionEvent.getY())){
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                            oClusterDistributedView.getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                        }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                            oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+                        }
+                        oFocusedItem.update(oTouchedItem, oContext, oClusterDistributedView);
+                        oOnBackPressedWhenFocused.setEnabled(true);
+                    }
+                    oTouchedItem = null;
+                    return true;
+                default:
+                    return view.onTouchEvent(motionEvent);
+            }
+        }
+    };
+
     ClusterDistributer(Context aContext, MapActivtySharedViewModel aViewModel){
         oClusterDistributedView = new ClusterDistributedView(aContext, this);
+        oClusterDistributedView.setOnTouchListener(oOnTouchListener);
         oContext = aContext;
         oMapActivitySharedViewModel = aViewModel;
         oClusterSquarePx = (int)aContext.getResources().getDimension(R.dimen.cluster_item_image);
@@ -62,8 +88,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         if(parent == null){
             aActivity.addContentView(oClusterDistributedView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
-        parent = (ViewGroup)oClusterDistributedView.getParent();
-        oFocusedItem = new FocusedItem(parent.getMeasuredWidth(), parent.getMeasuredHeight());
+
     }
 
     /**
@@ -237,26 +262,6 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     @Override
     public FocusedItem getFocusedItem() {
         return oFocusedItem;
-    }
-
-    @Override
-    public boolean onActionDown(MotionEvent event) {
-        return distributedItemIsTouched((int)event.getX(), (int)event.getY());
-    }
-
-    @Override
-    public boolean onActionUp(MotionEvent event) {
-        if(clickedItemIsSameWithTouchedItem((int)event.getX(), (int)event.getY())){
-            oFocusedItem.update(oTouchedItem, oContext);
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
-                oClusterDistributedView.getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-            }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-                oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
-            }
-            oOnBackPressedWhenFocused.setEnabled(true);
-        }
-        oTouchedItem = null;
-        return true;
     }
 
     private boolean distributedItemIsTouched(int aX, int aY){
