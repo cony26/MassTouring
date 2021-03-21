@@ -63,19 +63,21 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
                         prevX = initialX;
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        oFocusedDrawable.updateByDistance(prevX - motionEvent.getX());
+                        oFocusedDrawable.updateByDistance(motionEvent.getX() - prevX);
                         prevX = motionEvent.getX();
                         return true;
                     case MotionEvent.ACTION_UP:
+                        //finger move left
                         if(initialX - motionEvent.getX() > 300){
-                            oFocusedDrawable.next();
+                            oFocusedDrawable.moveTo(true);
                             Log.i(LoggerTag.CLUSTER, "next FocusedDrawable");
+                        //finger move right
                         }else if(initialX - motionEvent.getX() < -300){
-                            oFocusedDrawable.previous();
+                            oFocusedDrawable.moveTo(false);
                             Log.i(LoggerTag.CLUSTER, "previous FocusedDrawable");
                         }else{
                             //reset
-                            oFocusedDrawable.updateByDistance(-(initialX - motionEvent.getX()));
+                            oFocusedDrawable.updateByDistance(initialX - motionEvent.getX());
                         }
                         return true;
                     default:

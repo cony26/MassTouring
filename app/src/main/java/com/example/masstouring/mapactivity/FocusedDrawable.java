@@ -9,6 +9,8 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
 
+import com.example.masstouring.common.Const;
+
 import java.util.List;
 
 public class FocusedDrawable {
@@ -75,7 +77,7 @@ public class FocusedDrawable {
         oEnabled = aEnable;
     }
 
-    public void next(){
+    private void next(){
         oPrevBitmap = oBitmap;
         oBitmap = oNextBitmap;
 
@@ -98,7 +100,7 @@ public class FocusedDrawable {
         oPrevWindowRect.offset(-oMaxWidth, 0);
     }
 
-    public void previous(){
+    private void previous(){
         oNextBitmap = oBitmap;
         oBitmap = oPrevBitmap;
 
@@ -129,8 +131,39 @@ public class FocusedDrawable {
         return new Rect(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
     }
 
+    public void moveTo(boolean next){
+        int remainDistance;
+        if(next){
+            remainDistance = -oMaxWidth - oFocusedWindowRect.left;
+        }else{
+            remainDistance = oMaxWidth - oFocusedWindowRect.left;
+        }
+
+        int cycle = 200 / Const.FPS_MILLIS;
+        MapActivity.cExecutors.execute(new Runnable() {
+            @Override
+            public void run() {
+                for(int i = 0; i < cycle; i++){
+                    updateByDistance(remainDistance / cycle);
+                    try{
+                        Thread.sleep(Const.FPS_MILLIS);
+                    }catch(InterruptedException e){
+
+                    }
+                }
+
+                if(next){
+                    next();
+                }else{
+                    previous();
+                }
+            }
+        });
+
+    }
+
     public void updateByDistance(float aDistance){
-        int distance = (int)-aDistance;
+        int distance = (int)aDistance;
         oFocusedWindowRect.offset(distance, 0);
         oNextWindowRect.offset(distance, 0);
         oPrevWindowRect.offset(distance, 0);
