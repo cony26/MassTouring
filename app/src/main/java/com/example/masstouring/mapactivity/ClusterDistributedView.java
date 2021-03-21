@@ -67,6 +67,7 @@ public class ClusterDistributedView extends SurfaceView {
 
     @Override
     protected void onAttachedToWindow() {
+        Log.d(LoggerTag.CLUSTER_DISTRIBUTED_VIEW, "onAttachedToWindow");
         super.onAttachedToWindow();
     }
 
@@ -76,12 +77,14 @@ public class ClusterDistributedView extends SurfaceView {
         }else{
             requestShutdownDrawingTask();
         }
+        Log.d(LoggerTag.CLUSTER_DISTRIBUTED_VIEW, "onWindowFocusedChanged");
         super.onWindowFocusChanged(hasWindowFocus);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         requestShutdownDrawingTask();
+        Log.d(LoggerTag.CLUSTER_DISTRIBUTED_VIEW, "onDetachedFromWindow");
         super.onDetachedFromWindow();
     }
 
