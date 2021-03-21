@@ -8,7 +8,6 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -84,6 +83,11 @@ public class ClusterDistributedView extends SurfaceView {
     protected void onDetachedFromWindow() {
         requestShutdownDrawingTask();
         super.onDetachedFromWindow();
+    }
+
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 
     private static class ClusterDistributedDrawTask extends Thread{

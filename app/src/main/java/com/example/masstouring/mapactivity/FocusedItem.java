@@ -2,6 +2,7 @@ package com.example.masstouring.mapactivity;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +20,10 @@ public class FocusedItem {
     }
 
     public void update(DistributedItem aOriginalItem, Context aContext, View aView) {
-        oMaxWidth = aView.getMeasuredWidth();
-        oMaxHeight = aView.getMeasuredHeight();
+        Point point = new Point();
+        aView.getDisplay().getRealSize(point);
+        oMaxWidth = point.x;
+        oMaxHeight = point.y;
 
         oOriginalItem = aOriginalItem;
         oBitmap = oOriginalItem.getPicture().getBitmapSynclyScaledWithin(aContext, oMaxWidth, oMaxHeight);
