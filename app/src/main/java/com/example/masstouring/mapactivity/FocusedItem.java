@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
-import android.view.ViewGroup;
 
 public class FocusedItem {
     private DistributedItem oOriginalItem = null;

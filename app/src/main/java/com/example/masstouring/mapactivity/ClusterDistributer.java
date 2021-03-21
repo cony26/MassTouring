@@ -6,10 +6,13 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Build;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsetsController;
+
+import androidx.core.view.GestureDetectorCompat;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
@@ -31,6 +34,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     private final ClusterDistributedView oClusterDistributedView;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final int oClusterSquarePx;
+    private final GestureDetectorCompat oDetector;
     private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
         @Override
         public void handleOnBackPressed() {
@@ -48,31 +52,57 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     private final View.OnTouchListener oOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            switch (motionEvent.getAction()){
-                case MotionEvent.ACTION_DOWN:
-                    return distributedItemIsTouched((int)motionEvent.getX(), (int)motionEvent.getY());
-                case MotionEvent.ACTION_UP:
-                    view.performClick();
-                    if(clickedItemIsSameWithTouchedItem((int)motionEvent.getX(), (int)motionEvent.getY())){
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
-                            oClusterDistributedView.getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-                        }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-                            oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            if(oFocusedItem.isEnabled()){
+                oDetector.onTouchEvent(motionEvent);
+                return true;
+            }else{
+                switch (motionEvent.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        return distributedItemIsTouched((int)motionEvent.getX(), (int)motionEvent.getY());
+                    case MotionEvent.ACTION_UP:
+                        view.performClick();
+                        if(clickedItemIsSameWithTouchedItem((int)motionEvent.getX(), (int)motionEvent.getY())){
+                            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                                oClusterDistributedView.getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                            }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                                oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+                            }
+                            oFocusedItem.update(oTouchedItem, oContext, oClusterDistributedView);
+                            oOnBackPressedWhenFocused.setEnabled(true);
                         }
-                        oFocusedItem.update(oTouchedItem, oContext, oClusterDistributedView);
-                        oOnBackPressedWhenFocused.setEnabled(true);
-                    }
-                    oTouchedItem = null;
-                    return true;
-                default:
-                    return view.onTouchEvent(motionEvent);
+                        oTouchedItem = null;
+                        return true;
+                    default:
+                        return view.onTouchEvent(motionEvent);
+                }
             }
+        }
+    };
+
+    private final GestureDetector.SimpleOnGestureListener oSimpleOnGestureListener = new GestureDetector.SimpleOnGestureListener(){
+        private boolean oTapped = false;
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            if(oTapped){
+                oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+                oTapped = false;
+            }else{
+                oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+                oTapped = true;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
         }
     };
 
     ClusterDistributer(Context aContext, MapActivtySharedViewModel aViewModel){
         oClusterDistributedView = new ClusterDistributedView(aContext, this);
         oClusterDistributedView.setOnTouchListener(oOnTouchListener);
+        oDetector = new GestureDetectorCompat(aContext, oSimpleOnGestureListener);
         oContext = aContext;
         oMapActivitySharedViewModel = aViewModel;
         oClusterSquarePx = (int)aContext.getResources().getDimension(R.dimen.cluster_item_image);
