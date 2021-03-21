@@ -117,6 +117,9 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();
         if(parent == null){
             aActivity.addContentView(oClusterDistributedView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            Log.d(LoggerTag.CLUSTER, "attached ClusterDistributedView");
+        }else{
+            Log.e(LoggerTag.CLUSTER, "can't attach ClusterDistributedView");
         }
 
     }
@@ -128,6 +131,9 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();
         if(parent != null){
             parent.removeView(oClusterDistributedView);
+            Log.d(LoggerTag.CLUSTER, "detached ClusterDistributedView");
+        }else{
+            Log.e(LoggerTag.CLUSTER, "can't detach ClusterDistributedView");
         }
         clearClusterDistributedDrawable();
         oClusterDistributedView.requestShutdownDrawingTask();

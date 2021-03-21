@@ -42,10 +42,6 @@ public class FocusedItem {
         return oBitmap;
     }
 
-    public void setBitmap(Bitmap aBitmap) {
-        oBitmap = aBitmap;
-    }
-
     public boolean isEnabled(){
         return oEnabled;
     }
