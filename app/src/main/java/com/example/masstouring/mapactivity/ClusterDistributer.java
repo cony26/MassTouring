@@ -51,6 +51,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
 
     private final View.OnTouchListener oOnTouchListener = new View.OnTouchListener() {
         private float initialX;
+        private float prevX;
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             if(oFocusedDrawable.isEnabled()){
@@ -59,9 +60,12 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
                 switch (motionEvent.getAction()){
                     case MotionEvent.ACTION_DOWN:
                         initialX = motionEvent.getX();
+                        prevX = initialX;
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        Log.e(LoggerTag.CLUSTER, "distance:" + (initialX - motionEvent.getX()));
+                        oFocusedDrawable.updateByDistance(prevX - motionEvent.getX());
+                        Log.e(LoggerTag.CLUSTER, "distance:" + (prevX - motionEvent.getX()));
+                        prevX = motionEvent.getX();
                         return true;
                     case MotionEvent.ACTION_UP:
                         if(initialX - motionEvent.getX() > 500){
@@ -70,6 +74,9 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
                         }else if(initialX - motionEvent.getX() < -500){
                             oFocusedDrawable.previous();
                             Log.e(LoggerTag.CLUSTER, "previous");
+                        }else{
+                            //reset
+                            oFocusedDrawable.updateByDistance(-(initialX - motionEvent.getX()));
                         }
                         return true;
                     default:

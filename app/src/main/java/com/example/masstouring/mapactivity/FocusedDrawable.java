@@ -16,6 +16,8 @@ public class FocusedDrawable {
     private int oIndex;
     private DistributedItem oFocusedItem = null;
     private Rect oFocusedWindowRect;
+    private Rect oNextWindowRect;
+    private Rect oPrevWindowRect;
     private Bitmap oBitmap;
     private Bitmap oNextBitmap;
     private Bitmap oPrevBitmap;
@@ -26,10 +28,6 @@ public class FocusedDrawable {
 
     FocusedDrawable(Context aContext){
         oContext = aContext;
-    }
-
-    public DistributedItem getDistributedItem() {
-        return oFocusedItem;
     }
 
     public void prepareToShow(DistributedItem aOriginalItem, List<DistributedItem> aDistributedItems, View aView) {
@@ -57,15 +55,15 @@ public class FocusedDrawable {
                 }
 
                 oNextBitmap = oDistributedItems.get(nextIndex).getPicture().getBitmapSynclyScaledWithin(oContext, oMaxWidth, oMaxHeight);
+                oNextWindowRect = createRect(oNextBitmap);
+                oNextWindowRect.offset(oMaxWidth, 0);
                 oPrevBitmap = oDistributedItems.get(prevIndex).getPicture().getBitmapSynclyScaledWithin(oContext, oMaxWidth, oMaxHeight);
+                oPrevWindowRect = createRect(oPrevBitmap);
+                oPrevWindowRect.offset(-oMaxWidth, 0);
             }
         });
 
-        int centerX = oMaxWidth / 2;
-        int centerY = oMaxHeight / 2;
-        int halfWidth = oBitmap.getWidth() / 2;
-        int halfHeight = oBitmap.getHeight() / 2;
-        oFocusedWindowRect = new Rect(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
+        oFocusedWindowRect = createRect(oBitmap);
         oEnabled = true;
     }
 
@@ -90,14 +88,14 @@ public class FocusedDrawable {
             @Override
             public void run() {
                 oNextBitmap = oDistributedItems.get(oIndex).getPicture().getBitmapSynclyScaledWithin(oContext, oMaxWidth, oMaxHeight);
+                oNextWindowRect = createRect(oNextBitmap);
+                oNextWindowRect.offset(oMaxWidth, 0);
             }
         });
 
-        int centerX = oMaxWidth / 2;
-        int centerY = oMaxHeight / 2;
-        int halfWidth = oBitmap.getWidth() / 2;
-        int halfHeight = oBitmap.getHeight() / 2;
-        oFocusedWindowRect = new Rect(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
+        oFocusedWindowRect = createRect(oBitmap);
+        oPrevWindowRect = createRect(oPrevBitmap);
+        oPrevWindowRect.offset(-oMaxWidth, 0);
     }
 
     public void previous(){
@@ -113,20 +111,41 @@ public class FocusedDrawable {
             @Override
             public void run() {
                 oPrevBitmap = oDistributedItems.get(oIndex).getPicture().getBitmapSynclyScaledWithin(oContext, oMaxWidth, oMaxHeight);
+                oPrevWindowRect = createRect(oPrevBitmap);
+                oPrevWindowRect.offset(-oMaxWidth, 0);
             }
         });
 
+        oFocusedWindowRect = createRect(oBitmap);
+        oNextWindowRect = createRect(oNextBitmap);
+        oNextWindowRect.offset(oMaxWidth, 0);
+    }
+
+    private Rect createRect(Bitmap aBitmap){
         int centerX = oMaxWidth / 2;
         int centerY = oMaxHeight / 2;
-        int halfWidth = oBitmap.getWidth() / 2;
-        int halfHeight = oBitmap.getHeight() / 2;
-        oFocusedWindowRect = new Rect(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
+        int halfWidth = aBitmap.getWidth() / 2;
+        int halfHeight = aBitmap.getHeight() / 2;
+        return new Rect(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight);
+    }
+
+    public void updateByDistance(float aDistance){
+        int distance = (int)-aDistance;
+        oFocusedWindowRect.offset(distance, 0);
+        oNextWindowRect.offset(distance, 0);
+        oPrevWindowRect.offset(distance, 0);
     }
 
     public void draw(Canvas aCanvas, Paint p){
         if(oEnabled){
             aCanvas.drawColor(Color.BLACK);
             aCanvas.drawBitmap(oBitmap, null, oFocusedWindowRect, p);
+            if(oNextBitmap != null){
+                aCanvas.drawBitmap(oNextBitmap, null, oNextWindowRect, p);
+            }
+            if(oPrevBitmap != null){
+                aCanvas.drawBitmap(oPrevBitmap, null, oPrevWindowRect, p);
+            }
         }
     }
 }
