@@ -6,15 +6,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowInsetsController;
 
 import androidx.annotation.NonNull;
 
@@ -25,22 +21,7 @@ import java.util.List;
 
 public class ClusterDistributedView extends SurfaceView {
     private IClusterDistributer oClusterDistributer;
-    private DistributedItem oTouchedItem = null;
-    private FocusedItem oFocusedItem = null;
     private ClusterDistributedDrawTask oDrawTask = null;
-    private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
-        @Override
-        public void handleOnBackPressed() {
-            oFocusedItem.setEnable(false);
-            oOnBackPressedWhenFocused.setEnabled(false);
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
-                getWindowInsetsController().show(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-            }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-                setSystemUiVisibility(View.VISIBLE);
-            }
-            Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when distributed item is focused");
-        }
-    };
 
     public ClusterDistributedView(Context context, IClusterDistributer aClusterDistributer) {
         super(context);
@@ -62,7 +43,7 @@ public class ClusterDistributedView extends SurfaceView {
         getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, oClusterDistributer.getClusterDistributedDrawableList(), oFocusedItem);
+                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, oClusterDistributer.getClusterDistributedDrawableList(), oClusterDistributer.getFocusedItem());
                 MapActivity.cExecutors.execute(oDrawTask);
             }
 
@@ -77,7 +58,6 @@ public class ClusterDistributedView extends SurfaceView {
         });
         getHolder().setFormat(PixelFormat.TRANSPARENT);
         setZOrderOnTop(true);
-        BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedWhenFocused);
     }
 
     public void requestShutdownDrawingTask(){
@@ -90,54 +70,17 @@ public class ClusterDistributedView extends SurfaceView {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                return distributedItemIsTouched((int)event.getX(), (int)event.getY());
+                return oClusterDistributer.onActionDown(event);
             case MotionEvent.ACTION_UP:
                 performClick();
-                if(clickedItemIsSameWithTouchedItem((int)event.getX(), (int)event.getY())){
-                    oFocusedItem.update(oTouchedItem, getContext());
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
-                        getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-                    }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-                        setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
-                    }
-                    oOnBackPressedWhenFocused.setEnabled(true);
-                }
-                oTouchedItem = null;
-                return true;
+                return oClusterDistributer.onActionUp(event);
             default:
                 return super.onTouchEvent(event);
         }
     }
 
-
-    private boolean distributedItemIsTouched(int aX, int aY){
-        oTouchedItem = null;
-
-        List<ClusterDistributedDrawable> list = oClusterDistributer.getClusterDistributedDrawableList();
-        for(ClusterDistributedDrawable drawable : list){
-            DistributedItem item = drawable.findDistributedItem(aX, aY);
-            if(item != null){
-                oTouchedItem = item;
-                break;
-            }
-        }
-
-        return oTouchedItem != null;
-    }
-
-    private boolean clickedItemIsSameWithTouchedItem(int aX, int aY) {
-        if (oTouchedItem.getRect().contains(aX, aY)) {
-            Log.i(LoggerTag.CLUSTER, "Distributed View is Touched:" + oTouchedItem.toString());
-            return true;
-        }
-
-        return false;
-    }
-
     @Override
     protected void onAttachedToWindow() {
-        ViewGroup parent = (ViewGroup)getParent();
-        oFocusedItem = new FocusedItem(parent.getMeasuredWidth(), parent.getMeasuredHeight());
         super.onAttachedToWindow();
     }
 

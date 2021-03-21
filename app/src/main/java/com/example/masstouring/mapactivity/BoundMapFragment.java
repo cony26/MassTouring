@@ -251,7 +251,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         Context context = oMapFragment.getContext();
         oClusterManager = new ClusterManager<Picture>(context, oMap);
         oPictureClusterRenderer = new PictureClusterRenderer(context, oMap, oClusterManager);
-        oClusterDistributer = new ClusterDistributer(context, oClusterManager, oMapActivityViewModel);
+        oClusterDistributer = new ClusterDistributer(context, oMapActivityViewModel);
         oPictureClusterRenderer.setClusterUpdatedListener(oClusterDistributer);
         oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);

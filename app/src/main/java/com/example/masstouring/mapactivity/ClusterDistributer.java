@@ -4,8 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.os.Build;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsetsController;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
@@ -21,18 +25,32 @@ import java.util.stream.Collectors;
 
 public class ClusterDistributer implements ClusterManager.OnClusterClickListener<Picture>, PictureClusterRenderer.IClusterUpdatedListener, IClusterDistributer {
     private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new CopyOnWriteArrayList<>();
+    private DistributedItem oTouchedItem = null;
+    private FocusedItem oFocusedItem = null;
     private final Context oContext;
-    private final ClusterManager<Picture> oClusterManager;
     private final ClusterDistributedView oClusterDistributedView;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final int oClusterSquarePx;
+    private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
+        @Override
+        public void handleOnBackPressed() {
+            oFocusedItem.setEnable(false);
+            oOnBackPressedWhenFocused.setEnabled(false);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                oClusterDistributedView.getWindowInsetsController().show(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+            }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                oClusterDistributedView.setSystemUiVisibility(View.VISIBLE);
+            }
+            Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when distributed item is focused");
+        }
+    };
 
-    ClusterDistributer(Context aContext, ClusterManager<Picture> aClusterManager, MapActivtySharedViewModel aViewModel){
+    ClusterDistributer(Context aContext, MapActivtySharedViewModel aViewModel){
         oClusterDistributedView = new ClusterDistributedView(aContext, this);
         oContext = aContext;
-        oClusterManager = aClusterManager;
         oMapActivitySharedViewModel = aViewModel;
         oClusterSquarePx = (int)aContext.getResources().getDimension(R.dimen.cluster_item_image);
+        BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedWhenFocused);
     }
 
     /**
@@ -44,6 +62,8 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         if(parent == null){
             aActivity.addContentView(oClusterDistributedView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
+        parent = (ViewGroup)oClusterDistributedView.getParent();
+        oFocusedItem = new FocusedItem(parent.getMeasuredWidth(), parent.getMeasuredHeight());
     }
 
     /**
@@ -212,5 +232,53 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     @Override
     public List<ClusterDistributedDrawable> getClusterDistributedDrawableList() {
         return oClusterDistributedDrawableList;
+    }
+
+    @Override
+    public FocusedItem getFocusedItem() {
+        return oFocusedItem;
+    }
+
+    @Override
+    public boolean onActionDown(MotionEvent event) {
+        return distributedItemIsTouched((int)event.getX(), (int)event.getY());
+    }
+
+    @Override
+    public boolean onActionUp(MotionEvent event) {
+        if(clickedItemIsSameWithTouchedItem((int)event.getX(), (int)event.getY())){
+            oFocusedItem.update(oTouchedItem, oContext);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                oClusterDistributedView.getWindowInsetsController().hide(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+            }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+            }
+            oOnBackPressedWhenFocused.setEnabled(true);
+        }
+        oTouchedItem = null;
+        return true;
+    }
+
+    private boolean distributedItemIsTouched(int aX, int aY){
+        oTouchedItem = null;
+
+        for(ClusterDistributedDrawable drawable : oClusterDistributedDrawableList){
+            DistributedItem item = drawable.findDistributedItem(aX, aY);
+            if(item != null){
+                oTouchedItem = item;
+                break;
+            }
+        }
+
+        return oTouchedItem != null;
+    }
+
+    private boolean clickedItemIsSameWithTouchedItem(int aX, int aY) {
+        if (oTouchedItem.getRect().contains(aX, aY)) {
+            Log.i(LoggerTag.CLUSTER, "Distributed View is Touched:" + oTouchedItem.toString());
+            return true;
+        }
+
+        return false;
     }
 }
