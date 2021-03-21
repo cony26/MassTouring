@@ -97,12 +97,12 @@ public class ClusterDistributedView extends SurfaceView {
         private volatile boolean oShutdownRequested = false;
         private final SurfaceHolder oSurfaceHolder;
         private final Paint p = new Paint();
-        private final FocusedItem oFocusedItem;
+        private final FocusedDrawable oFocusedDrawable;
         private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList;
-        ClusterDistributedDrawTask(SurfaceHolder aSurfaceHolder, List<ClusterDistributedDrawable> aClusterDistributedDrawableList, FocusedItem aFocusedItem){
+        ClusterDistributedDrawTask(SurfaceHolder aSurfaceHolder, List<ClusterDistributedDrawable> aClusterDistributedDrawableList, FocusedDrawable aFocusedDrawable){
             oSurfaceHolder = aSurfaceHolder;
             oClusterDistributedDrawableList = aClusterDistributedDrawableList;
-            oFocusedItem = aFocusedItem;
+            oFocusedDrawable = aFocusedDrawable;
         }
 
         @Override
@@ -128,7 +128,9 @@ public class ClusterDistributedView extends SurfaceView {
                 drawable.draw(canvas);
             }
 
-            paintFocusedItem(canvas);
+            if(oFocusedDrawable != null){
+                oFocusedDrawable.draw(canvas, p);
+            }
 
             oSurfaceHolder.unlockCanvasAndPost(canvas);
 
@@ -144,17 +146,6 @@ public class ClusterDistributedView extends SurfaceView {
             }
 
             return canvas;
-        }
-
-        private void paintFocusedItem(Canvas aCanvas){
-            if(oFocusedItem == null){
-                return;
-            }
-
-            if(oFocusedItem.isEnabled()){
-                aCanvas.drawColor(Color.BLACK);
-                aCanvas.drawBitmap(oFocusedItem.getBitmap(), null, oFocusedItem.getFocusedWindowRect(), p);
-            }
         }
 
         public void requestShutDown(){

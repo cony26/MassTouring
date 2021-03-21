@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class ClusterDistributer implements ClusterManager.OnClusterClickListener<Picture>, PictureClusterRenderer.IClusterUpdatedListener, IClusterDistributer {
     private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new CopyOnWriteArrayList<>();
     private DistributedItem oTouchedItem = null;
-    private final FocusedItem oFocusedItem = new FocusedItem();
+    private final FocusedDrawable oFocusedDrawable = new FocusedDrawable();
     private final Context oContext;
     private final ClusterDistributedView oClusterDistributedView;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
@@ -38,7 +38,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
         @Override
         public void handleOnBackPressed() {
-            oFocusedItem.setEnable(false);
+            oFocusedDrawable.setEnable(false);
             oOnBackPressedWhenFocused.setEnabled(false);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
                 oClusterDistributedView.getWindowInsetsController().show(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
@@ -52,7 +52,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     private final View.OnTouchListener oOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            if(oFocusedItem.isEnabled()){
+            if(oFocusedDrawable.isEnabled()){
                 oDetector.onTouchEvent(motionEvent);
                 return true;
             }else{
@@ -67,7 +67,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
                             }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
                                 oClusterDistributedView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
                             }
-                            oFocusedItem.update(oTouchedItem, oContext, oClusterDistributedView);
+                            oFocusedDrawable.update(oTouchedItem, oContext, oClusterDistributedView);
                             oOnBackPressedWhenFocused.setEnabled(true);
                         }
                         oTouchedItem = null;
@@ -296,8 +296,8 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     }
 
     @Override
-    public FocusedItem getFocusedItem() {
-        return oFocusedItem;
+    public FocusedDrawable getFocusedItem() {
+        return oFocusedDrawable;
     }
 
     private boolean distributedItemIsTouched(int aX, int aY){
