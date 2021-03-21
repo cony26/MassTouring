@@ -27,6 +27,7 @@ import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,12 +38,13 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
     private ImageView oItemImageView;
     private Context oContext;
     private final int oSquarePx;
-    private final ClusterManager<Picture> oClusterManager;
+    private final List<IClusterUpdatedListener> oClusterUpdatedListener = new ArrayList<>();
+    private final GoogleMap oGoogleMap;
 
     public PictureClusterRenderer(Context context, GoogleMap map, ClusterManager<Picture> clusterManager) {
         super(context, map, clusterManager);
         oContext = context;
-        oClusterManager = clusterManager;
+        oGoogleMap = map;
         oClusterIconGenerator = new IconGenerator(context);
         oItemIconGenerator = new IconGenerator(context);
         oSquarePx = (int)context.getResources().getDimension(R.dimen.cluster_item_image);
@@ -89,11 +91,19 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
         oClusterImageView.setImageBitmap(tmpBitmap);
         Bitmap icon = oClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
+
+        for(IClusterUpdatedListener listener : oClusterUpdatedListener){
+
+            listener.onClusterCreated(cluster, oGoogleMap);
+        }
+        Log.e(LoggerTag.CLUSTER, "onBeforeClusterRendered");
     }
 
     @Override
     protected void onClusterUpdated(@NonNull Cluster<Picture> cluster, @NonNull Marker marker) {
         layoutBitmapsAsyncly(cluster);
+
+        Log.e(LoggerTag.CLUSTER, "onClusterUpdated");
     }
 
     private void setClusterBitmap(Bitmap aBitmap, Marker aMarker, int aClusterSize){
@@ -250,4 +260,13 @@ public class PictureClusterRenderer extends DefaultClusterRenderer<Picture> {
             Log.i(LoggerTag.CLUSTER, "set Future Item Bitmap");
         }
     };
+
+    public void setClusterUpdatedListener(IClusterUpdatedListener aListener){
+        oClusterUpdatedListener.add(aListener);
+    }
+
+    public interface IClusterUpdatedListener {
+        default void onClusterUpdated(Cluster<Picture> aCluster, Marker aMarker){};
+        default void onClusterCreated(Cluster<Picture> aCluster, GoogleMap aGoogleMap){};
+    }
 }

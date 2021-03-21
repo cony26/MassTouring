@@ -11,18 +11,14 @@ public class DistributedItem {
     private int oCenterY;
     private int oRadius;
     private double oTheta;
-    private final boolean oCW;
+    private boolean oCW;
     private final Bitmap oBitmap;
     private final Rect oRect;
     private final Picture oPicture;
-    DistributedItem(int aCenterX, int aCenterY, int aRadius, double aTheta, boolean aCW, Bitmap aBitmap, Rect aRect, Picture aPicture){
-        oCenterX = aCenterX;
-        oCenterY = aCenterY;
-        oRadius = aRadius;
-        oTheta = aTheta;
-        oCW = aCW;
+
+    DistributedItem(Bitmap aBitmap, Picture aPicture){
         oBitmap = aBitmap;
-        oRect = aRect;
+        oRect = new Rect(0, 0, aBitmap.getWidth(), aBitmap.getHeight());
         oPicture = aPicture;
     }
 
@@ -38,10 +34,6 @@ public class DistributedItem {
         return oRadius;
     }
 
-    public void setRadius(int aRadius) {
-        oRadius = aRadius;
-    }
-
     public Bitmap getBitmap() {
         return oBitmap;
     }
@@ -54,10 +46,20 @@ public class DistributedItem {
         return oPicture;
     }
 
-    public void updateRect(int aDistance){
-        double theta = (double) aDistance / oRadius;
-        oTheta += oCW ? theta : -theta;
+    /**
+     *
+     * @param aDistance the distance (px) which this item moves on along with the circle.
+     */
+    public void updatePositionByDistancePx(int aDistance){
+        updatePositionByTheta((double) aDistance / oRadius);
+    }
 
+    private void updatePositionByTheta(double aTheta){
+        oTheta += oCW ? aTheta : -aTheta;
+        updateRect();
+    }
+
+    private void updateRect(){
         int centerX = (int) (oRadius * Math.cos(oTheta)) + oCenterX;
         int centerY = (int) (oRadius * Math.sin(oTheta)) + oCenterY;
         int w = oBitmap.getWidth();
@@ -68,6 +70,23 @@ public class DistributedItem {
     public void updateCenterPoint(Point aPoint){
         oCenterX = aPoint.x;
         oCenterY = aPoint.y;
+    }
+
+    public void update(int aCenterX, int aCenterY, int aRadius, double aTheta, boolean aCW){
+        oCenterX = aCenterX;
+        oCenterY = aCenterY;
+        oRadius = aRadius;
+        oTheta = aTheta;
+        oCW = aCW;
+        updateRect();
+    }
+
+    private Rect createRectOnCircle(){
+        int centerX = (int) (oRadius * Math.cos(oTheta)) + oCenterX;
+        int centerY = (int) (oRadius * Math.sin(oTheta)) + oCenterY;
+        int w = oBitmap.getWidth();
+        int h = oBitmap.getHeight();
+        return new Rect(centerX - w / 2, centerY - h / 2, centerX + w / 2, centerY + h /2);
     }
 
     @NonNull

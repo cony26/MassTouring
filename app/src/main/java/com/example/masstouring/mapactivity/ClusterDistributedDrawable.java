@@ -25,7 +25,7 @@ public class ClusterDistributedDrawable{
     public void draw(Canvas aCanvas){
         if(oPaintable){
             for(DistributedItem item : oDistributedItems){
-                item.updateRect(Const.MOVING_RATE_PIXEL_PER_FPS);
+                item.updatePositionByDistancePx(Const.MOVING_RATE_PIXEL_PER_FPS);
                 Rect rect = item.getRect();
                 int padding = 10;
                 oPaint.setColor(Color.BLUE);
@@ -47,7 +47,7 @@ public class ClusterDistributedDrawable{
         return oDistributedItems;
     }
 
-    public Cluster getCluster(){
+    public Cluster<Picture> getCluster(){
         return oCluster;
     }
 

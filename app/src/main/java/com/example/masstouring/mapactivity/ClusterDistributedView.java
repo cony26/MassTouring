@@ -86,6 +86,18 @@ public class ClusterDistributedView extends SurfaceView {
         oClusterDistributedDrawableList.add(aClusterDistributedDrawable);
     }
 
+    public boolean removeUnnecessaryClusterDistributedDrawable(){
+        List<ClusterDistributedDrawable> deleteList = new ArrayList<>();
+
+        for(ClusterDistributedDrawable drawable: oClusterDistributedDrawableList){
+            if(drawable.getDistributedItems().size() == 0){
+                deleteList.add(drawable);
+            }
+        }
+
+        return removeClusterDistributedDrawable(deleteList);
+    }
+
     public boolean removeClusterDistributedDrawable(Cluster aCluster){
         List<ClusterDistributedDrawable> deleteList = new ArrayList<>();
 
@@ -95,12 +107,31 @@ public class ClusterDistributedView extends SurfaceView {
             }
         }
 
-        if(deleteList.isEmpty()){
+        return removeClusterDistributedDrawable(deleteList);
+    }
+
+    private boolean removeClusterDistributedDrawable(List<ClusterDistributedDrawable> aDeletedList){
+        if(aDeletedList.isEmpty()){
             return false;
         }
 
-        deleteList.stream().forEach(oClusterDistributedDrawableList::remove);
+        for(ClusterDistributedDrawable drawable : aDeletedList){
+            oClusterDistributedDrawableList.remove(drawable);
+            Log.i(LoggerTag.CLUSTER, "removed ClusterDistributedDrawable");
+        }
         return true;
+    }
+
+    public boolean removeDistributedItems(List<DistributedItem> aDistributedItems){
+        boolean result = false;
+
+        for(ClusterDistributedDrawable drawable : oClusterDistributedDrawableList){
+            if(drawable.getDistributedItems().removeAll(aDistributedItems)){
+                result = true;
+            }
+        }
+
+        return result;
     }
 
     public void clearClusterDistributedDrawable(){
