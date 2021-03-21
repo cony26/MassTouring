@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import com.example.masstouring.R;
+import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
@@ -14,9 +16,11 @@ import com.google.maps.android.clustering.ClusterManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-public class ClusterDistributer implements ClusterManager.OnClusterClickListener<Picture>, PictureClusterRenderer.IClusterUpdatedListener {
+public class ClusterDistributer implements ClusterManager.OnClusterClickListener<Picture>, PictureClusterRenderer.IClusterUpdatedListener, IClusterDistributer {
+    private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new CopyOnWriteArrayList<>();
     private final Context oContext;
     private final ClusterManager<Picture> oClusterManager;
     private final ClusterDistributedView oClusterDistributedView;
@@ -24,7 +28,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     private final int oClusterSquarePx;
 
     ClusterDistributer(Context aContext, ClusterManager<Picture> aClusterManager, MapActivtySharedViewModel aViewModel){
-        oClusterDistributedView = new ClusterDistributedView(aContext);
+        oClusterDistributedView = new ClusterDistributedView(aContext, this);
         oContext = aContext;
         oClusterManager = aClusterManager;
         oMapActivitySharedViewModel = aViewModel;
@@ -50,15 +54,15 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         if(parent != null){
             parent.removeView(oClusterDistributedView);
         }
-        oClusterDistributedView.clearClusterDistributedDrawable();
+        clearClusterDistributedDrawable();
         oClusterDistributedView.requestShutdownDrawingTask();
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
     }
 
     @Override
     public boolean onClusterClick(Cluster<Picture> cluster) {
-        if(oClusterDistributedView.hasClusterDistributedDrawable(cluster)){
-            oClusterDistributedView.removeClusterDistributedDrawable(cluster);
+        if(hasClusterDistributedDrawable(cluster)){
+            removeClusterDistributedDrawable(cluster);
         }else{
             distribute(cluster);
         }
@@ -68,7 +72,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
 
     @Override
     public void onClusterCreated(Cluster<Picture> aCluster, GoogleMap aGoogleMap) {
-        List<DistributedItem> renderedDistributedItems = oClusterDistributedView.getClusterDistributedDrawableList().stream()
+        List<DistributedItem> renderedDistributedItems = oClusterDistributedDrawableList.stream()
                 .flatMap(drawable -> drawable.getDistributedItems().stream())
                 .collect(Collectors.toList());
 
@@ -83,13 +87,13 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
             }
         }
 
-        oClusterDistributedView.removeDistributedItems(distributedItems);
+        removeDistributedItems(distributedItems);
 
         Point point = aGoogleMap.getProjection().toScreenLocation(aCluster.getPosition());
         calculateDistribution(distributedItems, point.x, point.y);
 
-        oClusterDistributedView.addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, aCluster));
-        oClusterDistributedView.removeUnnecessaryClusterDistributedDrawable();
+        addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, aCluster));
+        removeUnnecessaryClusterDistributedDrawable();
     }
 
     private void calculateDistribution(List<DistributedItem> aDistributedItems, int aCenterX, int aCenterY){
@@ -130,17 +134,83 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         calculateDistribution(distributedItems, viewCenterX, viewCenterY);
 
         //draw each items on the calculated position
-        oClusterDistributedView.addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, aCluster));
+        addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, aCluster));
 
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
     }
 
     public void updateClusterScreenPosition(GoogleMap aMap){
-        List<ClusterDistributedDrawable> list = oClusterDistributedView.getClusterDistributedDrawableList();
-        for(ClusterDistributedDrawable drawable : list){
+        for(ClusterDistributedDrawable drawable : oClusterDistributedDrawableList){
             Point point = aMap.getProjection().toScreenLocation(drawable.getCluster().getPosition());
             drawable.getDistributedItems().stream()
                     .forEach(item -> item.updateCenterPoint(point));
         }
+    }
+
+    public void addClusterDistributedDrawable(ClusterDistributedDrawable aClusterDistributedDrawable){
+        oClusterDistributedDrawableList.add(aClusterDistributedDrawable);
+        Log.i(LoggerTag.CLUSTER, "added aClusterDistributedDrawable:" + aClusterDistributedDrawable.toString() + ", clusterDistributedDrawableList:" + oClusterDistributedDrawableList);
+    }
+
+    private boolean removeUnnecessaryClusterDistributedDrawable(){
+        List<ClusterDistributedDrawable> deleteList = new ArrayList<>();
+
+        for(ClusterDistributedDrawable drawable: oClusterDistributedDrawableList){
+            if(drawable.getDistributedItems().size() == 0){
+                deleteList.add(drawable);
+            }
+        }
+
+        return removeClusterDistributedDrawable(deleteList);
+    }
+
+    private boolean removeClusterDistributedDrawable(Cluster aCluster){
+        List<ClusterDistributedDrawable> deleteList = new ArrayList<>();
+
+        for(ClusterDistributedDrawable drawable: oClusterDistributedDrawableList){
+            if(drawable.getCluster().equals(aCluster)){
+                deleteList.add(drawable);
+            }
+        }
+
+        return removeClusterDistributedDrawable(deleteList);
+    }
+
+    private boolean removeClusterDistributedDrawable(List<ClusterDistributedDrawable> aDeletedList){
+        if(aDeletedList.isEmpty()){
+            return false;
+        }
+
+        for(ClusterDistributedDrawable drawable : aDeletedList){
+            oClusterDistributedDrawableList.remove(drawable);
+            Log.i(LoggerTag.CLUSTER, "removed ClusterDistributedDrawable:" + drawable.toString());
+        }
+        return true;
+    }
+
+    private boolean removeDistributedItems(List<DistributedItem> aDistributedItems){
+        boolean result = false;
+
+        for(ClusterDistributedDrawable drawable : oClusterDistributedDrawableList){
+            if(drawable.getDistributedItems().removeAll(aDistributedItems)){
+                result = true;
+            }
+        }
+
+        return result;
+    }
+
+    private void clearClusterDistributedDrawable(){
+        oClusterDistributedDrawableList.clear();
+    }
+
+    private boolean hasClusterDistributedDrawable(Cluster<Picture> aCluster){
+        return oClusterDistributedDrawableList.stream()
+                .anyMatch(drawable -> drawable.getCluster().equals(aCluster));
+    }
+
+    @Override
+    public List<ClusterDistributedDrawable> getClusterDistributedDrawableList() {
+        return oClusterDistributedDrawableList;
     }
 }

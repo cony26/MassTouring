@@ -20,14 +20,11 @@ import androidx.annotation.NonNull;
 
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
-import com.google.maps.android.clustering.Cluster;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ClusterDistributedView extends SurfaceView {
-    private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new CopyOnWriteArrayList<>();
+    private IClusterDistributer oClusterDistributer;
     private DistributedItem oTouchedItem = null;
     private FocusedItem oFocusedItem = null;
     private ClusterDistributedDrawTask oDrawTask = null;
@@ -45,8 +42,9 @@ public class ClusterDistributedView extends SurfaceView {
         }
     };
 
-    public ClusterDistributedView(Context context) {
+    public ClusterDistributedView(Context context, IClusterDistributer aClusterDistributer) {
         super(context);
+        oClusterDistributer = aClusterDistributer;
         init();
     }
 
@@ -64,7 +62,7 @@ public class ClusterDistributedView extends SurfaceView {
         getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, oClusterDistributedDrawableList, oFocusedItem);
+                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, oClusterDistributer.getClusterDistributedDrawableList(), oFocusedItem);
                 MapActivity.cExecutors.execute(oDrawTask);
             }
 
@@ -82,77 +80,10 @@ public class ClusterDistributedView extends SurfaceView {
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedWhenFocused);
     }
 
-
-    public void addClusterDistributedDrawable(ClusterDistributedDrawable aClusterDistributedDrawable){
-        oClusterDistributedDrawableList.add(aClusterDistributedDrawable);
-        Log.i(LoggerTag.CLUSTER, "added aClusterDistributedDrawable:" + aClusterDistributedDrawable.toString() + ", clusterDistributedDrawableList:" + oClusterDistributedDrawableList);
-    }
-
-    public boolean removeUnnecessaryClusterDistributedDrawable(){
-        List<ClusterDistributedDrawable> deleteList = new ArrayList<>();
-
-        for(ClusterDistributedDrawable drawable: oClusterDistributedDrawableList){
-            if(drawable.getDistributedItems().size() == 0){
-                deleteList.add(drawable);
-            }
-        }
-
-        return removeClusterDistributedDrawable(deleteList);
-    }
-
-    public boolean removeClusterDistributedDrawable(Cluster aCluster){
-        List<ClusterDistributedDrawable> deleteList = new ArrayList<>();
-
-        for(ClusterDistributedDrawable drawable: oClusterDistributedDrawableList){
-            if(drawable.getCluster().equals(aCluster)){
-                deleteList.add(drawable);
-            }
-        }
-
-        return removeClusterDistributedDrawable(deleteList);
-    }
-
-    private boolean removeClusterDistributedDrawable(List<ClusterDistributedDrawable> aDeletedList){
-        if(aDeletedList.isEmpty()){
-            return false;
-        }
-
-        for(ClusterDistributedDrawable drawable : aDeletedList){
-            oClusterDistributedDrawableList.remove(drawable);
-            Log.i(LoggerTag.CLUSTER, "removed ClusterDistributedDrawable:" + drawable.toString());
-        }
-        return true;
-    }
-
-    public boolean removeDistributedItems(List<DistributedItem> aDistributedItems){
-        boolean result = false;
-
-        for(ClusterDistributedDrawable drawable : oClusterDistributedDrawableList){
-            if(drawable.getDistributedItems().removeAll(aDistributedItems)){
-                result = true;
-            }
-        }
-
-        return result;
-    }
-
-    public void clearClusterDistributedDrawable(){
-        oClusterDistributedDrawableList.clear();
-    }
-
     public void requestShutdownDrawingTask(){
         if(oDrawTask != null){
             oDrawTask.requestShutDown();
         }
-    }
-
-    public List<ClusterDistributedDrawable> getClusterDistributedDrawableList(){
-        return oClusterDistributedDrawableList;
-    }
-
-    public boolean hasClusterDistributedDrawable(Cluster<Picture> aCluster){
-        return oClusterDistributedDrawableList.stream()
-                .anyMatch(drawable -> drawable.getCluster().equals(aCluster));
     }
 
     @Override
@@ -178,10 +109,12 @@ public class ClusterDistributedView extends SurfaceView {
         }
     }
 
+
     private boolean distributedItemIsTouched(int aX, int aY){
         oTouchedItem = null;
 
-        for(ClusterDistributedDrawable drawable : oClusterDistributedDrawableList){
+        List<ClusterDistributedDrawable> list = oClusterDistributer.getClusterDistributedDrawableList();
+        for(ClusterDistributedDrawable drawable : list){
             DistributedItem item = drawable.findDistributedItem(aX, aY);
             if(item != null){
                 oTouchedItem = item;
