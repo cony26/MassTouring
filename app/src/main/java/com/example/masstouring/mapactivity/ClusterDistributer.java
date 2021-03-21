@@ -112,7 +112,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         Point point = aGoogleMap.getProjection().toScreenLocation(aCluster.getPosition());
         calculateDistribution(distributedItems, point.x, point.y);
 
-        addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, aCluster));
+        addClusterDistributedDrawable(new ClusterDistributedDrawable(new CopyOnWriteArrayList<>(distributedItems), aCluster));
         removeUnnecessaryClusterDistributedDrawable();
     }
 
@@ -154,7 +154,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         calculateDistribution(distributedItems, viewCenterX, viewCenterY);
 
         //draw each items on the calculated position
-        addClusterDistributedDrawable(new ClusterDistributedDrawable(distributedItems, aCluster));
+        addClusterDistributedDrawable(new ClusterDistributedDrawable(new CopyOnWriteArrayList<>(distributedItems), aCluster));
 
         oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
     }
