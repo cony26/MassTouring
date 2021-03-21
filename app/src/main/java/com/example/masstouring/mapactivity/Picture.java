@@ -63,6 +63,15 @@ public class Picture implements ClusterItem {
         return loadBitmap(aContext, aReqWidth, aReqHeight, SCALE_WITHIN_OPERATOR);
     }
 
+    /**
+     * get Bitmap asynchronously and callback is called in main thread.
+     *
+     * @param aContext application context
+     * @param aReqWidth target width of bitmap
+     * @param aReqHeight target height of bitmap
+     * @param aCallback called in main thread after completion of loading Bitmap.
+     * @return the temporary bitmap
+     */
     public Bitmap getItemBitmapAsynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight, OnCompletedLoadBitmapCallback aCallback){
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
