@@ -24,9 +24,10 @@ import com.google.maps.android.clustering.Cluster;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ClusterDistributedView extends SurfaceView {
-    private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new ArrayList<>();
+    private final List<ClusterDistributedDrawable> oClusterDistributedDrawableList = new CopyOnWriteArrayList<>();
     private DistributedItem oTouchedItem = null;
     private FocusedItem oFocusedItem = null;
     private ClusterDistributedDrawTask oDrawTask = null;
