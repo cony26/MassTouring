@@ -7,9 +7,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
 import com.example.masstouring.common.Const;
+import com.example.masstouring.common.LoggerTag;
 
 import java.util.List;
 
@@ -148,9 +150,10 @@ public class FocusedDrawable {
                     try{
                         Thread.sleep(Const.FPS_MILLIS);
                     }catch(InterruptedException e){
-
+                        Log.e(LoggerTag.CLUSTER, "InterruptedException:", e);
                     }
                 }
+                updateByDistance(remainDistance % cycle);
 
                 if(next){
                     next();
