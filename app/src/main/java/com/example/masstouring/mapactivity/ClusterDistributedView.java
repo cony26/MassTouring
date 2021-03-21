@@ -42,7 +42,7 @@ public class ClusterDistributedView extends SurfaceView {
         getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, oClusterDistributer.getClusterDistributedDrawableList(), oClusterDistributer.getFocusedItem());
+                oDrawTask = new ClusterDistributedDrawTask(surfaceHolder, oClusterDistributer.getClusterDistributedDrawableList(), oClusterDistributer.getFocusedDrawable());
                 MapActivity.cExecutors.execute(oDrawTask);
             }
 

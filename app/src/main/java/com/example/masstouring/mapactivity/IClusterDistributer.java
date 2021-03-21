@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface IClusterDistributer {
     List<ClusterDistributedDrawable> getClusterDistributedDrawableList();
-    FocusedDrawable getFocusedItem();
+    FocusedDrawable getFocusedDrawable();
 }

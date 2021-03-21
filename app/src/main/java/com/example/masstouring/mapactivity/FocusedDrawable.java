@@ -9,7 +9,11 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
 
+import java.util.List;
+
 public class FocusedDrawable {
+    private List<DistributedItem> oDistributedItems;
+    private int oIndex;
     private DistributedItem oFocusedItem = null;
     private Rect oFocusedWindowRect;
     private Bitmap oBitmap;
@@ -21,13 +25,16 @@ public class FocusedDrawable {
         return oFocusedItem;
     }
 
-    public void update(DistributedItem aOriginalItem, Context aContext, View aView) {
+    public void update(DistributedItem aOriginalItem, List<DistributedItem> aDistributedItems, Context aContext, View aView) {
+        oFocusedItem = aOriginalItem;
+        oDistributedItems = aDistributedItems;
+        oIndex = oDistributedItems.indexOf(oFocusedItem);
+
         Point point = new Point();
         aView.getDisplay().getRealSize(point);
         oMaxWidth = point.x;
         oMaxHeight = point.y;
 
-        oFocusedItem = aOriginalItem;
         oBitmap = oFocusedItem.getPicture().getBitmapSynclyScaledWithin(aContext, oMaxWidth, oMaxHeight);
         int centerX = oMaxWidth / 2;
         int centerY = oMaxHeight / 2;
