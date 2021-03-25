@@ -14,13 +14,45 @@ import java.time.LocalDateTime;
 public class LoggerTask extends Thread {
     private final Context oContext;
     private final String oOutputFileName;
-    public LoggerTask(Context aContext){
+    private boolean oMainActivityState = false;
+    private boolean oMapActivityState = false;
+    private boolean oRecordServiceState = false;
+    private static LoggerTask oSingleton;
+    private LoggerTask(Context aContext){
         oContext = aContext;
         oOutputFileName = LocalDateTime.now().format(Const.LOG_OUTPUT_FILE_DATE_FORMAT) + ".txt";
+        oMainActivityState = true;
+    }
+
+    public static void initialize(Context aContext){
+        oSingleton = new LoggerTask(aContext);
+        oSingleton.start();
+    }
+
+    public static LoggerTask getInstance(){
+        return oSingleton;
+    }
+
+    public void setMainActivityState(boolean aMainActivityState){
+        oMainActivityState = aMainActivityState;
+    }
+
+    public void setMapActivityState(boolean aMapActivityState){
+        oMapActivityState = aMapActivityState;
+    }
+
+    public void setRecordServiceState(boolean aRecordServiceState){
+        oRecordServiceState = aRecordServiceState;
+    }
+
+    private boolean isApplicationAlive(){
+        return oMainActivityState || oMapActivityState || oRecordServiceState;
     }
 
     @Override
     public void run() {
+        Log.e(LoggerTag.SYSTEM_PROCESS, "start logging output");
+
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(new String[]{"logcat", "-v", "time"});
@@ -29,7 +61,7 @@ public class LoggerTask extends Thread {
         }
 
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()))){
-            while(true){
+            while(isApplicationAlive()){
                 String line = reader.readLine();
                 if(line == null){
                     Thread.sleep(Const.LOGGING_INTERVAL_MILLIS);
@@ -51,7 +83,7 @@ public class LoggerTask extends Thread {
             Log.e(LoggerTag.SYSTEM_PROCESS, "error happens in logging output", e);
         }finally {
             proc.destroy();
-            Log.e(LoggerTag.SYSTEM_PROCESS, "finish logging output");
         }
+        Log.e(LoggerTag.SYSTEM_PROCESS, "finish logging output");
     }
 }

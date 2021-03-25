@@ -28,6 +28,7 @@ import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.database.DatabaseInfoRepairer;
 import com.example.masstouring.recordservice.RecordService;
@@ -64,6 +65,7 @@ public class MapActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LoggerTask.getInstance().setMapActivityState(true);
         new LifeCycleLogger(this, getClass().getSimpleName());
         BackPressedCallbackRegisterer.initialize(this);
         checkPermissions();
@@ -101,6 +103,12 @@ public class MapActivity extends AppCompatActivity{
         super.onPause();
         stopServiceIfNotRecording();
         unbindServiceGracefully();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LoggerTask.getInstance().setMapActivityState(false);
     }
 
     @Override

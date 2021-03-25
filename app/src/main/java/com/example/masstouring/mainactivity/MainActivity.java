@@ -50,10 +50,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LoggerTask.initialize(getApplicationContext());
         new LifeCycleLogger(this, getClass().getSimpleName());
         setContentView(R.layout.activity_main);
-        new LoggerTask(getApplicationContext()).start();
         setButtonClickListeners();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LoggerTask.getInstance().setMainActivityState(false);
     }
 
     private void setButtonClickListeners() {

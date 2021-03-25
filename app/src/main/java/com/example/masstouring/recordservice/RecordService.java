@@ -18,6 +18,7 @@ import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.mapactivity.RecordObject;
@@ -79,6 +80,7 @@ public class RecordService extends LifecycleService {
     @Override
     public void onCreate() {
         super.onCreate();
+        LoggerTask.getInstance().setRecordServiceState(true);
         new LifeCycleLogger(this, getClass().getSimpleName());
         oBoundLocationClient = new BoundLocationClient(this, this, oLocCallback);
 
@@ -163,6 +165,7 @@ public class RecordService extends LifecycleService {
         stopRecording();
         stopForeground(true);
         stopSelf();
+        LoggerTask.getInstance().setRecordServiceState(false);
     }
 
     public RecordState getRecordState(){
