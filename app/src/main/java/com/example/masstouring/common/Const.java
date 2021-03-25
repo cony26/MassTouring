@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 public class Const {
     //format for LocalDateTime
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    public static final DateTimeFormatter LOG_OUTPUT_FILE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
     public static final String DUMMY_DATE_FORMAT = "1000/10/01 00:00:00";
     public static final DateTimeFormatter START_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd HH:mm");
     public static final DateTimeFormatter END_SAME_DATE_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
@@ -33,4 +34,7 @@ public class Const {
     //Animation
     public static final int FPS_MILLIS = 1000 / 30;
     public static final int MOVING_RATE_PIXEL_PER_FPS = 5;
+
+    //parameter for loggin
+    public static final int LOGGING_INTERVAL_MILLIS = 1000;
 }

@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.masstouring.common.LifeCycleLogger;
+import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         new LifeCycleLogger(this, getClass().getSimpleName());
         setContentView(R.layout.activity_main);
-
+        new LoggerTask(getApplicationContext()).start();
         setButtonClickListeners();
     }
 
