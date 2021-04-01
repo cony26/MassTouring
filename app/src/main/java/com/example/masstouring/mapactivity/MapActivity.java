@@ -103,12 +103,12 @@ public class MapActivity extends AppCompatActivity{
         super.onPause();
         stopServiceIfNotRecording();
         unbindServiceGracefully();
-        LoggerTask.getInstance().setMapActivityState(false);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        LoggerTask.getInstance().setMapActivityState(false);
     }
 
     @Override
