@@ -57,9 +57,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        LoggerTask.getInstance().setMainActivityState(false);
+    }
+
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        LoggerTask.getInstance().setMainActivityState(false);
     }
 
     private void setButtonClickListeners() {
