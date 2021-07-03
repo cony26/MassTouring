@@ -28,7 +28,7 @@ public class LoggerTask extends Thread {
     }
 
     public static void initialize(Context aContext){
-        if(oSingleton != null){
+        if(oSingleton == null){
             oSingleton = new LoggerTask(aContext);
             oSingleton.start();
         }
