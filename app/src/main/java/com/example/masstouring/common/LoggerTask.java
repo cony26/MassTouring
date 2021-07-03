@@ -20,7 +20,7 @@ public class LoggerTask extends Thread {
     private boolean oMainActivityState = false;
     private boolean oMapActivityState = false;
     private boolean oRecordServiceState = false;
-    private static LoggerTask oSingleton;
+    private static LoggerTask oSingleton = null;
     private LoggerTask(Context aContext){
         oContext = aContext;
         oOutputFileName = LocalDateTime.now().format(Const.LOG_OUTPUT_FILE_DATE_FORMAT);
@@ -28,8 +28,10 @@ public class LoggerTask extends Thread {
     }
 
     public static void initialize(Context aContext){
-        oSingleton = new LoggerTask(aContext);
-        oSingleton.start();
+        if(oSingleton != null){
+            oSingleton = new LoggerTask(aContext);
+            oSingleton.start();
+        }
     }
 
     public static LoggerTask getInstance(){
