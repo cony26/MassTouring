@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -19,11 +20,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.OnLifecycleEvent;
 
+import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTask;
+import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.ranking.SynchronizationThread;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -34,8 +38,15 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -83,7 +94,8 @@ public class MainActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        mediaAccessPractice();
+//                        mediaAccessPractice();
+                        connectHttp();
                     }
                 }
         );
@@ -198,5 +210,40 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void connectHttp(){
+
+        new SynchronizationThread(new DatabaseHelper(getApplicationContext(), Const.DB_NAME)).start();
+
+//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+//        StrictMode.setThreadPolicy(policy);
+//
+//        try{
+////            Socket sock = new Socket("192.168.0.4",8080);
+////            if(sock.isConnected()){
+////                Log.e("test", "connected to " + sock.getRemoteSocketAddress().toString());
+////            }
+//
+//            URL url = new URL("http://192.168.0.4:8080/webapplication_war_exploded/chapter25/");
+//            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//            con.setRequestMethod("GET");
+//            con.setDoInput(true);
+//
+//            if(con.getResponseCode() == HttpURLConnection.HTTP_OK){
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
+//                StringBuilder builder = new StringBuilder();
+//                String line;
+//                while((line = reader.readLine()) != null){
+//                    builder.append(line);
+//                }
+//                Log.e("test", builder.toString());
+//            }else{
+//                Log.e("test", "can't connect");
+//            }
+//        }catch(Exception e){
+//            e.printStackTrace();
+//        }
+
     }
 }

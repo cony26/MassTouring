@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+//apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 30
@@ -42,6 +43,7 @@ dependencies {
     implementation 'androidx.work:work-runtime:2.5.0'
     implementation 'com.google.maps.android:maps-utils-ktx:2.2.0'
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
+    implementation 'com.google.code.gson:gson:2.8.7'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
