@@ -1,5 +1,10 @@
-apply plugin: 'com.android.application'
+//apply plugin: 'com.android.application'
 //apply plugin: 'com.android.library'
+
+plugins{
+    id 'com.android.application'
+    id 'maven-publish'
+}
 
 android {
     compileSdkVersion 30
@@ -27,6 +32,13 @@ android {
     }
     testOptions{
         unitTests.returnDefaultValues = true
+    }
+
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+//        quiet true
+        baseline file("lint-baseline.xml")
     }
 }
 
@@ -61,4 +73,25 @@ dependencies {
 
     // Saved state module for ViewModel
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+}
+
+afterEvaluate{
+    publishing{
+        publications{
+            release(MavenPublication){
+                groupId = 'com.example'
+                artifactId = 'masstouring'
+                version = '1.1'
+//                artifact('build/intermediates/app_classes/release/classes.jar')
+//                artifact packageReleaseBundle
+//                from components.release_apk
+                artifact createSources
+            }
+        }
+    }
+}
+
+tasks.register('createSources',Jar){
+    archiveClassifier = "java-sources"
+    from compileReleaseJavaWithJavac
 }
