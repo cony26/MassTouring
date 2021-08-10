@@ -4,6 +4,7 @@
 plugins{
     id 'com.android.application'
     id 'maven-publish'
+    id 'kotlin-android'
 }
 
 android {
@@ -40,6 +41,9 @@ android {
 //        quiet true
         baseline file("lint-baseline.xml")
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
@@ -56,6 +60,7 @@ dependencies {
     implementation 'com.google.maps.android:maps-utils-ktx:2.2.0'
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
     implementation 'com.google.code.gson:gson:2.8.7'
+    implementation 'com.google.android.material:material:1.4.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -73,6 +78,9 @@ dependencies {
 
     // Saved state module for ViewModel
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+    implementation "androidx.core:core-ktx:+"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.1.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 afterEvaluate{
@@ -94,4 +102,7 @@ afterEvaluate{
 tasks.register('createSources',Jar){
     archiveClassifier = "java-sources"
     from compileReleaseJavaWithJavac
+}
+repositories {
+    mavenCentral()
 }
