@@ -167,9 +167,15 @@ public class FocusedDrawable {
 
     public void updateByDistance(float aDistance){
         int distance = (int)aDistance;
-        oFocusedWindowRect.offset(distance, 0);
-        oNextWindowRect.offset(distance, 0);
-        oPrevWindowRect.offset(distance, 0);
+        if(oFocusedWindowRect != null){
+            oFocusedWindowRect.offset(distance, 0);
+        }
+        if(oNextWindowRect != null){
+            oNextWindowRect.offset(distance, 0);
+        }
+        if(oPrevWindowRect != null){
+            oPrevWindowRect.offset(distance, 0);
+        }
     }
 
     public void draw(Canvas aCanvas, Paint p){
