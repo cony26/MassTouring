@@ -265,7 +265,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
                 polylineOptions.add(new LatLng(latitude, longitude));
             }
-        }catch(SQLException | CursorIndexOutOfBoundsException e){
+        }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring PolylineOptions from ID:" + aId, e);
         }
 
