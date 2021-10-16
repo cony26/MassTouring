@@ -27,6 +27,7 @@ import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.mapactivity.TouringMapActivity;
 import com.example.masstouring.ranking.RankingActivity;
 import com.example.masstouring.ranking.SynchronizationThread;
 import com.google.android.gms.common.api.ApiException;
@@ -85,7 +86,8 @@ public class MainActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Intent i = new Intent(MainActivity.this, MapActivity.class);
+//                        Intent i = new Intent(MainActivity.this, MapActivity.class);
+                        Intent i = new Intent(MainActivity.this, TouringMapActivity.class);
                         startActivity(i);
                     }
                 }
