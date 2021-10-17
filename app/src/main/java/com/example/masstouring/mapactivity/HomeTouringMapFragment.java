@@ -75,13 +75,11 @@ public class HomeTouringMapFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LoggerTask.getInstance().setMapActivityState(true);
         new LifeCycleLogger(this, getClass().getSimpleName());
         BackPressedCallbackRegisterer.initialize((AppCompatActivity)getActivity());
         checkPermissions();
         oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
         oDatabaseHelper = new DatabaseHelper(getContext(), Const.DB_NAME);
-
         cExecutors.execute(new DatabaseInfoRepairer(oDatabaseHelper));
     }
 

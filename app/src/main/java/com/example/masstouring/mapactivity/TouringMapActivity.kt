@@ -1,36 +1,33 @@
-package com.example.masstouring.mapactivity;
+package com.example.masstouring.mapactivity
 
-import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import androidx.appcompat.widget.Toolbar
+import com.example.masstouring.R
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.NavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
+import androidx.navigation.ui.NavigationUI
+import com.example.masstouring.common.LoggerTask
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
+class TouringMapActivity : AppCompatActivity() {
+    private lateinit var appBarConfiguration : AppBarConfiguration
 
-import com.example.masstouring.R;
-import com.google.android.material.navigation.NavigationView;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        LoggerTask.getInstance().setMapActivityState(true)
 
-public class TouringMapActivity extends AppCompatActivity {
+        setContentView(R.layout.touring_map_activity)
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment? ?: return
+        val navController = navHostFragment.navController
 
-    @Override
-    protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        val drawerLayout : DrawerLayout? = findViewById(R.id.drawer_layout)
+        appBarConfiguration = AppBarConfiguration(setOf(R.id.homeTouringMapFragment), drawerLayout)
 
-        setContentView(R.layout.touring_map_activity);
-
-        NavHostFragment navHostFragment = (NavHostFragment)getSupportFragmentManager().findFragmentById(R.id.my_nav_host_fragment);
-        NavController navController = navHostFragment.getNavController();
-
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.homeTouringMapFragment)
-                .setDrawerLayout(findViewById(R.id.drawer_layout))
-                .build();
-
-        NavigationView navView = findViewById(R.id.nav_view);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
     }
 }
