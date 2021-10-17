@@ -131,7 +131,7 @@ public class MapActivity extends AppCompatActivity{
                 Optional.ofNullable(recordStartEvent.getContentIfNotHandled()).ifPresent(content -> {
                     Toast.makeText(MapActivity.this, content, Toast.LENGTH_SHORT).show();
                     oBoundMapFragment.initialize();
-                    oMapActivitySharedViewModel.getIsRecordsViewVisible().setValue(false);
+                    oMapActivitySharedViewModel.isRecordsViewVisible().setValue(false);
                 });
             }
         });
@@ -180,13 +180,13 @@ public class MapActivity extends AppCompatActivity{
                         switch (state){
                             case RECORDING:
                                 oMapActivitySharedViewModel.getRecordState().setValue(RecordState.STOP);
-                                oMapActivitySharedViewModel.getRecordEndEvent().setValue(new RecordEndEvent(getString(R.string.touringFinishToast)));
+                                oMapActivitySharedViewModel.getRecordEndEvent().setValue(new RecordEndEvent(R.string.touringFinishToast));
                                 if(oRecordServiceBound) {
                                     oRecordService.stopRecording();
                                 }
                                 break;
                             case STOP:
-                                oMapActivitySharedViewModel.getRecordStartEvent().setValue(new RecordStartEvent(getString(R.string.touringStartToast)));
+                                oMapActivitySharedViewModel.getRecordStartEvent().setValue(new RecordStartEvent(R.string.touringStartToast));
                                 startRecordService();
 
                                 cExecutors.execute(new Runnable() {
@@ -222,7 +222,7 @@ public class MapActivity extends AppCompatActivity{
         oMemoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MutableLiveData<Boolean> isRecordsViewVisible = oMapActivitySharedViewModel.getIsRecordsViewVisible();
+                MutableLiveData<Boolean> isRecordsViewVisible = oMapActivitySharedViewModel.isRecordsViewVisible();
                 if(isRecordsViewVisible.getValue()) {
                     isRecordsViewVisible.setValue(false);
                     oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);

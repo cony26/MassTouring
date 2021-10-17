@@ -39,7 +39,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenViewVisible = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.RECORD_VIEW) {
         @Override
         public void handleOnBackPressed() {
-            oMapActivitySharedViewModel.getIsRecordsViewVisible().setValue(false);
+            oMapActivitySharedViewModel.isRecordsViewVisible().setValue(false);
             Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when records view visible");
         }
     };
@@ -64,7 +64,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     }
 
     private void subscribe(LifecycleOwner aLifeCycleOwner){
-        oMapActivitySharedViewModel.getIsRecordsViewVisible().observe(aLifeCycleOwner, new Observer<Boolean>() {
+        oMapActivitySharedViewModel.isRecordsViewVisible().observe(aLifeCycleOwner, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean isVisible) {
                 if(isVisible){
@@ -137,7 +137,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
         }
 
-        oMapActivitySharedViewModel.getIsTracePosition().setValue(false);
+        oMapActivitySharedViewModel.isTracePosition().setValue(false);
     }
 
     @Override

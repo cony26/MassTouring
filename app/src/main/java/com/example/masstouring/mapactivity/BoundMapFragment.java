@@ -2,6 +2,7 @@ package com.example.masstouring.mapactivity;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Handler;
@@ -51,7 +52,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED) {
         @Override
         public void handleOnBackPressed() {
-            if(oMapActivityViewModel.getIsClusterDistributed().getValue()){
+            if(oMapActivityViewModel.isClusterDistributed().getValue()){
                 oClusterDistributer.detachDistributedView();
             }
             Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when cluster distributed");
@@ -67,16 +68,28 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oDatabaseHelper = aDatabaseHelper;
         subscribeLiveData();
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenClusterDistributed);
+        oMapActivityViewModel.setLocationUpdateCallback(this);
     }
 
     private void subscribeLiveData(){
-        oMapActivityViewModel.getIsClusterDistributed().observe(oMapFragment, new Observer<Boolean>() {
+        oMapActivityViewModel.isClusterDistributed().observe(oMapFragment, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aDistributed) {
                 if(aDistributed){
                     oOnBackPressedCallbackWhenClusterDistributed.setEnabled(true);
                 }else{
                     oOnBackPressedCallbackWhenClusterDistributed.setEnabled(false);
+                }
+            }
+        });
+
+        oMapActivityViewModel.getRestoreEvent().observe(oMapFragment, new Observer<RestoreFromServiceEvent>() {
+            @Override
+            public void onChanged(RestoreFromServiceEvent aEvent) {
+                Integer id = aEvent.getContentIfNotHandled();
+                if(id != null){
+                    restorePolyline(id);
+                    moveCameraToLastLocation(id);
                 }
             }
         });
@@ -93,7 +106,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
-                oMapActivityViewModel.getIsTracePosition().setValue(true);
+                oMapActivityViewModel.isTracePosition().setValue(true);
                 return false;
             }
         });
@@ -101,14 +114,14 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             @Override
             public void onCameraMoveStarted(int i) {
                 if(i == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE){
-                    oMapActivityViewModel.getIsTracePosition().setValue(false);
+                    oMapActivityViewModel.isTracePosition().setValue(false);
                 }
             }
         });
         oMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
-                if(oMapActivityViewModel.getIsClusterDistributed().getValue()){
+                if(oMapActivityViewModel.isClusterDistributed().getValue()){
                     oClusterDistributer.updateClusterScreenPosition(oMap);
                 }
             }
@@ -118,7 +131,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     @Override
     public void onReceiveLocationUpdate(Location aLocation, boolean aNeedUpdate) {
-        if(oMapActivityViewModel.getIsTracePosition().getValue()) {
+        if(oMapActivityViewModel.isTracePosition().getValue()) {
             oMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()), 16f));
         }
 

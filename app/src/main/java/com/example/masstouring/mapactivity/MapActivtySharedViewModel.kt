@@ -1,37 +1,51 @@
-package com.example.masstouring.mapactivity;
+package com.example.masstouring.mapactivity
 
-import android.view.View;
+import android.util.Log
+import android.view.View
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.example.masstouring.R
+import com.example.masstouring.common.LoggerTag
+import com.example.masstouring.recordservice.ILocationUpdateCallback
 
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+class MapActivtySharedViewModel : ViewModel() {
+    val isTracePosition = MutableLiveData(true)
+    val recordState = MutableLiveData(RecordState.STOP)
+    val recordStartEvent = MutableLiveData<RecordStartEvent>()
+    val recordEndEvent = MutableLiveData<RecordEndEvent>()
+    val recordServiceOrderEvent = MutableLiveData<RecordServiceOrderEvent>()
+    val isRecordServiceBound = MutableLiveData(false)
+    val isRecordsViewVisible = MutableLiveData(false)
+    val toolbarVisibility = MutableLiveData(View.GONE)
+    val isClusterDistributed = MutableLiveData(false)
+    val isRecording: Boolean
+        get() = recordState.value == RecordState.RECORDING
+    var locationUpdateCallback : ILocationUpdateCallback? = null
+    val restoreEvent = MutableLiveData<RestoreFromServiceEvent>()
 
-public class MapActivtySharedViewModel extends ViewModel {
-    private MutableLiveData<Boolean> oIsTracePosition = new MutableLiveData<>(true);
-    private MutableLiveData<RecordState> oRecordState = new MutableLiveData<>(RecordState.STOP);
-    private MutableLiveData<RecordStartEvent> oRecordStartEvent = new MutableLiveData<>();
-    private MutableLiveData<RecordEndEvent> oRecordEndEvent = new MutableLiveData<>();
-    private MutableLiveData<Boolean> oIsRecordsViewVisible = new MutableLiveData<>(false);
-    private MutableLiveData<Integer> oToolbarVisiblity = new MutableLiveData<>(View.GONE);
-    private MutableLiveData<Boolean> oIsClusterDistributed = new MutableLiveData<>(false);
-
-    public MutableLiveData<Boolean> getIsTracePosition() {
-        return oIsTracePosition;
+    //Start/EndRecordButton
+    fun onRecordButtonClick() {
+        val state: RecordState? = recordState.value
+        when (state) {
+            RecordState.RECORDING -> {
+                recordState.value = RecordState.STOP
+                recordEndEvent.value = RecordEndEvent(R.string.touringFinishToast)
+                recordServiceOrderEvent.value = RecordServiceOrderEvent(RecordServiceOrderEvent.Order.END)
+            }
+            RecordState.STOP -> {
+                recordStartEvent.value = RecordStartEvent(R.string.touringStartToast)
+            }
+            else -> Log.e(LoggerTag.SYSTEM_PROCESS, "unexpected record state detected:" + state?.id)
+        }
     }
-    public MutableLiveData<RecordState> getRecordState() {
-        return oRecordState;
-    }
-    public boolean isRecording(){
-        return oRecordState.getValue().equals(RecordState.RECORDING);
-    }
-    public MutableLiveData<Boolean> getIsRecordsViewVisible(){return oIsRecordsViewVisible;}
-    public MutableLiveData<Integer> getToolbarVisibility(){return oToolbarVisiblity;}
 
-    public MutableLiveData<RecordStartEvent> getRecordStartEvent() {
-        return oRecordStartEvent;
+    //CheckRecordsButton
+    fun onCheckRecordsButtonClick(){
+        if (isRecordsViewVisible.value!!) {
+            isRecordsViewVisible.value = false
+            toolbarVisibility.value = View.GONE
+        } else {
+            isRecordsViewVisible.value = true
+        }
     }
-
-    public MutableLiveData<RecordEndEvent> getRecordEndEvent(){
-        return oRecordEndEvent;
-    }
-    public MutableLiveData<Boolean> getIsClusterDistributed(){return oIsClusterDistributed;}
 }

@@ -166,7 +166,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         }
         clearClusterDistributedDrawable();
         oClusterDistributedView.requestShutdownDrawingTask();
-        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(false);
+        oMapActivitySharedViewModel.isClusterDistributed().setValue(false);
     }
 
     @Override
@@ -246,7 +246,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         //draw each items on the calculated position
         addClusterDistributedDrawable(new ClusterDistributedDrawable(new CopyOnWriteArrayList<>(distributedItems), aCluster));
 
-        oMapActivitySharedViewModel.getIsClusterDistributed().setValue(true);
+        oMapActivitySharedViewModel.isClusterDistributed().setValue(true);
     }
 
     public void updateClusterScreenPosition(GoogleMap aMap){

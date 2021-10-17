@@ -1,7 +1,7 @@
 package com.example.masstouring.mapactivity;
 
-public class RecordStartEvent extends Event<String>{
-    public RecordStartEvent(String aString){
+public class RecordStartEvent extends Event<Integer>{
+    public RecordStartEvent(Integer aString){
         super(aString);
     }
 }
