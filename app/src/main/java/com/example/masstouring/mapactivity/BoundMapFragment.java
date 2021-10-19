@@ -68,7 +68,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oDatabaseHelper = aDatabaseHelper;
         subscribeLiveData();
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenClusterDistributed);
-        oMapActivityViewModel.setLocationUpdateCallback(this);
+        oMapActivityViewModel.getLocationUpdateCallback().setValue(this);
     }
 
     private void subscribeLiveData(){
@@ -258,6 +258,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 //        oPictureClusterRenderer.setOnClusterItemClickListener(null);
 //        oClusterManager.getMarkerCollection().clear();
 //        oPictureClusterRenderer.onRemove();
+        oMapActivityViewModel.getLocationUpdateCallback().setValue(null);
     }
 
     private void instantiateClusterManagers(){

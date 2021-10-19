@@ -154,7 +154,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     }
 
     /**
-     * detach DistributedView to {@code aActivity} if attached.
+     * detach DistributedView from {@code aActivity} if attached.
      */
     public void detachDistributedView(){
         ViewGroup parent = (ViewGroup)oClusterDistributedView.getParent();

@@ -20,7 +20,7 @@ class MapActivtySharedViewModel : ViewModel() {
     val isClusterDistributed = MutableLiveData(false)
     val isRecording: Boolean
         get() = recordState.value == RecordState.RECORDING
-    var locationUpdateCallback : ILocationUpdateCallback? = null
+    val locationUpdateCallback = MutableLiveData<ILocationUpdateCallback>()
     val restoreEvent = MutableLiveData<RestoreFromServiceEvent>()
 
     //Start/EndRecordButton
@@ -33,6 +33,7 @@ class MapActivtySharedViewModel : ViewModel() {
                 recordServiceOrderEvent.value = RecordServiceOrderEvent(RecordServiceOrderEvent.Order.END)
             }
             RecordState.STOP -> {
+                recordState.value = RecordState.RECORDING
                 recordStartEvent.value = RecordStartEvent(R.string.touringStartToast)
             }
             else -> Log.e(LoggerTag.SYSTEM_PROCESS, "unexpected record state detected:" + state?.id)

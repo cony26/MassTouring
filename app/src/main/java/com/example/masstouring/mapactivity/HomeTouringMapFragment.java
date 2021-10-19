@@ -63,7 +63,7 @@ public class HomeTouringMapFragment extends Fragment {
         new LifeCycleLogger(this, getClass().getSimpleName());
         BackPressedCallbackRegisterer.initialize((AppCompatActivity)getActivity());
         checkPermissions();
-        oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
+        oMapActivitySharedViewModel = new ViewModelProvider(requireActivity()).get(MapActivtySharedViewModel.class);
         oDatabaseHelper = new DatabaseHelper(getContext(), Const.DB_NAME);
         cExecutors.execute(new DatabaseInfoRepairer(oDatabaseHelper));
     }
