@@ -33,12 +33,16 @@ class BoundRecordService(val viewModel: MapActivtySharedViewModel, val appCompat
                 it.setUnbindRequestCallback(stopRequestCallback)
                 it.setIRecordServiceCallback(viewModel.locationUpdateCallback.value)
 
-                //Service : Recording, Activity : Recording not start
+                //Service : RECORDING, Activity : STOP
                 //restore from service
                 if(it.recordState.equals(RecordState.RECORDING)){
                     viewModel.recordState.value = RecordState.RECORDING
                     val recordId: Int? = recordService?.recordObject?.recordId
                     viewModel.restoreEvent.value = RestoreFromServiceEvent(recordId)
+                }
+                //Service : STOP, Activity : STOP
+                else{
+                    viewModel.recordState.value = RecordState.STOP
                 }
             }
             Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity")
@@ -82,19 +86,18 @@ class BoundRecordService(val viewModel: MapActivtySharedViewModel, val appCompat
     private fun subscribeLiveData(){
         viewModel.recordServiceOrderEvent.observe(appCompatActivity, Observer {
             val order = it.contentIfNotHandled
-            if(order.equals(RecordServiceOrderEvent.Order.START)){
-                val i = Intent(appCompatActivity.applicationContext, RecordService::class.java)
-                appCompatActivity.startForegroundService(i)
-                appCompatActivity.bindService(i, oRecordServiceConnection, AppCompatActivity.BIND_AUTO_CREATE)
-                GlobalScope.launch {
-                    while(!viewModel.isRecordServiceBound.value!!){
-                        delay(10)
-                    }
-                    recordService?.startRecording();
+            when(order){
+                RecordServiceOrderEvent.Order.START ->{
+                    startRecordService()
+                    startRecording()
                 }
-            }else if(order.equals(RecordServiceOrderEvent.Order.END)){
-                if (viewModel.isRecordServiceBound.value!!) {
-                    recordService?.stopRecording()
+                RecordServiceOrderEvent.Order.BOUND ->{
+                    startRecordService()
+                }
+                RecordServiceOrderEvent.Order.END ->{
+                    if (viewModel.isRecordServiceBound.value!!) {
+                        recordService?.stopRecording()
+                    }
                 }
             }
         })
@@ -102,5 +105,22 @@ class BoundRecordService(val viewModel: MapActivtySharedViewModel, val appCompat
         viewModel.locationUpdateCallback.observe(appCompatActivity, Observer {
             recordService?.setIRecordServiceCallback(viewModel.locationUpdateCallback.value)
         })
+    }
+
+    private fun startRecordService(){
+        val i = Intent(appCompatActivity.applicationContext, RecordService::class.java)
+        appCompatActivity.startForegroundService(i)
+        appCompatActivity.bindService(i, oRecordServiceConnection, AppCompatActivity.BIND_AUTO_CREATE)
+    }
+
+    private fun startRecording(){
+        //FIXME:this settter is called multiply. the logic should be made better easier
+        viewModel.recordState.value = RecordState.RECORDING
+        GlobalScope.launch {
+            while(!viewModel.isRecordServiceBound.value!!){
+                delay(10)
+            }
+            recordService?.startRecording();
+        }
     }
 }

@@ -38,7 +38,7 @@ class TouringMapActivity : AppCompatActivity() {
     }
 
     override fun onStart() {
-        viewModel.recordServiceOrderEvent.value = RecordServiceOrderEvent(RecordServiceOrderEvent.Order.START)
+        viewModel.recordServiceOrderEvent.value = RecordServiceOrderEvent(RecordServiceOrderEvent.Order.BOUND)
         super.onStart()
     }
 
