@@ -14,7 +14,7 @@ import com.example.masstouring.common.LoggerTask
 
 class TouringMapActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration : AppBarConfiguration
-    private lateinit var boundRecordService: BoundRecordService
+    private lateinit var recordServiceConnector: RecordServiceConnector
     private val viewModel: MapActivtySharedViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +33,7 @@ class TouringMapActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
 
-        boundRecordService = BoundRecordService(viewModel, this)
+        recordServiceConnector = RecordServiceConnector(viewModel, this)
         subscribeLiveData()
     }
 
