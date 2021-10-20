@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void connectHttp(){
 
-        new SynchronizationThread(new DatabaseHelper(getApplicationContext(), Const.DB_NAME)).start();
+        new SynchronizationThread(new DatabaseHelper(getApplicationContext())).start();
 
 //        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 //        StrictMode.setThreadPolicy(policy);

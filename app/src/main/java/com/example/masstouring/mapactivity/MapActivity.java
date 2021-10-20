@@ -48,7 +48,6 @@ public class MapActivity extends AppCompatActivity{
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private RecordService oRecordService;
     private boolean oRecordServiceBound = false;
-    private DatabaseHelper oDatabaseHelper;
 
     private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
         @Override
@@ -71,19 +70,18 @@ public class MapActivity extends AppCompatActivity{
         checkPermissions();
         setContentView(R.layout.activity_maps);
         oMapActivitySharedViewModel = new ViewModelProvider(this).get(MapActivtySharedViewModel.class);
-        oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
         oStartRecordingButton = findViewById(R.id.btnStartRecording);
         oMemoryButton = findViewById(R.id.btnMemory);
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
-        oBoundMapFragment = new BoundMapFragment(this, oMapActivitySharedViewModel, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map), oDatabaseHelper);
-        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel, oDatabaseHelper);
+        oBoundMapFragment = new BoundMapFragment(this, oMapActivitySharedViewModel, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel);
         oBoundRecordsView.setMapFragment(oBoundMapFragment);
 
         setButtonClickListeners();
         subscribeLiveData();
 
-        cExecutors.execute(new DatabaseInfoRepairer(oDatabaseHelper));
+        cExecutors.execute(new DatabaseInfoRepairer(getApplicationContext()));
     }
 
     @Override

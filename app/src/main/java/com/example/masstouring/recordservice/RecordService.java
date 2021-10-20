@@ -57,7 +57,7 @@ public class RecordService extends LifecycleService {
     private Notification oNotification;
     private RecordObject oRecordObject = null;
     private RecordState oRecordState = RecordState.STOP;
-    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this, Const.DB_NAME);
+    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this);
     private static final String CANCEL_ACTION = "cancel record action";
     private final IBinder oBinder = new RecordServiceBinder();
     private Optional<ILocationUpdateCallback> oRecordServiceCallback = Optional.empty();

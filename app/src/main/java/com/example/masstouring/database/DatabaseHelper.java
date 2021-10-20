@@ -28,8 +28,8 @@ import java.util.Set;
 import static java.util.Collections.max;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    public DatabaseHelper(Context context, String aDBName){
-        super(context, aDBName, null, Const.DB_VERSION);
+    public DatabaseHelper(Context context){
+        super(context, Const.DB_NAME, null, Const.DB_VERSION);
     }
 
     @Override

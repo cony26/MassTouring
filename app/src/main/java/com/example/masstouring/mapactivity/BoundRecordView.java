@@ -15,6 +15,7 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
 import com.google.android.gms.maps.model.LatLng;
@@ -44,7 +45,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     };
 
-    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel, DatabaseHelper aDatabaseHelper){
+    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel){
         aAppCompatActivity.getLifecycle().addObserver(this);
         oRecordsView = aRecordView;
         oManager = new LinearLayoutManager(aRecordView.getContext());
@@ -53,7 +54,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         oRecordsView.setLayoutManager(oManager);
         oRecordsView.setVisibility(View.GONE);
 
-        oDatabaseHelper = aDatabaseHelper;
+        oDatabaseHelper = new DatabaseHelper(aAppCompatActivity.getApplicationContext());
         subscribe(aAppCompatActivity);
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenViewVisible);
     }

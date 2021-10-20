@@ -12,10 +12,15 @@ import androidx.navigation.ui.NavigationUI
 import com.example.masstouring.R
 import com.example.masstouring.common.LifeCycleLogger
 import com.example.masstouring.common.LoggerTask
+import com.example.masstouring.database.DatabaseInfoRepairer
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class TouringMapActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration : AppBarConfiguration
     private lateinit var recordServiceConnector: RecordServiceConnector
+    val cExecutors: ExecutorService = Executors.newFixedThreadPool(5)
+
     private lateinit var toolbar : Toolbar
 
     private val viewModel: MapActivtySharedViewModel by viewModels()
@@ -39,6 +44,8 @@ class TouringMapActivity : AppCompatActivity() {
 
         recordServiceConnector = RecordServiceConnector(viewModel, this)
         subscribeLiveData()
+
+        cExecutors.execute(DatabaseInfoRepairer(applicationContext))
     }
 
     override fun onStart() {

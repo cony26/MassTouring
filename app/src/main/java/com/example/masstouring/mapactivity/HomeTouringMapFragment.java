@@ -22,11 +22,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.R;
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
-import com.example.masstouring.database.DatabaseHelper;
-import com.example.masstouring.database.DatabaseInfoRepairer;
 import com.example.masstouring.mapactivity.presenter.CheckRecordsButtonPresenter;
 import com.example.masstouring.mapactivity.presenter.RecordButtonPresenter;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -34,15 +31,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class HomeTouringMapFragment extends Fragment {
-    static final ExecutorService cExecutors = Executors.newFixedThreadPool(5);
     private BoundRecordView oBoundRecordsView;
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
-    private DatabaseHelper oDatabaseHelper;
 
     private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
         @Override
@@ -63,8 +56,7 @@ public class HomeTouringMapFragment extends Fragment {
         BackPressedCallbackRegisterer.initialize((AppCompatActivity)getActivity());
         checkPermissions();
         oMapActivitySharedViewModel = new ViewModelProvider(requireActivity()).get(MapActivtySharedViewModel.class);
-        oDatabaseHelper = new DatabaseHelper(getContext(), Const.DB_NAME);
-        cExecutors.execute(new DatabaseInfoRepairer(oDatabaseHelper));
+
     }
 
     @Nullable
@@ -83,8 +75,8 @@ public class HomeTouringMapFragment extends Fragment {
         new CheckRecordsButtonPresenter(view.findViewById(R.id.btnMemory), this, oMapActivitySharedViewModel);
 
         AppCompatActivity activity = (AppCompatActivity) getActivity();
-        oBoundMapFragment = new BoundMapFragment(activity, oMapActivitySharedViewModel, (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map), oDatabaseHelper);
-        oBoundRecordsView = new BoundRecordView(activity, view.findViewById(R.id.recordsView), oMapActivitySharedViewModel, oDatabaseHelper);
+        oBoundMapFragment = new BoundMapFragment(activity, oMapActivitySharedViewModel, (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map));
+        oBoundRecordsView = new BoundRecordView(activity, view.findViewById(R.id.recordsView), oMapActivitySharedViewModel);
         oBoundRecordsView.setMapFragment(oBoundMapFragment);
         subscribeLiveData();
     }
