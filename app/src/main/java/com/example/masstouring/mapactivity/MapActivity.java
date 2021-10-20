@@ -54,7 +54,7 @@ public class MapActivity extends AppCompatActivity{
         @Override
         public void onPositiveClick() {
             oBoundRecordsView.deleteSelectedItems();
-            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
+            oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
         }
 
         @Override
@@ -145,10 +145,10 @@ public class MapActivity extends AppCompatActivity{
             }
         });
 
-        oMapActivitySharedViewModel.getToolbarVisibility().observe(this, new Observer<Integer>() {
+        oMapActivitySharedViewModel.getDeleteRecordsIconVisible().observe(this, new Observer<Boolean>() {
             @Override
-            public void onChanged(Integer integer) {
-                oToolbar.setVisibility(integer);
+            public void onChanged(Boolean isVisible) {
+                //
             }
         });
     }
@@ -225,7 +225,7 @@ public class MapActivity extends AppCompatActivity{
                 MutableLiveData<Boolean> isRecordsViewVisible = oMapActivitySharedViewModel.isRecordsViewVisible();
                 if(isRecordsViewVisible.getValue()) {
                     isRecordsViewVisible.setValue(false);
-                    oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
+                    oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
                 }else{
                     isRecordsViewVisible.setValue(true);
                 }

@@ -25,7 +25,6 @@ import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
-import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.database.DatabaseInfoRepairer;
 import com.example.masstouring.mapactivity.presenter.CheckRecordsButtonPresenter;
@@ -49,7 +48,7 @@ public class HomeTouringMapFragment extends Fragment {
         @Override
         public void onPositiveClick() {
             oBoundRecordsView.deleteSelectedItems();
-            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
+            oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
         }
 
         @Override
@@ -150,6 +149,7 @@ public class HomeTouringMapFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater inflater) {
         inflater.inflate(R.menu.action_menu, menu);
+        menu.findItem(R.id.action_delete).setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
     }
 

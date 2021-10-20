@@ -5,6 +5,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
@@ -15,6 +16,8 @@ import com.example.masstouring.common.LoggerTask
 class TouringMapActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration : AppBarConfiguration
     private lateinit var recordServiceConnector: RecordServiceConnector
+    private lateinit var toolbar : Toolbar
+
     private val viewModel: MapActivtySharedViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,8 +32,9 @@ class TouringMapActivity : AppCompatActivity() {
         val drawerLayout : DrawerLayout? = findViewById(R.id.drawer_layout)
         appBarConfiguration = AppBarConfiguration(setOf(R.id.homeTouringMapFragment), drawerLayout)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
 
         recordServiceConnector = RecordServiceConnector(viewModel, this)
@@ -48,6 +52,9 @@ class TouringMapActivity : AppCompatActivity() {
     }
 
     private fun subscribeLiveData(){
+        viewModel.deleteRecordsIconVisible.observe(this, Observer {
+            toolbar?.menu?.findItem(R.id.action_delete)?.isVisible = it
+        })
 
     }
 }

@@ -76,7 +76,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
                 }else{
                     oRecordsView.setVisibility(View.GONE);
                     oOnBackPressedCallbackWhenViewVisible.setEnabled(false);
-                    oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
+                    oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
                 }
             }
         });
@@ -143,9 +143,9 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     @Override
     public void onRecordItemLongClick() {
         if(oRecordsViewAdapter.getSelectedItemIdList().size() > 0){
-            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.VISIBLE);
+            oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(true);
         }else{
-            oMapActivitySharedViewModel.getToolbarVisibility().setValue(View.GONE);
+            oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
         }
     }
 

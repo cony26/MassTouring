@@ -16,7 +16,7 @@ class MapActivtySharedViewModel : ViewModel() {
     val recordServiceOrderEvent = MutableLiveData<RecordServiceOrderEvent>()
     val isRecordServiceBound = MutableLiveData(false)
     val isRecordsViewVisible = MutableLiveData(false)
-    val toolbarVisibility = MutableLiveData(View.GONE)
+    val deleteRecordsIconVisible = MutableLiveData(false)
     val isClusterDistributed = MutableLiveData(false)
     val isRecording: Boolean
         get() = recordState.value == RecordState.RECORDING
@@ -42,11 +42,8 @@ class MapActivtySharedViewModel : ViewModel() {
 
     //CheckRecordsButton
     fun onCheckRecordsButtonClick(){
-        if (isRecordsViewVisible.value!!) {
-            isRecordsViewVisible.value = false
-            toolbarVisibility.value = View.GONE
-        } else {
-            isRecordsViewVisible.value = true
+        isRecordsViewVisible.value?.let{
+            isRecordsViewVisible.value = !it
         }
     }
 }
