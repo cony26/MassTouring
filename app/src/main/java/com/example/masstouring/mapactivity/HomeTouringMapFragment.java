@@ -149,7 +149,6 @@ public class HomeTouringMapFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater inflater) {
         inflater.inflate(R.menu.action_menu, menu);
-        menu.findItem(R.id.action_delete).setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
