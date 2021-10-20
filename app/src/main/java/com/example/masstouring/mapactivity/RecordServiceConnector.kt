@@ -106,9 +106,9 @@ class RecordServiceConnector(val viewModel: MapActivtySharedViewModel, val appCo
     }
 
     private fun restoreFromService(){
-        //Service : RECORDING, Activity : STOP
-        //restore from service
         recordService?.let {
+            //Service : RECORDING, Activity : STOP
+            //restore from service
             if(it.recordState.equals(RecordState.RECORDING)){
                 viewModel.recordState.value = RecordState.RECORDING
                 val recordId: Int? = it.recordObject?.recordId
