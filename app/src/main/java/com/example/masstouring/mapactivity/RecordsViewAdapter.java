@@ -100,8 +100,9 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         aHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                recordItem.setSelected(true);
-                view.setBackgroundColor(Color.CYAN);
+                boolean originalState = recordItem.isSelected();
+                recordItem.setSelected(!originalState);
+                view.setBackgroundColor(originalState ? oInitialColor : Color.CYAN);
                 oCallback.onRecordItemLongClick();
                 return true;
             }
