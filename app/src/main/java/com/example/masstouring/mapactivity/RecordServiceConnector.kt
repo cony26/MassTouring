@@ -119,7 +119,6 @@ class RecordServiceConnector(val viewModel: MapActivtySharedViewModel, val appCo
                 viewModel.recordState.value = RecordState.STOP
             }
         }
-
     }
 
     private fun startRecording(){

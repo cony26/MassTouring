@@ -1,7 +1,5 @@
 package com.example.masstouring.mapactivity;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,7 +13,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
@@ -37,26 +34,12 @@ public class HomeTouringMapFragment extends Fragment {
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
 
-    private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
-        @Override
-        public void onPositiveClick() {
-            oBoundRecordsView.deleteSelectedItems();
-            oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
-        }
-
-        @Override
-        public void onNegativeClick() {
-        }
-    };
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new LifeCycleLogger(this, getClass().getSimpleName());
         BackPressedCallbackRegisterer.initialize((AppCompatActivity)getActivity());
-        checkPermissions();
         oMapActivitySharedViewModel = new ViewModelProvider(requireActivity()).get(MapActivtySharedViewModel.class);
-
     }
 
     @Nullable
@@ -131,7 +114,7 @@ public class HomeTouringMapFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_delete) {
             DeleteConfirmationDialog dialog = new DeleteConfirmationDialog();
-            dialog.setCallback(oDeleteDialogCallback);
+            dialog.setCallback(oBoundRecordsView.oDeleteDialogCallback);
             dialog.show(getParentFragmentManager(), "deleteConfirmationDialog");
             return true;
         }
@@ -142,15 +125,5 @@ public class HomeTouringMapFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater inflater) {
         inflater.inflate(R.menu.action_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    private void checkPermissions(){
-        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-
-        if(ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-        }
     }
 }

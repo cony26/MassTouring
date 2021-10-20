@@ -15,9 +15,9 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
+import com.example.masstouring.mapactivity.DeleteConfirmationDialog.IDeleteConfirmationDialogCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -42,6 +42,17 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         public void handleOnBackPressed() {
             oMapActivitySharedViewModel.isRecordsViewVisible().setValue(false);
             Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when records view visible");
+        }
+    };
+
+    public final IDeleteConfirmationDialogCallback oDeleteDialogCallback = new IDeleteConfirmationDialogCallback() {
+        @Override
+        public void onPositiveClick() {
+            oMapActivitySharedViewModel.onDeletePositiveClick(BoundRecordView.this);
+        }
+
+        @Override
+        public void onNegativeClick() {
         }
     };
 

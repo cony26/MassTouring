@@ -1,9 +1,12 @@
 package com.example.masstouring.mapactivity
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
@@ -29,6 +32,7 @@ class TouringMapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         LoggerTask.getInstance().setMapActivityState(true)
         LifeCycleLogger(this, javaClass.simpleName)
+        checkPermissions()
 
         setContentView(R.layout.touring_map_activity)
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.my_nav_host_fragment) as NavHostFragment? ?: return
@@ -39,7 +43,6 @@ class TouringMapActivity : AppCompatActivity() {
 
         toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
 
         recordServiceConnector = RecordServiceConnector(viewModel, this)
@@ -63,5 +66,14 @@ class TouringMapActivity : AppCompatActivity() {
             toolbar?.menu?.findItem(R.id.action_delete)?.isVisible = it
         })
 
+    }
+
+    private fun checkPermissions() {
+        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+        }
+        if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
+        }
     }
 }

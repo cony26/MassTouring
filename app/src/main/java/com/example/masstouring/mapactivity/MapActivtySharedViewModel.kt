@@ -4,9 +4,11 @@ import android.util.Log
 import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.recordservice.ILocationUpdateCallback
+import kotlinx.coroutines.launch
 
 class MapActivtySharedViewModel : ViewModel() {
     val isTracePosition = MutableLiveData(true)
@@ -45,5 +47,12 @@ class MapActivtySharedViewModel : ViewModel() {
         isRecordsViewVisible.value?.let{
             isRecordsViewVisible.value = !it
         }
+    }
+
+    fun onDeletePositiveClick(boundRecordView: BoundRecordView){
+        viewModelScope.launch {
+            boundRecordView.deleteSelectedItems()
+        }
+        deleteRecordsIconVisible.value = false
     }
 }
