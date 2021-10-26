@@ -3,14 +3,20 @@ package com.example.masstouring.mapactivity
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.recordservice.ILocationUpdateCallback
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MapActivtySharedViewModel : ViewModel() {
+@HiltViewModel
+class MapActivtySharedViewModel @Inject constructor(
+        private val savedStateHandle: SavedStateHandle
+): ViewModel() {
     val isTracePosition = MutableLiveData(true)
     val recordState = MutableLiveData(RecordState.STOP)
     val recordStartEvent = MutableLiveData<RecordStartEvent>()

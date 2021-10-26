@@ -16,12 +16,17 @@ import com.example.masstouring.R
 import com.example.masstouring.common.LifeCycleLogger
 import com.example.masstouring.common.LoggerTask
 import com.example.masstouring.database.DatabaseInfoRepairer
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class TouringMapActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration : AppBarConfiguration
-    private lateinit var recordServiceConnector: RecordServiceConnector
+
+    @Inject
+    lateinit var recordServiceConnector: RecordServiceConnector
     val cExecutors: ExecutorService = Executors.newFixedThreadPool(5)
 
     private lateinit var toolbar : Toolbar
@@ -45,7 +50,6 @@ class TouringMapActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
 
-        recordServiceConnector = RecordServiceConnector(viewModel, this)
         subscribeLiveData()
 
         cExecutors.execute(DatabaseInfoRepairer(applicationContext))

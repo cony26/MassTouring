@@ -5,19 +5,25 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.Observer
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.*
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.recordservice.RecordService
+import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RecordServiceConnector(val viewModel: MapActivtySharedViewModel, val appCompatActivity: AppCompatActivity) : LifecycleObserver {
+@ActivityScoped
+class RecordServiceConnector @Inject constructor(
+        val appCompatActivity: FragmentActivity
+        ) : LifecycleObserver {
     private var recordService: RecordService? = null
+    private val viewModel : MapActivtySharedViewModel = ViewModelProvider(appCompatActivity).get(MapActivtySharedViewModel::class.java)
+
     init {
         subscribeLiveData()
         appCompatActivity.lifecycle.addObserver(this)
