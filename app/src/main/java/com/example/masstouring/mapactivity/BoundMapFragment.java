@@ -50,7 +50,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private Polyline oRecordingLastPolyline = null;
     private PolylineOptions oRecordingPolylineOptions = null;
     private Map<Integer, List<Polyline>> oRenderedPolylineMap = new HashMap<>();
-    private final DatabaseHelper oDatabaseHelper;
     private List<Integer> oRenderedIdList = new ArrayList<>();
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED) {
         @Override
@@ -68,7 +67,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMapFragment.getLifecycle().addObserver(this);
         new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
         oMapActivityViewModel = new ViewModelProvider(aAppCompatActivity).get(MapActivtySharedViewModel.class);
-        oDatabaseHelper = new DatabaseHelper(aAppCompatActivity.getApplicationContext());
         subscribeLiveData();
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenClusterDistributed);
         oMapActivityViewModel.getLocationUpdateCallback().setValue(this);
@@ -225,13 +223,16 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
     public void restorePolyline(int aRecordId){
         if(oRecordingPolylineOptions == null){
-            oRecordingPolylineOptions = oDatabaseHelper.restorePolylineOptionsFrom(aRecordId);
+            oRecordingPolylineOptions = oMapActivityViewModel.restorePolylineOptionsFrom(aRecordId);
             oRecordingLastPolyline = oMap.addPolyline(oRecordingPolylineOptions);
         }
     }
 
     public void moveCameraToLastLocation(int aRecordId){
-        oDatabaseHelper.getLastLatLngFrom(aRecordId).ifPresent(e -> oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(e, 16f)));
+        LatLng latLng = oMapActivityViewModel.getLastLatLngFrom(aRecordId);
+        if(latLng != null){
+            oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
+        }
     }
 
     public void fitCameraTo(LatLngBounds aLatLngBounds, int aPadding){

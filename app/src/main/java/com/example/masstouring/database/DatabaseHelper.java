@@ -25,10 +25,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
 import static java.util.Collections.max;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    public DatabaseHelper(Context context){
+    @Inject
+    public DatabaseHelper(@ApplicationContext Context context){
         super(context, Const.DB_NAME, null, Const.DB_VERSION);
     }
 
@@ -273,7 +278,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return polylineOptions;
     }
 
-    public Optional<LatLng> getLastLatLngFrom(int aId){
+    public LatLng getLastLatLngFrom(int aId){
         LatLng latLng = null;
         try(SQLiteDatabase db = getReadableDatabase()) {
             Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
@@ -288,7 +293,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         Log.d(LoggerTag.DATABASE_PROCESS, "get Last LatLng From Id");
-        return Optional.ofNullable(latLng);
+        return latLng;
     }
 
     public void debugPrint(){

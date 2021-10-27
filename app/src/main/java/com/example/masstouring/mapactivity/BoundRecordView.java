@@ -41,10 +41,9 @@ import dagger.hilt.android.scopes.FragmentScoped;
 import dagger.hilt.android.scopes.ViewScoped;
 
 public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
-    private RecyclerView oRecordsView;
-    private final LinearLayoutManager oManager;
+    private final RecyclerView oRecordsView;
     private RecordsViewAdapter oRecordsViewAdapter;
-    private MapActivtySharedViewModel oMapActivitySharedViewModel;
+    private final MapActivtySharedViewModel oMapActivitySharedViewModel;
     private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
     private static final int alpha = 0x80000000;
@@ -70,7 +69,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     public BoundRecordView(FragmentActivity aActivity){
         aActivity.getLifecycle().addObserver(this);
         oRecordsView = aActivity.findViewById(R.id.recordsView);
-        oManager = new LinearLayoutManager(oRecordsView.getContext());
+        LinearLayoutManager oManager = new LinearLayoutManager(oRecordsView.getContext());
         oMapActivitySharedViewModel = new ViewModelProvider(aActivity).get(MapActivtySharedViewModel.class);
         oManager.setOrientation(LinearLayoutManager.VERTICAL);
         oRecordsView.setLayoutManager(oManager);

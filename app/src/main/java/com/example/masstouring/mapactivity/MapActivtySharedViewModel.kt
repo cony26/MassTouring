@@ -1,7 +1,6 @@
 package com.example.masstouring.mapactivity
 
 import android.util.Log
-import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -9,13 +8,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.recordservice.ILocationUpdateCallback
+import com.example.masstouring.repository.Repository
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MapActivtySharedViewModel @Inject constructor(
-        private val savedStateHandle: SavedStateHandle
+        private val savedStateHandle: SavedStateHandle,
+        private val repository : Repository
 ): ViewModel() {
     val isTracePosition = MutableLiveData(true)
     val recordState = MutableLiveData(RecordState.STOP)
@@ -60,5 +64,13 @@ class MapActivtySharedViewModel @Inject constructor(
             boundRecordView.deleteSelectedItems()
         }
         deleteRecordsIconVisible.value = false
+    }
+
+    fun restorePolylineOptionsFrom(aId: Int): PolylineOptions?{
+        return repository.restorePolylineOptionsFrom(aId)
+    }
+
+    fun getLastLatLngFrom(aId: Int): LatLng?{
+        return repository.getLastLatLngFrom(aId)
     }
 }
