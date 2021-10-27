@@ -15,7 +15,9 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
@@ -60,12 +62,12 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         }
     };
 
-    public BoundMapFragment(AppCompatActivity aAppCompatActivity, MapActivtySharedViewModel aMapActivityViewModel, SupportMapFragment aMapFragment){
-        aMapFragment.getMapAsync(this);
+    public BoundMapFragment(AppCompatActivity aAppCompatActivity, SupportMapFragment aMapFragment){
         oMapFragment = aMapFragment;
+        oMapFragment.getMapAsync(this);
         oMapFragment.getLifecycle().addObserver(this);
         new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
-        oMapActivityViewModel = aMapActivityViewModel;
+        oMapActivityViewModel = new ViewModelProvider(aAppCompatActivity).get(MapActivtySharedViewModel.class);
         oDatabaseHelper = new DatabaseHelper(aAppCompatActivity.getApplicationContext());
         subscribeLiveData();
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenClusterDistributed);

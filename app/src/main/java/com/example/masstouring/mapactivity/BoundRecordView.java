@@ -7,14 +7,17 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.DeleteConfirmationDialog.IDeleteConfirmationDialogCallback;
@@ -28,6 +31,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.inject.Inject;
+
+import dagger.hilt.InstallIn;
+import dagger.hilt.android.components.ViewComponent;
+import dagger.hilt.android.scopes.ActivityScoped;
+import dagger.hilt.android.scopes.FragmentScoped;
+import dagger.hilt.android.scopes.ViewScoped;
 
 public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private RecyclerView oRecordsView;
@@ -56,17 +67,17 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     };
 
-    public BoundRecordView(AppCompatActivity aAppCompatActivity, RecyclerView aRecordView, MapActivtySharedViewModel aViewModel){
-        aAppCompatActivity.getLifecycle().addObserver(this);
-        oRecordsView = aRecordView;
-        oManager = new LinearLayoutManager(aRecordView.getContext());
-        oMapActivitySharedViewModel = aViewModel;
+    public BoundRecordView(FragmentActivity aActivity){
+        aActivity.getLifecycle().addObserver(this);
+        oRecordsView = aActivity.findViewById(R.id.recordsView);
+        oManager = new LinearLayoutManager(oRecordsView.getContext());
+        oMapActivitySharedViewModel = new ViewModelProvider(aActivity).get(MapActivtySharedViewModel.class);
         oManager.setOrientation(LinearLayoutManager.VERTICAL);
         oRecordsView.setLayoutManager(oManager);
         oRecordsView.setVisibility(View.GONE);
 
-        oDatabaseHelper = new DatabaseHelper(aAppCompatActivity.getApplicationContext());
-        subscribe(aAppCompatActivity);
+        oDatabaseHelper = new DatabaseHelper(aActivity.getApplicationContext());
+        subscribe(aActivity);
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenViewVisible);
     }
 

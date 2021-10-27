@@ -29,6 +29,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class HomeTouringMapFragment extends Fragment {
     private BoundRecordView oBoundRecordsView;
     private BoundMapFragment oBoundMapFragment;
@@ -58,8 +63,9 @@ public class HomeTouringMapFragment extends Fragment {
         new CheckRecordsButtonPresenter(view.findViewById(R.id.btnMemory), this, oMapActivitySharedViewModel);
 
         AppCompatActivity activity = (AppCompatActivity) getActivity();
-        oBoundMapFragment = new BoundMapFragment(activity, oMapActivitySharedViewModel, (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map));
-        oBoundRecordsView = new BoundRecordView(activity, view.findViewById(R.id.recordsView), oMapActivitySharedViewModel);
+        SupportMapFragment mapFragment = (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map);
+        oBoundRecordsView = new BoundRecordView(activity);
+        oBoundMapFragment = new BoundMapFragment(activity, mapFragment);
         oBoundRecordsView.setMapFragment(oBoundMapFragment);
         subscribeLiveData();
     }

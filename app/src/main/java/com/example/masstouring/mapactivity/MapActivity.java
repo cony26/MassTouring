@@ -74,8 +74,7 @@ public class MapActivity extends AppCompatActivity{
         oMemoryButton = findViewById(R.id.btnMemory);
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
-        oBoundMapFragment = new BoundMapFragment(this, oMapActivitySharedViewModel, (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-        oBoundRecordsView = new BoundRecordView(this, findViewById(R.id.recordsView), oMapActivitySharedViewModel);
+        oBoundMapFragment = new BoundMapFragment(this, (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map));
         oBoundRecordsView.setMapFragment(oBoundMapFragment);
 
         setButtonClickListeners();
