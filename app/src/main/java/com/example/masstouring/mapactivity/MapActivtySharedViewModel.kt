@@ -13,7 +13,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -73,4 +72,17 @@ class MapActivtySharedViewModel @Inject constructor(
     fun getLastLatLngFrom(aId: Int): LatLng?{
         return repository.getLastLatLngFrom(aId)
     }
+
+    fun getRecords(): List<RecordItem?>?{
+        return repository.getRecords()
+    }
+
+    fun getRecordSize(): Int{
+        return repository.getRecordSize()
+    }
+
+    fun deleteRecord(aIds: IntArray){
+        repository.deleteRecord(aIds)
+    }
+
 }

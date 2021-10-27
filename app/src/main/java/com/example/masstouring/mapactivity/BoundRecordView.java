@@ -44,7 +44,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final RecyclerView oRecordsView;
     private RecordsViewAdapter oRecordsViewAdapter;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
-    private final DatabaseHelper oDatabaseHelper;
     private BoundMapFragment oMapFragment;
     private static final int alpha = 0x80000000;
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenViewVisible = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.RECORD_VIEW) {
@@ -75,7 +74,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         oRecordsView.setLayoutManager(oManager);
         oRecordsView.setVisibility(View.GONE);
 
-        oDatabaseHelper = new DatabaseHelper(aActivity.getApplicationContext());
         subscribe(aActivity);
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenViewVisible);
     }
@@ -105,13 +103,13 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     }
 
     private List<RecordItem> loadRecords(){
-        RecordItem recordItemArray[] = new RecordItem[oDatabaseHelper.getRecordSize()];
+        RecordItem recordItemArray[] = new RecordItem[oMapActivitySharedViewModel.getRecordSize()];
         Arrays.fill(recordItemArray, RecordItem.EMPTY_RECORD);
 
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
-                List<RecordItem> data = oDatabaseHelper.getRecords();
+                List<RecordItem> data = oMapActivitySharedViewModel.getRecords();
                 data.stream()
                         .filter(recordItem -> oMapFragment.isRendered(recordItem.getId()))
                         .forEach(recordItem -> recordItem.setRendered(true));
@@ -245,8 +243,8 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
 
     public void deleteSelectedItems(){
         List<Integer> list = oRecordsViewAdapter.getSelectedItemIdList();
-        oDatabaseHelper.deleteRecord(list.stream().mapToInt(id -> id).toArray());
-        oRecordsViewAdapter.setData(oDatabaseHelper.getRecords());
+        oMapActivitySharedViewModel.deleteRecord(list.stream().mapToInt(id -> id).toArray());
+        oRecordsViewAdapter.setData(oMapActivitySharedViewModel.getRecords());
         oRecordsViewAdapter.notifyDataSetChanged();
     }
 

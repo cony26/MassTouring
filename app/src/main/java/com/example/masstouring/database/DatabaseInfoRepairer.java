@@ -12,6 +12,8 @@ import com.example.masstouring.mapactivity.RecordObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * 1. delete records that has only few records. The threshold is defined in {@link #THRESHOLD_TOO_SMALL}.<br>
  * 2. repair database by inserting the proper row as {@link RecordsEndInfo}.<br>

@@ -1,6 +1,7 @@
 package com.example.masstouring.repository
 
 import com.example.masstouring.database.DatabaseHelper
+import com.example.masstouring.mapactivity.RecordItem
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
 import java.util.*
@@ -15,5 +16,17 @@ class Repository @Inject constructor(
 
     fun getLastLatLngFrom(aId: Int): LatLng?{
         return db.getLastLatLngFrom(aId)
+    }
+
+    fun getRecords(): List<RecordItem?>?{
+        return db.records
+    }
+
+    fun getRecordSize(): Int{
+        return db.recordSize
+    }
+
+    fun deleteRecord(aIds: IntArray){
+        db.deleteRecord(aIds)
     }
 }

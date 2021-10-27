@@ -136,7 +136,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void deleteRecord(int... aIds){
+    public void deleteRecord(int[] aIds){
         try (SQLiteDatabase db = getWritableDatabase()) {
             for(int id : aIds){
                 db.delete(Tables.RECORDS_STARTINFO.getName(), RecordsStartInfo.ID.getQuatedName() + "=" + id, null);
