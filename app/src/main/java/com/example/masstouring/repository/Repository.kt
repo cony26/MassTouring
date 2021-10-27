@@ -4,7 +4,6 @@ import com.example.masstouring.database.DatabaseHelper
 import com.example.masstouring.mapactivity.RecordItem
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
-import java.util.*
 import javax.inject.Inject
 
 class Repository @Inject constructor(

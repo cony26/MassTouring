@@ -5,14 +5,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.mapactivity.RecordObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.inject.Inject;
 
 /**
  * 1. delete records that has only few records. The threshold is defined in {@link #THRESHOLD_TOO_SMALL}.<br>

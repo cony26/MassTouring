@@ -2,7 +2,6 @@ package com.example.masstouring.mapactivity;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Handler;
@@ -17,12 +16,9 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.masstouring.R;
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.MediaAccessUtil;
-import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;

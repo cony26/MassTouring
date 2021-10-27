@@ -25,11 +25,9 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.masstouring.R;
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.LoggerTask;
-import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.database.DatabaseInfoRepairer;
 import com.example.masstouring.recordservice.RecordService;
 import com.google.android.gms.maps.SupportMapFragment;
