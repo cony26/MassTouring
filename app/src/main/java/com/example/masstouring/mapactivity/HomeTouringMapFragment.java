@@ -38,7 +38,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class HomeTouringMapFragment extends Fragment {
     private RecordViewController oBoundRecordsView;
-    private BoundMapFragment oBoundMapFragment;
+    private GoogleMapController oGoogleMapController;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
 
     @Override
@@ -67,7 +67,7 @@ public class HomeTouringMapFragment extends Fragment {
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         SupportMapFragment mapFragment = (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map);
         oBoundRecordsView = new RecordViewController(activity);
-        oBoundMapFragment = new BoundMapFragment(activity, mapFragment);
+        oGoogleMapController = new GoogleMapController(activity, mapFragment);
         subscribeLiveData();
     }
 
@@ -101,7 +101,7 @@ public class HomeTouringMapFragment extends Fragment {
                 Optional.ofNullable(recordStartEvent.getContentIfNotHandled()).ifPresent(resId -> {
                     Toast.makeText(getContext(), getString(resId), Toast.LENGTH_SHORT).show();
                     oMapActivitySharedViewModel.getRecordServiceOrderEvent().setValue(new RecordServiceOrderEvent(RecordServiceOrderEvent.Order.START));
-                    oBoundMapFragment.initialize();
+                    oGoogleMapController.initialize();
                     oMapActivitySharedViewModel.isRecordsViewVisible().setValue(false);
                 });
             }

@@ -16,6 +16,7 @@ import androidx.core.view.GestureDetectorCompat;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.viewmodel.GoogleMapViewModel;
 import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.maps.android.clustering.Cluster;
@@ -33,7 +34,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
     private final FocusedDrawable oFocusedDrawable;
     private final Context oContext;
     private final ClusterDistributedView oClusterDistributedView;
-    private final MapActivtySharedViewModel oMapActivitySharedViewModel;
+    private final GoogleMapViewModel googleMapViewModel;
     private final int oClusterSquarePx;
     private final GestureDetectorCompat oDetector;
     private final PrioritizedOnBackPressedCallback oOnBackPressedWhenFocused = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED_ITEM_FOCUSED) {
@@ -128,13 +129,13 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         }
     };
 
-    ClusterDistributer(Context aContext, MapActivtySharedViewModel aViewModel){
+    ClusterDistributer(Context aContext, GoogleMapViewModel aViewModel){
         oFocusedDrawable = new FocusedDrawable(aContext);
         oClusterDistributedView = new ClusterDistributedView(aContext, this);
         oClusterDistributedView.setOnTouchListener(oOnTouchListener);
         oDetector = new GestureDetectorCompat(aContext, oSimpleOnGestureListener);
         oContext = aContext;
-        oMapActivitySharedViewModel = aViewModel;
+        googleMapViewModel = aViewModel;
         oClusterSquarePx = (int)aContext.getResources().getDimension(R.dimen.cluster_item_image);
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedWhenFocused);
     }
@@ -167,7 +168,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         }
         clearClusterDistributedDrawable();
         oClusterDistributedView.requestShutdownDrawingTask();
-        oMapActivitySharedViewModel.isClusterDistributed().setValue(false);
+        googleMapViewModel.isClusterDistributed().setValue(false);
     }
 
     @Override
@@ -247,7 +248,7 @@ public class ClusterDistributer implements ClusterManager.OnClusterClickListener
         //draw each items on the calculated position
         addClusterDistributedDrawable(new ClusterDistributedDrawable(new CopyOnWriteArrayList<>(distributedItems), aCluster));
 
-        oMapActivitySharedViewModel.isClusterDistributed().setValue(true);
+        googleMapViewModel.isClusterDistributed().setValue(true);
     }
 
     public void updateClusterScreenPosition(GoogleMap aMap){

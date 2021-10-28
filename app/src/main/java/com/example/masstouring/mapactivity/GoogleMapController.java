@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, ILocationUpdateCallback {
+public class GoogleMapController implements OnMapReadyCallback, LifecycleObserver, ILocationUpdateCallback {
     private GoogleMap oMap;
     private ClusterManager<Picture> oClusterManager;
     private PictureClusterRenderer oPictureClusterRenderer = null;
@@ -54,14 +54,14 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED) {
         @Override
         public void handleOnBackPressed() {
-            if(oMapActivityViewModel.isClusterDistributed().getValue()){
+            if(oGoogleMapViewModel.isClusterDistributed().getValue()){
                 oClusterDistributer.detachDistributedView();
             }
             Log.d(LoggerTag.SYSTEM_PROCESS,"back pressed when cluster distributed");
         }
     };
 
-    public BoundMapFragment(AppCompatActivity aAppCompatActivity, SupportMapFragment aMapFragment){
+    public GoogleMapController(AppCompatActivity aAppCompatActivity, SupportMapFragment aMapFragment){
         oMapFragment = aMapFragment;
         oMapFragment.getMapAsync(this);
         oMapFragment.getLifecycle().addObserver(this);
@@ -74,7 +74,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     }
 
     private void subscribeLiveData(){
-        oMapActivityViewModel.isClusterDistributed().observe(oMapFragment, new Observer<Boolean>() {
+        oGoogleMapViewModel.isClusterDistributed().observe(oMapFragment, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aDistributed) {
                 if(aDistributed){
@@ -165,7 +165,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
-                if(oMapActivityViewModel.isClusterDistributed().getValue()){
+                if(oGoogleMapViewModel.isClusterDistributed().getValue()){
                     oClusterDistributer.updateClusterScreenPosition(oMap);
                 }
             }
@@ -275,7 +275,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         Context context = oMapFragment.getContext();
         oClusterManager = new ClusterManager<Picture>(context, oMap);
         oPictureClusterRenderer = new PictureClusterRenderer(context, oMap, oClusterManager);
-        oClusterDistributer = new ClusterDistributer(context, oMapActivityViewModel);
+        oClusterDistributer = new ClusterDistributer(context, oGoogleMapViewModel);
         oPictureClusterRenderer.setClusterUpdatedListener(oClusterDistributer);
         oClusterManager.setRenderer(oPictureClusterRenderer);
         oMap.setOnCameraIdleListener(oClusterManager);

@@ -32,7 +32,6 @@ class MapActivtySharedViewModel @Inject constructor(
     val isRecordServiceBound = MutableLiveData(false)
     val isRecordsViewVisible = MutableLiveData(false)
     val deleteRecordsIconVisible = MutableLiveData(false)
-    val isClusterDistributed = MutableLiveData(false)
     val isRecording: Boolean
         get() = recordState.value == RecordState.RECORDING
     val locationUpdateCallback = MutableLiveData<ILocationUpdateCallback>()

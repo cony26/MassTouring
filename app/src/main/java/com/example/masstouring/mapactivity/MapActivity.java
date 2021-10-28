@@ -45,7 +45,7 @@ public class MapActivity extends AppCompatActivity{
     private Button oMemoryButton;
     private RecordViewController oBoundRecordsView;
     private Toolbar oToolbar;
-    private BoundMapFragment oBoundMapFragment;
+    private GoogleMapController oGoogleMapController;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
     private RecordService oRecordService;
     private boolean oRecordServiceBound = false;
@@ -75,7 +75,7 @@ public class MapActivity extends AppCompatActivity{
         oMemoryButton = findViewById(R.id.btnMemory);
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
-        oBoundMapFragment = new BoundMapFragment(this, (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map));
+        oGoogleMapController = new GoogleMapController(this, (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map));
 
         setButtonClickListeners();
         subscribeLiveData();
@@ -127,7 +127,7 @@ public class MapActivity extends AppCompatActivity{
             public void onChanged(RecordStartEvent recordStartEvent) {
                 Optional.ofNullable(recordStartEvent.getContentIfNotHandled()).ifPresent(content -> {
                     Toast.makeText(MapActivity.this, content, Toast.LENGTH_SHORT).show();
-                    oBoundMapFragment.initialize();
+                    oGoogleMapController.initialize();
                     oMapActivitySharedViewModel.isRecordsViewVisible().setValue(false);
                 });
             }
@@ -244,7 +244,7 @@ public class MapActivity extends AppCompatActivity{
             oRecordService = binder.getRecordService();
             oRecordServiceBound = true;
             oMapActivitySharedViewModel.getRecordState().setValue(oRecordService.getRecordState());
-            oRecordService.setIRecordServiceCallback(oBoundMapFragment);
+            oRecordService.setIRecordServiceCallback(oGoogleMapController);
             oRecordService.setUnbindRequestCallback(new RecordService.IStopRequestCallback() {
                 @Override
                 public void onStopRecordService() {
