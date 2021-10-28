@@ -18,6 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.event.FitAreaEvent;
+import com.example.masstouring.event.PolylineRenderEvent;
+import com.example.masstouring.event.RemoveRecordItemEvent;
 import com.example.masstouring.mapactivity.DeleteConfirmationDialog.IDeleteConfirmationDialogCallback;
 import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.model.LatLng;
@@ -36,7 +39,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private RecordsViewAdapter oRecordsViewAdapter;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
     private BoundMapFragment oMapFragment;
-    private static final int alpha = 0x80000000;
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenViewVisible = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.RECORD_VIEW) {
         @Override
         public void handleOnBackPressed() {
@@ -133,19 +135,11 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         if(locationMap.size() <= 1)
             return;
 
-        int id = aRecordItem.getId();
         if(aRecordItem.isRendered()){
-            oMapFragment.removePolyline(id);
-            oMapFragment.removePictureMarkersOnMapAsyncly(aRecordItem);
+            oMapActivitySharedViewModel.getRemoveRecordItemEvent().setValue(new RemoveRecordItemEvent(aRecordItem));
         }else{
-            if(oMapFragment.isNothingRendered()){
-                LatLngBounds fitArea = createFitAreaFrom(locationMap);
-                oMapFragment.fitCameraTo(fitArea, 0);
-            }
-
-            List<PolylineOptions> polylineOptionsList = createPolylineFrom(locationMap, aRecordItem.getSpeedkmphMap());
-            oMapFragment.drawPolyline(polylineOptionsList, id);
-            oMapFragment.addPictureMarkersOnMapAsyncly(aRecordItem);
+            oMapActivitySharedViewModel.getFitAreaEvent().setValue(new FitAreaEvent(aRecordItem));
+            oMapActivitySharedViewModel.getPolylineRenderEvent().setValue(new PolylineRenderEvent(aRecordItem));
         }
 
         oMapActivitySharedViewModel.isTracePosition().setValue(false);
@@ -158,78 +152,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }else{
             oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
         }
-    }
-
-    private List<PolylineOptions> createPolylineFrom(Map<Integer, LatLng> aLatLngMap, Map<Integer, Double> aSpeedKmphMap){
-        double maxSpeedKmph = aSpeedKmphMap.values().stream().max(Double::compareTo).orElse(0.0);
-        double minSpeedKmph = aSpeedKmphMap.values().stream().min(Double::compareTo).orElse(0.0);
-        double diff = maxSpeedKmph - minSpeedKmph;
-
-        List<PolylineOptions> polylineOptionsList = new ArrayList<>();
-        PolylineOptions polylineOptions = null;
-        int prevColor = Integer.MIN_VALUE;
-
-        for(int i = 0; i < aLatLngMap.size(); i++){
-            int color = calculateColorForNewSpeed(aSpeedKmphMap.get(i), diff, minSpeedKmph);
-
-            if(polylineOptions == null){
-                polylineOptions = new PolylineOptions().color(color);
-                prevColor = color;
-                continue;
-            }
-
-            if(color != prevColor){
-                polylineOptionsList.add(polylineOptions);
-                polylineOptions = new PolylineOptions().color(color);
-            }
-            polylineOptions.add(aLatLngMap.get(i));
-            prevColor = color;
-        }
-        return polylineOptionsList;
-    }
-
-    private int calculateColorForNewSpeed(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph){
-        int color;
-        if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph / 3){
-            color = Color.RED + alpha;
-        }else if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph * 2 / 3){
-            color = Color.GREEN + alpha;
-        }else{
-            color = Color.BLUE + alpha;
-        }
-
-        return color;
-    }
-
-    private LatLngBounds createFitAreaFrom(Map<Integer, LatLng> aMap){
-        double minLat;
-        double maxLat;
-        double minLon;
-        double maxLon;
-        Set<Double> latSet = new HashSet<>();
-        Set<Double> lonSet = new HashSet<>();
-
-        for(int i = 0; i < aMap.size(); i++){
-            LatLng latLng = aMap.get(i);
-            latSet.add(latLng.latitude);
-            lonSet.add(latLng.longitude);
-        }
-        maxLat = latSet.stream().max(Double::compareTo).get();
-        minLat = latSet.stream().min(Double::compareTo).get();
-        maxLon = lonSet.stream().max(Double::compareTo).get();
-        minLon = lonSet.stream().min(Double::compareTo).get();
-
-        LatLngBounds area = new LatLngBounds(
-                new LatLng(minLat, minLon),
-                new LatLng(maxLat, maxLon)
-        );
-        StringBuilder builder = new StringBuilder();
-        builder.append("FitArea:")
-                .append("[lat1, lon1] = [").append(minLat).append(",").append(minLon).append("]")
-                .append("[lat2, lon2] = [").append(maxLat).append(",").append(maxLon).append("]");
-        Log.d(LoggerTag.LOCATION, builder.toString());
-
-        return area;
     }
 
     public void deleteSelectedItems(){

@@ -16,6 +16,7 @@ import com.example.masstouring.R
 import com.example.masstouring.common.LifeCycleLogger
 import com.example.masstouring.common.LoggerTask
 import com.example.masstouring.database.DatabaseInfoRepairer
+import com.example.masstouring.event.RecordServiceOrderEvent
 import com.example.masstouring.viewmodel.MapActivtySharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.concurrent.ExecutorService

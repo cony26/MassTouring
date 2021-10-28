@@ -19,6 +19,10 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.MediaAccessUtil;
+import com.example.masstouring.event.FitAreaEvent;
+import com.example.masstouring.event.PolylineRenderEvent;
+import com.example.masstouring.event.RemoveRecordItemEvent;
+import com.example.masstouring.event.RestoreFromServiceEvent;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
 import com.example.masstouring.viewmodel.GoogleMapViewModel;
 import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
@@ -64,7 +68,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMapFragment.getLifecycle().addObserver(this);
         new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
         oMapActivityViewModel = new ViewModelProvider(aAppCompatActivity).get(MapActivtySharedViewModel.class);
-        oGoogleMapViewModel = new ViewModelProvider(oMapFragment).get(GoogleMapViewModel.class);
+        oGoogleMapViewModel = new ViewModelProvider(oMapFragment.getParentFragment()).get(GoogleMapViewModel.class);
         subscribeLiveData();
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenClusterDistributed);
         oMapActivityViewModel.getLocationUpdateCallback().setValue(this);
@@ -87,8 +91,48 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             public void onChanged(RestoreFromServiceEvent aEvent) {
                 Integer id = aEvent.getContentIfNotHandled();
                 if(id != null){
-                    restorePolyline(id);
+                    oGoogleMapViewModel.restorePolylineOptionsFrom(oMap, id);
                     moveCameraToLastLocation(id);
+                }
+            }
+        });
+
+        oMapActivityViewModel.getPolylineRenderEvent().observe(oMapFragment, new Observer<PolylineRenderEvent>() {
+            @Override
+            public void onChanged(PolylineRenderEvent polylineRenderEvent) {
+                RecordItem item = polylineRenderEvent.getContentIfNotHandled();
+                if(item != null){
+                    List<PolylineOptions> polylineOptionsList = item.createPolylineOptions();
+                    List<Polyline> polylineList = new ArrayList<>();
+                    for(PolylineOptions polylineOptions : polylineOptionsList)
+                        polylineList.add(oMap.addPolyline(polylineOptions));
+
+                    oRenderedPolylineMap.put(item.getId(), polylineList);
+                    addPictureMarkersOnMapAsyncly(item);
+                }
+            }
+        });
+
+        oMapActivityViewModel.getFitAreaEvent().observe(oMapFragment, new Observer<FitAreaEvent>() {
+            @Override
+            public void onChanged(FitAreaEvent fitAreaEvent) {
+                if(isNothingRendered()){
+                    RecordItem item = fitAreaEvent.getContentIfNotHandled();
+                    if(item != null){
+                        LatLngBounds fitArea = item.createFitAreaFrom();
+                        oMap.moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
+                    }
+                }
+            }
+        });
+
+        oMapActivityViewModel.getRemoveRecordItemEvent().observe(oMapFragment, new Observer<RemoveRecordItemEvent>() {
+            @Override
+            public void onChanged(RemoveRecordItemEvent removeRecordItemEvent) {
+                RecordItem item = removeRecordItemEvent.getContentIfNotHandled();
+                if(item != null){
+                    removePolyline(item.getId());
+                    removePictureMarkersOnMapAsyncly(item);
                 }
             }
         });
@@ -152,14 +196,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         return oRenderedIdList.isEmpty();
     }
 
-    public void drawPolyline(List<PolylineOptions> aPolylineOptions, int aId){
-        List<Polyline> polylineList = new ArrayList<>();
-        for(PolylineOptions polylineOptions : aPolylineOptions)
-            polylineList.add(oMap.addPolyline(polylineOptions));
-
-        oRenderedPolylineMap.put(aId, polylineList);
-    }
-
     public void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
@@ -212,20 +248,11 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oRenderedPolylineMap.remove(aId);
     }
 
-
-    public void restorePolyline(int aRecordId){
-        oGoogleMapViewModel.restorePolylineOptionsFrom(oMap, aRecordId);
-    }
-
     public void moveCameraToLastLocation(int aRecordId){
-        LatLng latLng = oMapActivityViewModel.getLastLatLngFrom(aRecordId);
+        LatLng latLng = oGoogleMapViewModel.getLastLatLngFrom(aRecordId);
         if(latLng != null){
             oMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
         }
-    }
-
-    public void fitCameraTo(LatLngBounds aLatLngBounds, int aPadding){
-        oMap.moveCamera(CameraUpdateFactory.newLatLngBounds(aLatLngBounds, aPadding));
     }
 
     public void initialize(){

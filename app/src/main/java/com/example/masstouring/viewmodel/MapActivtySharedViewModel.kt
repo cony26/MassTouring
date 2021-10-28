@@ -7,10 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
+import com.example.masstouring.event.*
 import com.example.masstouring.mapactivity.*
 import com.example.masstouring.recordservice.ILocationUpdateCallback
 import com.example.masstouring.repository.Repository
-import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -34,6 +35,10 @@ class MapActivtySharedViewModel @Inject constructor(
         get() = recordState.value == RecordState.RECORDING
     val locationUpdateCallback = MutableLiveData<ILocationUpdateCallback>()
     val restoreEvent = MutableLiveData<RestoreFromServiceEvent>()
+    val renderedPolylineMap = MutableLiveData<Map<Int, List<Polyline>>>()
+    val polylineRenderEvent = MutableLiveData<PolylineRenderEvent>()
+    val fitAreaEvent = MutableLiveData<FitAreaEvent>()
+    val removeRecordItemEvent = MutableLiveData<RemoveRecordItemEvent>()
 
     //Start/EndRecordButton
     fun onRecordButtonClick() {
@@ -66,10 +71,6 @@ class MapActivtySharedViewModel @Inject constructor(
         deleteRecordsIconVisible.value = false
     }
 
-    fun getLastLatLngFrom(aId: Int): LatLng?{
-        return repository.getLastLatLngFrom(aId)
-    }
-
     fun getRecords(): List<RecordItem?>?{
         return repository.getRecords()
     }
@@ -81,5 +82,7 @@ class MapActivtySharedViewModel @Inject constructor(
     fun deleteRecord(aIds: IntArray){
         repository.deleteRecord(aIds)
     }
+
+
 
 }

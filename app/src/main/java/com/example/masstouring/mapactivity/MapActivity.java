@@ -29,6 +29,8 @@ import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.database.DatabaseInfoRepairer;
+import com.example.masstouring.event.RecordEndEvent;
+import com.example.masstouring.event.RecordStartEvent;
 import com.example.masstouring.recordservice.RecordService;
 import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -51,7 +53,7 @@ public class MapActivity extends AppCompatActivity{
     private DeleteConfirmationDialog.IDeleteConfirmationDialogCallback oDeleteDialogCallback = new DeleteConfirmationDialog.IDeleteConfirmationDialogCallback() {
         @Override
         public void onPositiveClick() {
-            oBoundRecordsView.deleteSelectedItems();
+//            oBoundRecordsView.deleteSelectedItems();
             oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
         }
 
@@ -254,7 +256,7 @@ public class MapActivity extends AppCompatActivity{
             if(oMapActivitySharedViewModel.isRecording()){
                 int recordId = oRecordService.getRecordObject().getRecordId();
 //                oBoundMapFragment.restorePolyline(recordId);
-                oBoundMapFragment.moveCameraToLastLocation(recordId);
+//                oBoundMapFragment.moveCameraToLastLocation(recordId);
             }
             Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity");
         }

@@ -1,12 +1,21 @@
 package com.example.masstouring.mapactivity;
 
+import android.graphics.Color;
 import android.location.Location;
+import android.util.Log;
 
 import com.example.masstouring.common.Const;
+import com.example.masstouring.common.LoggerTag;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RecordItem {
     private final int oId;
@@ -19,6 +28,7 @@ public class RecordItem {
     private boolean oSelected = false;
     private boolean oRendered = false;
     public static final RecordItem EMPTY_RECORD = new RecordItem();
+    private static final int alpha = 0x80000000;
 
     public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap, Map aSpeedKmphMap){
         oId = aID;
@@ -126,5 +136,77 @@ public class RecordItem {
             distanceSum += distancePoints[0];
         }
         return distanceSum;
+    }
+
+    public List<PolylineOptions> createPolylineOptions(){
+        double maxSpeedKmph = oSpeedkmphMap.values().stream().max(Double::compareTo).orElse(0.0);
+        double minSpeedKmph = oSpeedkmphMap.values().stream().min(Double::compareTo).orElse(0.0);
+        double diff = maxSpeedKmph - minSpeedKmph;
+
+        List<PolylineOptions> polylineOptionsList = new ArrayList<>();
+        PolylineOptions polylineOptions = null;
+        int prevColor = Integer.MIN_VALUE;
+
+        for(int i = 0; i < oLocationMap.size(); i++){
+            int color = calculateColorForNewSpeed(oSpeedkmphMap.get(i), diff, minSpeedKmph);
+
+            if(polylineOptions == null){
+                polylineOptions = new PolylineOptions().color(color);
+                prevColor = color;
+                continue;
+            }
+
+            if(color != prevColor){
+                polylineOptionsList.add(polylineOptions);
+                polylineOptions = new PolylineOptions().color(color);
+            }
+            polylineOptions.add(oLocationMap.get(i));
+            prevColor = color;
+        }
+        return polylineOptionsList;
+    }
+
+    private int calculateColorForNewSpeed(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph){
+        int color;
+        if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph / 3){
+            color = Color.RED + alpha;
+        }else if(aNewSpeedKmph < aMinSpeedKmph + aDiffSpeedKmph * 2 / 3){
+            color = Color.GREEN + alpha;
+        }else{
+            color = Color.BLUE + alpha;
+        }
+
+        return color;
+    }
+
+    public LatLngBounds createFitAreaFrom(){
+        double minLat;
+        double maxLat;
+        double minLon;
+        double maxLon;
+        Set<Double> latSet = new HashSet<>();
+        Set<Double> lonSet = new HashSet<>();
+
+        for(int i = 0; i < oLocationMap.size(); i++){
+            LatLng latLng = oLocationMap.get(i);
+            latSet.add(latLng.latitude);
+            lonSet.add(latLng.longitude);
+        }
+        maxLat = latSet.stream().max(Double::compareTo).get();
+        minLat = latSet.stream().min(Double::compareTo).get();
+        maxLon = lonSet.stream().max(Double::compareTo).get();
+        minLon = lonSet.stream().min(Double::compareTo).get();
+
+        LatLngBounds area = new LatLngBounds(
+                new LatLng(minLat, minLon),
+                new LatLng(maxLat, maxLon)
+        );
+        StringBuilder builder = new StringBuilder();
+        builder.append("FitArea:")
+                .append("[lat1, lon1] = [").append(minLat).append(",").append(minLon).append("]")
+                .append("[lat2, lon2] = [").append(maxLat).append(",").append(maxLon).append("]");
+        Log.d(LoggerTag.LOCATION, builder.toString());
+
+        return area;
     }
 }

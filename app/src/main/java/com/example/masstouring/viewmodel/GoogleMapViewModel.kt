@@ -16,23 +16,27 @@ class GoogleMapViewModel @Inject constructor(
         private val savedStateHandle: SavedStateHandle,
         private val repository : Repository
 ): ViewModel(){
-    var recordingLastPolyline: Polyline? = null
+    var recordingPolyline: Polyline? = null
     var recordingPolylineOptions: PolylineOptions? = null
 
     fun updatePolyline(googleMap: GoogleMap, location: Location){
-        recordingLastPolyline?.remove()
+        recordingPolyline?.remove()
 
         recordingPolylineOptions?.let{
             it.add(LatLng(location.latitude, location.longitude))
-            recordingLastPolyline = googleMap.addPolyline(it)
+            recordingPolyline = googleMap.addPolyline(it)
         }
     }
 
     fun restorePolylineOptionsFrom(googleMap: GoogleMap, aRecordId: Int){
         recordingPolylineOptions?.let {
             repository.restorePolylineOptionsFrom(aRecordId)
-            recordingLastPolyline = googleMap.addPolyline(it)
+            recordingPolyline = googleMap.addPolyline(it)
         }
+    }
+
+    fun getLastLatLngFrom(aId: Int): LatLng?{
+        return repository.getLastLatLngFrom(aId)
     }
 
 }
