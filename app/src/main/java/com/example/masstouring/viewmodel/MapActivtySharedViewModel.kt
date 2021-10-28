@@ -8,12 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.event.*
-import com.example.masstouring.mapactivity.RecordViewController
 import com.example.masstouring.mapactivity.RecordItem
 import com.example.masstouring.mapactivity.RecordState
+import com.example.masstouring.mapactivity.RecordViewController
 import com.example.masstouring.recordservice.ILocationUpdateCallback
 import com.example.masstouring.repository.Repository
-import com.google.android.gms.maps.model.Polyline
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
@@ -36,7 +35,6 @@ class MapActivtySharedViewModel @Inject constructor(
         get() = recordState.value == RecordState.RECORDING
     val locationUpdateCallback = MutableLiveData<ILocationUpdateCallback>()
     val restoreEvent = MutableLiveData<RestoreFromServiceEvent>()
-    val renderedPolylineMap = MutableLiveData<Map<Int, List<Polyline>>>()
     val polylineRenderEvent = MutableLiveData<PolylineRenderEvent>()
     val fitAreaEvent = MutableLiveData<FitAreaEvent>()
     val removeRecordItemEvent = MutableLiveData<RemoveRecordItemEvent>()
@@ -92,5 +90,4 @@ class MapActivtySharedViewModel @Inject constructor(
     fun isNothingRendered(): Boolean {
         return renderedIdList.isEmpty()
     }
-
 }

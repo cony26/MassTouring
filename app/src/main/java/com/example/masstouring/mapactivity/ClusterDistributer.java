@@ -17,7 +17,6 @@ import androidx.core.view.GestureDetectorCompat;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.viewmodel.GoogleMapViewModel;
-import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
