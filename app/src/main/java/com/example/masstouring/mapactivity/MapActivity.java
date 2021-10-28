@@ -30,6 +30,7 @@ import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.database.DatabaseInfoRepairer;
 import com.example.masstouring.recordservice.RecordService;
+import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.SupportMapFragment;
 
 import java.util.Optional;
@@ -252,7 +253,7 @@ public class MapActivity extends AppCompatActivity{
             });
             if(oMapActivitySharedViewModel.isRecording()){
                 int recordId = oRecordService.getRecordObject().getRecordId();
-                oBoundMapFragment.restorePolyline(recordId);
+//                oBoundMapFragment.restorePolyline(recordId);
                 oBoundMapFragment.moveCameraToLastLocation(recordId);
             }
             Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity");

@@ -5,12 +5,12 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.recordservice.RecordService
+import com.example.masstouring.viewmodel.MapActivtySharedViewModel
 import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay

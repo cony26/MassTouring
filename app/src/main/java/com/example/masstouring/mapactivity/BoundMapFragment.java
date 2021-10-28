@@ -20,6 +20,8 @@ import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.MediaAccessUtil;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
+import com.example.masstouring.viewmodel.GoogleMapViewModel;
+import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -41,10 +43,9 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private ClusterManager<Picture> oClusterManager;
     private PictureClusterRenderer oPictureClusterRenderer = null;
     private ClusterDistributer oClusterDistributer;
-    private SupportMapFragment oMapFragment;
-    private MapActivtySharedViewModel oMapActivityViewModel;
-    private Polyline oRecordingLastPolyline = null;
-    private PolylineOptions oRecordingPolylineOptions = null;
+    private final SupportMapFragment oMapFragment;
+    private final MapActivtySharedViewModel oMapActivityViewModel;
+    private final GoogleMapViewModel oGoogleMapViewModel;
     private Map<Integer, List<Polyline>> oRenderedPolylineMap = new HashMap<>();
     private List<Integer> oRenderedIdList = new ArrayList<>();
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED) {
@@ -63,6 +64,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMapFragment.getLifecycle().addObserver(this);
         new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
         oMapActivityViewModel = new ViewModelProvider(aAppCompatActivity).get(MapActivtySharedViewModel.class);
+        oGoogleMapViewModel = new ViewModelProvider(oMapFragment).get(GoogleMapViewModel.class);
         subscribeLiveData();
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenClusterDistributed);
         oMapActivityViewModel.getLocationUpdateCallback().setValue(this);
@@ -136,15 +138,9 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
             return;
 
         if(oMapActivityViewModel.isRecording()) {
-            if(oRecordingLastPolyline != null){
-                oRecordingLastPolyline.remove();
-            }
-
-            if(oRecordingPolylineOptions != null){
-                oRecordingPolylineOptions.add(new LatLng(aLocation.getLatitude(), aLocation.getLongitude()));
-                oRecordingLastPolyline = oMap.addPolyline(oRecordingPolylineOptions);
-            }
+            oGoogleMapViewModel.updatePolyline(oMap, aLocation);
         }
+
         Log.d(LoggerTag.SYSTEM_PROCESS, "Location Updates");
     }
 
@@ -218,10 +214,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
 
 
     public void restorePolyline(int aRecordId){
-        if(oRecordingPolylineOptions == null){
-            oRecordingPolylineOptions = oMapActivityViewModel.restorePolylineOptionsFrom(aRecordId);
-            oRecordingLastPolyline = oMap.addPolyline(oRecordingPolylineOptions);
-        }
+        oGoogleMapViewModel.restorePolylineOptionsFrom(oMap, aRecordId);
     }
 
     public void moveCameraToLastLocation(int aRecordId){
@@ -242,7 +235,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oRenderedIdList.clear();
         oRenderedPolylineMap.clear();
         oMap.clear();
-        oRecordingPolylineOptions = new PolylineOptions();
+        oGoogleMapViewModel.setRecordingPolylineOptions(new PolylineOptions());
     }
 
 

@@ -23,13 +23,12 @@ import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.mapactivity.presenter.CheckRecordsButtonPresenter;
 import com.example.masstouring.mapactivity.presenter.RecordButtonPresenter;
+import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.SupportMapFragment;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
-
-import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 

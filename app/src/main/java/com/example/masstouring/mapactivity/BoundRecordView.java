@@ -6,7 +6,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
@@ -19,8 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
-import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.DeleteConfirmationDialog.IDeleteConfirmationDialogCallback;
+import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -31,14 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.inject.Inject;
-
-import dagger.hilt.InstallIn;
-import dagger.hilt.android.components.ViewComponent;
-import dagger.hilt.android.scopes.ActivityScoped;
-import dagger.hilt.android.scopes.FragmentScoped;
-import dagger.hilt.android.scopes.ViewScoped;
 
 public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final RecyclerView oRecordsView;

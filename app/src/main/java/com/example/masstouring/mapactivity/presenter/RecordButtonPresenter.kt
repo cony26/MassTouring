@@ -3,7 +3,7 @@ package com.example.masstouring.mapactivity.presenter
 import android.widget.Button
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import com.example.masstouring.mapactivity.MapActivtySharedViewModel
+import com.example.masstouring.viewmodel.MapActivtySharedViewModel
 import com.example.masstouring.mapactivity.RecordState
 
 class RecordButtonPresenter(private val button : Button, private val owner : LifecycleOwner, private val viewModel : MapActivtySharedViewModel) : IPresenter {

@@ -1,4 +1,4 @@
-package com.example.masstouring.mapactivity
+package com.example.masstouring.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
+import com.example.masstouring.mapactivity.*
 import com.example.masstouring.recordservice.ILocationUpdateCallback
 import com.example.masstouring.repository.Repository
 import com.google.android.gms.maps.model.LatLng
@@ -63,10 +64,6 @@ class MapActivtySharedViewModel @Inject constructor(
             boundRecordView.deleteSelectedItems()
         }
         deleteRecordsIconVisible.value = false
-    }
-
-    fun restorePolylineOptionsFrom(aId: Int): PolylineOptions?{
-        return repository.restorePolylineOptionsFrom(aId)
     }
 
     fun getLastLatLngFrom(aId: Int): LatLng?{
