@@ -51,7 +51,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
     private final MapActivtySharedViewModel oMapActivityViewModel;
     private final GoogleMapViewModel oGoogleMapViewModel;
     private Map<Integer, List<Polyline>> oRenderedPolylineMap = new HashMap<>();
-    private List<Integer> oRenderedIdList = new ArrayList<>();
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED) {
         @Override
         public void handleOnBackPressed() {
@@ -108,6 +107,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                         polylineList.add(oMap.addPolyline(polylineOptions));
 
                     oRenderedPolylineMap.put(item.getId(), polylineList);
+                    oMapActivityViewModel.getRenderedIdList().add(item.getId());
                     addPictureMarkersOnMapAsyncly(item);
                 }
             }
@@ -116,7 +116,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oMapActivityViewModel.getFitAreaEvent().observe(oMapFragment, new Observer<FitAreaEvent>() {
             @Override
             public void onChanged(FitAreaEvent fitAreaEvent) {
-                if(isNothingRendered()){
+                if(oMapActivityViewModel.isNothingRendered()){
                     RecordItem item = fitAreaEvent.getContentIfNotHandled();
                     if(item != null){
                         LatLngBounds fitArea = item.createFitAreaFrom();
@@ -133,6 +133,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                 if(item != null){
                     removePolyline(item.getId());
                     removePictureMarkersOnMapAsyncly(item);
+                    oMapActivityViewModel.getRenderedIdList().remove((Object)item.getId());
                 }
             }
         });
@@ -188,13 +189,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         Log.d(LoggerTag.SYSTEM_PROCESS, "Location Updates");
     }
 
-    public boolean isRendered(int aId){
-        return oRenderedIdList.contains(aId);
-    }
-
-    public boolean isNothingRendered(){
-        return oRenderedIdList.isEmpty();
-    }
 
     public void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
         MapActivity.cExecutors.execute(new Runnable() {
@@ -204,8 +198,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                 drawMarkers(picturesList);
             }
         });
-
-        oRenderedIdList.add(aRecordItem.getId());
     }
 
     public void removePictureMarkersOnMapAsyncly(RecordItem aRecordItem){
@@ -216,8 +208,6 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
                 removeMarkers(picturesList);
             }
         });
-
-        oRenderedIdList.remove((Object)aRecordItem.getId());
     }
 
     private void drawMarkers(List<Picture> aPictureList){
@@ -259,7 +249,7 @@ public class BoundMapFragment implements OnMapReadyCallback, LifecycleObserver, 
         oClusterDistributer.detachDistributedView();
         oClusterManager.clearItems();
         oClusterManager.cluster();
-        oRenderedIdList.clear();
+        oMapActivityViewModel.getRenderedIdList().clear();
         oRenderedPolylineMap.clear();
         oMap.clear();
         oGoogleMapViewModel.setRecordingPolylineOptions(new PolylineOptions());

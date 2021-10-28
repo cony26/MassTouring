@@ -38,7 +38,6 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     private final RecyclerView oRecordsView;
     private RecordsViewAdapter oRecordsViewAdapter;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
-    private BoundMapFragment oMapFragment;
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenViewVisible = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.RECORD_VIEW) {
         @Override
         public void handleOnBackPressed() {
@@ -104,7 +103,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             public void run() {
                 List<RecordItem> data = oMapActivitySharedViewModel.getRecords();
                 data.stream()
-                        .filter(recordItem -> oMapFragment.isRendered(recordItem.getId()))
+                        .filter(recordItem -> oMapActivitySharedViewModel.isRendered(recordItem.getId()))
                         .forEach(recordItem -> recordItem.setRendered(true));
                 while(oRecordsViewAdapter == null){
                     try{
@@ -159,9 +158,5 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         oMapActivitySharedViewModel.deleteRecord(list.stream().mapToInt(id -> id).toArray());
         oRecordsViewAdapter.setData(oMapActivitySharedViewModel.getRecords());
         oRecordsViewAdapter.notifyDataSetChanged();
-    }
-
-    public void setMapFragment(BoundMapFragment aMapFragment) {
-        oMapFragment = aMapFragment;
     }
 }

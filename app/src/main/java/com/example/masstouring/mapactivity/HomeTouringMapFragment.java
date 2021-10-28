@@ -68,7 +68,6 @@ public class HomeTouringMapFragment extends Fragment {
         SupportMapFragment mapFragment = (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map);
         oBoundRecordsView = new BoundRecordView(activity);
         oBoundMapFragment = new BoundMapFragment(activity, mapFragment);
-        oBoundRecordsView.setMapFragment(oBoundMapFragment);
         subscribeLiveData();
     }
 
