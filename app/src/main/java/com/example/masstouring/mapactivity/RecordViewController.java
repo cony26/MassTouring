@@ -1,6 +1,5 @@
 package com.example.masstouring.mapactivity;
 
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -23,18 +22,12 @@ import com.example.masstouring.event.PolylineRenderEvent;
 import com.example.masstouring.event.RemoveRecordItemEvent;
 import com.example.masstouring.mapactivity.DeleteConfirmationDialog.IDeleteConfirmationDialogCallback;
 import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
+public class RecordViewController implements LifecycleObserver, IItemClickCallback{
     private final RecyclerView oRecordsView;
     private RecordsViewAdapter oRecordsViewAdapter;
     private final MapActivtySharedViewModel oMapActivitySharedViewModel;
@@ -49,7 +42,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
     public final IDeleteConfirmationDialogCallback oDeleteDialogCallback = new IDeleteConfirmationDialogCallback() {
         @Override
         public void onPositiveClick() {
-            oMapActivitySharedViewModel.onDeletePositiveClick(BoundRecordView.this);
+            oMapActivitySharedViewModel.onDeletePositiveClick(RecordViewController.this);
         }
 
         @Override
@@ -57,7 +50,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
         }
     };
 
-    public BoundRecordView(FragmentActivity aActivity){
+    public RecordViewController(FragmentActivity aActivity){
         aActivity.getLifecycle().addObserver(this);
         oRecordsView = aActivity.findViewById(R.id.recordsView);
         LinearLayoutManager oManager = new LinearLayoutManager(oRecordsView.getContext());
@@ -81,7 +74,7 @@ public class BoundRecordView implements LifecycleObserver, IItemClickCallback{
             public void onChanged(Boolean isVisible) {
                 if(isVisible){
                     List<RecordItem> data = loadRecords();
-                    oRecordsViewAdapter = new RecordsViewAdapter(data, BoundRecordView.this, oRecordsView.getContext());
+                    oRecordsViewAdapter = new RecordsViewAdapter(data, RecordViewController.this, oRecordsView.getContext());
                     oRecordsView.setAdapter(oRecordsViewAdapter);
                     oRecordsView.setVisibility(View.VISIBLE);
                     oOnBackPressedCallbackWhenViewVisible.setEnabled(true);

@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.event.*
-import com.example.masstouring.mapactivity.BoundRecordView
+import com.example.masstouring.mapactivity.RecordViewController
 import com.example.masstouring.mapactivity.RecordItem
 import com.example.masstouring.mapactivity.RecordState
 import com.example.masstouring.recordservice.ILocationUpdateCallback
@@ -67,9 +67,9 @@ class MapActivtySharedViewModel @Inject constructor(
         }
     }
 
-    fun onDeletePositiveClick(boundRecordView: BoundRecordView){
+    fun onDeletePositiveClick(recordViewController: RecordViewController){
         viewModelScope.launch {
-            boundRecordView.deleteSelectedItems()
+            recordViewController.deleteSelectedItems()
         }
         deleteRecordsIconVisible.value = false
     }

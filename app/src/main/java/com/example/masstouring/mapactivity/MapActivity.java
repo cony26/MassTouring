@@ -43,7 +43,7 @@ public class MapActivity extends AppCompatActivity{
     static final ExecutorService cExecutors = Executors.newFixedThreadPool(5);
     private Button oStartRecordingButton;
     private Button oMemoryButton;
-    private BoundRecordView oBoundRecordsView;
+    private RecordViewController oBoundRecordsView;
     private Toolbar oToolbar;
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
@@ -76,7 +76,6 @@ public class MapActivity extends AppCompatActivity{
         oToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(oToolbar);
         oBoundMapFragment = new BoundMapFragment(this, (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map));
-        oBoundRecordsView.setMapFragment(oBoundMapFragment);
 
         setButtonClickListeners();
         subscribeLiveData();

@@ -37,7 +37,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class HomeTouringMapFragment extends Fragment {
-    private BoundRecordView oBoundRecordsView;
+    private RecordViewController oBoundRecordsView;
     private BoundMapFragment oBoundMapFragment;
     private MapActivtySharedViewModel oMapActivitySharedViewModel;
 
@@ -66,7 +66,7 @@ public class HomeTouringMapFragment extends Fragment {
 
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         SupportMapFragment mapFragment = (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map);
-        oBoundRecordsView = new BoundRecordView(activity);
+        oBoundRecordsView = new RecordViewController(activity);
         oBoundMapFragment = new BoundMapFragment(activity, mapFragment);
         subscribeLiveData();
     }
