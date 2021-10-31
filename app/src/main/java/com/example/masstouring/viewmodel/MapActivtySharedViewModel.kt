@@ -67,9 +67,10 @@ class MapActivtySharedViewModel @Inject constructor(
         }
     }
 
-    fun onDeletePositiveClick(recordViewController: RecordViewController){
+    fun onDeletePositiveClick(callback: IRecordItemLoadCallback){
         viewModelScope.launch {
-            recordViewController.deleteSelectedItems()
+            deleteRecord(getSelectedItemIdList().toIntArray())
+            callback.onCompletingLoad()
         }
         deleteRecordsIconVisible.value = false
     }
@@ -92,6 +93,13 @@ class MapActivtySharedViewModel @Inject constructor(
             repository.getRecord(aId)
             aCallback.onCompletingLoad()
         }
+    }
+
+    fun getSelectedItemIdList(): List<Int> {
+        return getRecords(false)
+                .filter { it.isSelected }
+                .map{ it.id }
+                .toList()
     }
 
     fun getRecordSize(): Int{

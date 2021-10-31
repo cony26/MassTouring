@@ -42,7 +42,7 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
     public final IDeleteConfirmationDialogCallback oDeleteDialogCallback = new IDeleteConfirmationDialogCallback() {
         @Override
         public void onPositiveClick() {
-            oMapActivitySharedViewModel.onDeletePositiveClick(RecordViewController.this);
+            oMapActivitySharedViewModel.onDeletePositiveClick(oRecordsViewAdapter);
         }
 
         @Override
@@ -86,32 +86,6 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
         });
     }
 
-    private List<RecordItem> loadRecords(){
-        RecordItem recordItemArray[] = new RecordItem[oMapActivitySharedViewModel.getRecordSize()];
-        Arrays.fill(recordItemArray, RecordItem.EMPTY_RECORD);
-
-        MapActivity.cExecutors.execute(new Runnable() {
-            @Override
-            public void run() {
-                while(oRecordsViewAdapter == null){
-                    try{
-                        Thread.sleep(100);
-                    }catch(InterruptedException e){
-                        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "interrupted");
-                    }
-                }
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        oRecordsViewAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        });
-
-        return Arrays.asList(recordItemArray);
-    }
-
     @Override
     public void onRecordItemClick(RecordItem aRecordItem) {
         if(aRecordItem == RecordItem.EMPTY_RECORD){
@@ -133,16 +107,10 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
 
     @Override
     public void onRecordItemLongClick() {
-        if(oRecordsViewAdapter.getSelectedItemIdList().size() > 0){
+        if(oMapActivitySharedViewModel.getSelectedItemIdList().size() > 0){
             oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(true);
         }else{
             oMapActivitySharedViewModel.getDeleteRecordsIconVisible().setValue(false);
         }
-    }
-
-    public void deleteSelectedItems(){
-        List<Integer> list = oRecordsViewAdapter.getSelectedItemIdList();
-        oMapActivitySharedViewModel.deleteRecord(list.stream().mapToInt(id -> id).toArray());
-        oRecordsViewAdapter.notifyDataSetChanged();
     }
 }

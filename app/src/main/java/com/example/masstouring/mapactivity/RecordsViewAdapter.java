@@ -27,6 +27,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
     private final MapActivtySharedViewModel viewModel;
     private final IItemClickCallback callback;
     private final int initialColor;
+    private final StringBuilder reuseBuilder = new StringBuilder();
 
     public RecordsViewAdapter(MapActivtySharedViewModel aViewModel, IItemClickCallback aCallback, Context aContext){
         viewModel = aViewModel;
@@ -72,10 +73,10 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         }
         aHolder.oEndDateText.setText(endDateText);
 
-        StringBuilder builder = new StringBuilder();
-        BigDecimal distance = new BigDecimal(recordItem.getDistance() / 1000);
-        builder.append(distance.setScale(3, BigDecimal.ROUND_UP)).append(Const.KM_UNIT);
-        aHolder.oDistanceText.setText(builder.toString());
+        reuseBuilder.setLength(0);
+        BigDecimal distance = BigDecimal.valueOf(recordItem.getDistance() / 1000);
+        reuseBuilder.append(distance.setScale(3, BigDecimal.ROUND_UP)).append(Const.KM_UNIT);
+        aHolder.oDistanceText.setText(reuseBuilder.toString());
 
         String appendixText = Integer.toString(recordItem.getId());
         aHolder.oAppendixText.setText(appendixText);
@@ -123,13 +124,6 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
     @Override
     public int getItemCount(){
         return viewModel.getRecordSize();
-    }
-
-    public List<Integer> getSelectedItemIdList(){
-        return viewModel.getRecords(false).stream()
-                .filter(RecordItem::isSelected)
-                .map(RecordItem::getId)
-                .collect(Collectors.toList());
     }
 
     @Override
