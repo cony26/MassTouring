@@ -73,8 +73,7 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
             @Override
             public void onChanged(Boolean isVisible) {
                 if(isVisible){
-                    List<RecordItem> data = loadRecords();
-                    oRecordsViewAdapter = new RecordsViewAdapter(data, RecordViewController.this, oRecordsView.getContext());
+                    oRecordsViewAdapter = new RecordsViewAdapter(oMapActivitySharedViewModel, RecordViewController.this, oRecordsView.getContext());
                     oRecordsView.setAdapter(oRecordsViewAdapter);
                     oRecordsView.setVisibility(View.VISIBLE);
                     oOnBackPressedCallbackWhenViewVisible.setEnabled(true);
@@ -94,10 +93,6 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
         MapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
-                List<RecordItem> data = oMapActivitySharedViewModel.getRecords();
-                data.stream()
-                        .filter(recordItem -> oMapActivitySharedViewModel.isRendered(recordItem.getId()))
-                        .forEach(recordItem -> recordItem.setRendered(true));
                 while(oRecordsViewAdapter == null){
                     try{
                         Thread.sleep(100);
@@ -105,7 +100,6 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
                         Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "interrupted");
                     }
                 }
-                oRecordsViewAdapter.setData(data);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -149,7 +143,6 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
     public void deleteSelectedItems(){
         List<Integer> list = oRecordsViewAdapter.getSelectedItemIdList();
         oMapActivitySharedViewModel.deleteRecord(list.stream().mapToInt(id -> id).toArray());
-        oRecordsViewAdapter.setData(oMapActivitySharedViewModel.getRecords());
         oRecordsViewAdapter.notifyDataSetChanged();
     }
 }

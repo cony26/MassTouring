@@ -27,8 +27,10 @@ public class RecordItem {
     private final Map<Integer, Double> oSpeedkmphMap;
     private boolean oSelected = false;
     private boolean oRendered = false;
-    public static final RecordItem EMPTY_RECORD = new RecordItem();
+    private final boolean oHasAllData;
     private static final int alpha = 0x80000000;
+    public static final int INVALID_ID = -1;
+    public static final RecordItem EMPTY_RECORD = new RecordItem(INVALID_ID);
 
     public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap, Map aSpeedKmphMap){
         oId = aID;
@@ -45,16 +47,18 @@ public class RecordItem {
         oTimeStampMap = aTimeStampMap;
         oSpeedkmphMap = aSpeedKmphMap;
         oDistance = calculateDistance(aLocationMap);
+        oHasAllData = true;
     }
 
-    private RecordItem(){
-        oId = 0;
+    public RecordItem(int aId){
+        oId = aId;
         oStartDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);;
         oEndDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);
         oLocationMap = null;
         oTimeStampMap = null;
         oSpeedkmphMap = null;
         oDistance = 0;
+        oHasAllData = false;
     }
 
     public LocalDateTime getStartDate(){
@@ -101,6 +105,10 @@ public class RecordItem {
 
     public boolean isRendered(){
         return oRendered;
+    }
+
+    public boolean hasAllData(){
+        return oHasAllData;
     }
 
     @Override

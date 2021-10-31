@@ -173,10 +173,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try(SQLiteDatabase db = getReadableDatabase()){
             Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
             return recordsStartInfoCursor.getCount();
-        }catch(SQLException | CursorIndexOutOfBoundsException e){
+        }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to loading RecordSize:", e);
             return 0;
         }
+    }
+
+    public List<Integer> getRecordIdList(){
+        List<Integer> recordIdList = new ArrayList<>();
+        try(SQLiteDatabase db = getReadableDatabase()){
+            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
+            while(recordsStartInfoCursor.moveToNext()){
+                int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
+                recordIdList.add(id);
+            }
+        }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to load RecordIdList:", e);
+        }
+        return recordIdList;
     }
 
     public List<RecordItem> getRecords(){
@@ -212,7 +226,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 builder.append("id:").append(id).append(", startDate:").append(startInfo).append(", endDate:").append(endInfo);
                 data.add(new RecordItem(id, startInfo, endInfo, locationMap, timeStampMap, speedkmph));
             }
-        }catch(SQLException | CursorIndexOutOfBoundsException e){
+        }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to loading Records:", e);
         }
 
@@ -221,7 +235,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return data;
-        
+    }
+
+    public RecordItem getRecordItem(int aId){
+        RecordItem recordItem = null;
+        try(SQLiteDatabase db = getReadableDatabase()){
+            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
+            recordsStartInfoCursor.moveToNext();
+            String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
+
+            String endInfo = Const.NO_INFO;
+            Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
+            recordsEndInfoCusor.moveToNext();
+            if(!recordsEndInfoCusor.isAfterLast()){
+                endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
+            }
+
+            Map<Integer, LatLng> locationMap = new HashMap<>();
+            Map<Integer, String> timeStampMap = new HashMap<>();
+            Map<Integer, Double> speedkmph = new HashMap<>();
+            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
+            while(positionsCursor.moveToNext()){
+                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
+                String date = (String)Tables.POSITIONS.get(positionsCursor, Positions.TIMESTAMP);
+                locationMap.put(order, new LatLng(latitude, longitude));
+                timeStampMap.put(order, date);
+                speedkmph.put(order, (double)Tables.POSITIONS.get(positionsCursor, Positions.SPEEDMPS) * 60 * 60 / 1000);
+            }
+
+            recordItem = new RecordItem(aId, startInfo, endInfo, locationMap, timeStampMap, speedkmph);
+            Log.d(LoggerTag.DATABASE_PROCESS, "loaded:" + recordItem.toString());
+        }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
+            Log.e(LoggerTag.DATABASE_PROCESS, "failed to load RecordItem[id:" + aId + "]", e);
+        }
+
+        return recordItem;
     }
 
     public RecordObject restoreRecordObjectFromId(int aId){
@@ -249,7 +299,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 location.setLongitude(longitude);
                 recordObject.setLastRecordedLocation(location);
             }
-        }catch(SQLException | CursorIndexOutOfBoundsException e){
+        }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring RecordObject from ID:" + aId, e);
         }
 
@@ -287,7 +337,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 double longitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
                 latLng = new LatLng(latitude, longitude);
             }
-        }catch(SQLException | CursorIndexOutOfBoundsException e){
+        }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to getting last LatLng from ID:" + aId, e);
         }
 

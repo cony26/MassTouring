@@ -2,6 +2,8 @@ package com.example.masstouring.mapactivity;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,23 +15,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.masstouring.R;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LoggerTag;
+import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> {
-    private List<RecordItem> oData;
-    private final IItemClickCallback oCallback;
-    private final int oInitialColor;
+public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> implements MapActivtySharedViewModel.IRecordItemLoadCallback {
+    private final MapActivtySharedViewModel viewModel;
+    private final IItemClickCallback callback;
+    private final int initialColor;
 
-    public RecordsViewAdapter(List<RecordItem> aData, IItemClickCallback aCallback, Context aContext){
-        oData = aData;
-        oCallback = aCallback;
-        oInitialColor = ContextCompat.getColor(aContext, R.color.cardview);
+    public RecordsViewAdapter(MapActivtySharedViewModel aViewModel, IItemClickCallback aCallback, Context aContext){
+        viewModel = aViewModel;
+        callback = aCallback;
+        initialColor = ContextCompat.getColor(aContext, R.color.cardview);
     }
 
     @Override
@@ -42,7 +44,11 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
     public void onBindViewHolder(RecordsViewHolder aHolder, int aPosition){
         Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "onBindViewHolder");
 
-        RecordItem recordItem = oData.get(aPosition);
+        RecordItem recordItem = viewModel.getRecords(false).get(aPosition);
+        if(!recordItem.hasAllData()){
+            viewModel.getRecordAsync(recordItem.getId(), this);
+        }
+
         LocalDateTime startDate = recordItem.getStartDate();
         LocalDateTime endDate = recordItem.getEndDate();
 
@@ -74,7 +80,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         String appendixText = Integer.toString(recordItem.getId());
         aHolder.oAppendixText.setText(appendixText);
 
-        int color = oInitialColor;
+        int color = initialColor;
         if(recordItem.isRendered()){
             color = Color.GRAY;
         }
@@ -90,9 +96,9 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
                     return;
                 }
 
-                int color = recordItem.isRendered() ? oInitialColor : Color.GRAY;
+                int color = recordItem.isRendered() ? initialColor : Color.GRAY;
                 view.setBackgroundColor(color);
-                oCallback.onRecordItemClick(recordItem);
+                callback.onRecordItemClick(recordItem);
                 recordItem.setRendered(!recordItem.isRendered());
                 Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "record item clicked : " + recordItem.toString());
             }
@@ -100,10 +106,14 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         aHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
+                if(recordItem == RecordItem.EMPTY_RECORD){
+                    return true;
+                }
+
                 boolean originalState = recordItem.isSelected();
                 recordItem.setSelected(!originalState);
-                view.setBackgroundColor(originalState ? oInitialColor : Color.CYAN);
-                oCallback.onRecordItemLongClick();
+                view.setBackgroundColor(originalState ? initialColor : Color.CYAN);
+                callback.onRecordItemLongClick();
                 return true;
             }
         });
@@ -112,17 +122,23 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
 
     @Override
     public int getItemCount(){
-        return oData.size();
+        return viewModel.getRecordSize();
     }
 
     public List<Integer> getSelectedItemIdList(){
-        return oData.stream()
-                .filter(data -> data.isSelected())
-                .map(data -> data.getId())
+        return viewModel.getRecords(false).stream()
+                .filter(RecordItem::isSelected)
+                .map(RecordItem::getId)
                 .collect(Collectors.toList());
     }
 
-    public void setData(List<RecordItem> aRecordItemList){
-        oData = aRecordItemList;
+    @Override
+    public void onCompletingLoad() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
     }
 }

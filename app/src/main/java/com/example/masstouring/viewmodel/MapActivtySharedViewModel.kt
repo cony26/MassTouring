@@ -16,6 +16,9 @@ import com.example.masstouring.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
+import java.util.function.Function
+import java.util.function.Predicate
+import java.util.stream.Collectors
 import javax.inject.Inject
 
 @HiltViewModel
@@ -71,8 +74,24 @@ class MapActivtySharedViewModel @Inject constructor(
         deleteRecordsIconVisible.value = false
     }
 
-    fun getRecords(): List<RecordItem?>?{
-        return repository.getRecords()
+    /**
+     * get RecordItem List.<br>
+     * if {@code force} is true, reload the all RecordItem from Database. It may take time.<br>
+     * if {@code force} is false, get RecordItem List from cached data.
+     */
+    fun getRecords(force : Boolean): List<RecordItem>{
+        return repository.getRecords(force)
+    }
+
+    fun getRecord(aId : Int): RecordItem{
+        return repository.getRecord(aId)
+    }
+
+    fun getRecordAsync(aId : Int, aCallback : IRecordItemLoadCallback){
+        viewModelScope.launch {
+            repository.getRecord(aId)
+            aCallback.onCompletingLoad()
+        }
     }
 
     fun getRecordSize(): Int{
@@ -89,5 +108,9 @@ class MapActivtySharedViewModel @Inject constructor(
 
     fun isNothingRendered(): Boolean {
         return renderedIdList.isEmpty()
+    }
+
+    public interface IRecordItemLoadCallback{
+        fun onCompletingLoad()
     }
 }
