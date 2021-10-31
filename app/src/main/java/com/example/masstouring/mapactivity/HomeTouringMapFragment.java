@@ -37,16 +37,16 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class HomeTouringMapFragment extends Fragment {
-    private RecordViewController oBoundRecordsView;
-    private GoogleMapController oGoogleMapController;
-    private MapActivtySharedViewModel oMapActivitySharedViewModel;
+    private RecordViewController recordsViewController;
+    private GoogleMapController googleMapController;
+    private MapActivtySharedViewModel mapActivitySharedViewModel;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new LifeCycleLogger(this, getClass().getSimpleName());
         BackPressedCallbackRegisterer.initialize((AppCompatActivity)getActivity());
-        oMapActivitySharedViewModel = new ViewModelProvider(requireActivity()).get(MapActivtySharedViewModel.class);
+        mapActivitySharedViewModel = new ViewModelProvider(requireActivity()).get(MapActivtySharedViewModel.class);
     }
 
     @Nullable
@@ -61,13 +61,13 @@ public class HomeTouringMapFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        new RecordButtonPresenter(view.findViewById(R.id.btnStartRecording), this, oMapActivitySharedViewModel);
-        new CheckRecordsButtonPresenter(view.findViewById(R.id.btnMemory), this, oMapActivitySharedViewModel);
+        new RecordButtonPresenter(view.findViewById(R.id.btnStartRecording), this, mapActivitySharedViewModel);
+        new CheckRecordsButtonPresenter(view.findViewById(R.id.btnMemory), this, mapActivitySharedViewModel);
 
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         SupportMapFragment mapFragment = (SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map);
-        oBoundRecordsView = new RecordViewController(activity);
-        oGoogleMapController = new GoogleMapController(activity, mapFragment);
+        recordsViewController = new RecordViewController(activity);
+        googleMapController = new GoogleMapController(activity, mapFragment);
         subscribeLiveData();
     }
 
@@ -95,19 +95,19 @@ public class HomeTouringMapFragment extends Fragment {
     private void subscribeLiveData(){
         LifecycleOwner owner = getViewLifecycleOwner();
 
-        oMapActivitySharedViewModel.getRecordStartEvent().observe(owner, new Observer<RecordStartEvent>() {
+        mapActivitySharedViewModel.getRecordStartEvent().observe(owner, new Observer<RecordStartEvent>() {
             @Override
             public void onChanged(RecordStartEvent recordStartEvent) {
                 Optional.ofNullable(recordStartEvent.getContentIfNotHandled()).ifPresent(resId -> {
                     Toast.makeText(getContext(), getString(resId), Toast.LENGTH_SHORT).show();
-                    oMapActivitySharedViewModel.getRecordServiceOrderEvent().setValue(new RecordServiceOrderEvent(RecordServiceOrderEvent.Order.START));
-                    oGoogleMapController.initialize();
-                    oMapActivitySharedViewModel.isRecordsViewVisible().setValue(false);
+                    mapActivitySharedViewModel.getRecordServiceOrderEvent().setValue(new RecordServiceOrderEvent(RecordServiceOrderEvent.Order.START));
+                    googleMapController.initialize();
+                    mapActivitySharedViewModel.isRecordsViewVisible().setValue(false);
                 });
             }
         });
 
-        oMapActivitySharedViewModel.getRecordEndEvent().observe(owner, new Observer<RecordEndEvent>() {
+        mapActivitySharedViewModel.getRecordEndEvent().observe(owner, new Observer<RecordEndEvent>() {
             @Override
             public void onChanged(RecordEndEvent recordEndEvent) {
                 Optional.ofNullable(recordEndEvent.getContentIfNotHandled()).ifPresent(resId -> {
@@ -121,7 +121,7 @@ public class HomeTouringMapFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_delete) {
             DeleteConfirmationDialog dialog = new DeleteConfirmationDialog();
-            dialog.setCallback(oBoundRecordsView.oDeleteDialogCallback);
+            dialog.setCallback(recordsViewController.oDeleteDialogCallback);
             dialog.show(getParentFragmentManager(), "deleteConfirmationDialog");
             return true;
         }
