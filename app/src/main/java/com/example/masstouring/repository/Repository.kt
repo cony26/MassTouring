@@ -12,7 +12,7 @@ import javax.inject.Inject
 class Repository @Inject constructor(
         private val db : DatabaseHelper
 ) {
-    val cachedRecordItems: MutableList<RecordItem> = mutableListOf()
+    private val cachedRecordItems: MutableList<RecordItem> = mutableListOf()
 
     fun restorePolylineOptionsFrom(aId: Int): PolylineOptions?{
         return db.restorePolylineOptionsFrom(aId)
@@ -22,30 +22,32 @@ class Repository @Inject constructor(
         return db.getLastLatLngFrom(aId)
     }
 
-    fun getRecords(force : Boolean): List<RecordItem>{
-        if(force){
-            cachedRecordItems.clear()
-            cachedRecordItems.addAll(db.records)
-        }else{
-            if(cachedRecordItems.isEmpty()){
-                cachedRecordItems.addAll(Collections.nCopies(getRecordSize(), RecordItem.EMPTY_RECORD))
+    fun cleanLoadRecordItems(): List<RecordItem>{
+        cachedRecordItems.clear()
+        cachedRecordItems.addAll(db.records)
 
-                GlobalScope.launch {
-                    val idList = db.recordIdList
-                    val list = mutableListOf<RecordItem>()
-                    for (id in idList){
-                        list.add(RecordItem(id))
-                    }
-                    cachedRecordItems.clear()
-                    cachedRecordItems.addAll(list)
-                }
-            }
+        return cachedRecordItems
+    }
+
+    fun getCachedRecordItems(): List<RecordItem>{
+        if(cachedRecordItems.isEmpty()){
+            createRecordItemCacheWithId()
         }
 
         return cachedRecordItems
     }
 
-    fun getRecord(aId : Int): RecordItem{
+    private fun createRecordItemCacheWithId(){
+        val idList = db.recordIdList
+        val list = mutableListOf<RecordItem>()
+        for (id in idList){
+            list.add(RecordItem(id))
+        }
+        cachedRecordItems.clear()
+        cachedRecordItems.addAll(list)
+    }
+
+    fun loadRecord(aId : Int): RecordItem{
         if(aId == RecordItem.INVALID_ID){
             return RecordItem.EMPTY_RECORD
         }
@@ -65,10 +67,17 @@ class Repository @Inject constructor(
     }
 
     fun getRecordSize(): Int{
-        return db.recordSize
+        if(cachedRecordItems.isEmpty()){
+            return db.recordSize
+        }else{
+            return cachedRecordItems.size
+        }
     }
 
     fun deleteRecord(aIds: IntArray){
+        cachedRecordItems.removeIf {
+            aIds.contains(it.id)
+        }
         db.deleteRecord(aIds)
     }
 }

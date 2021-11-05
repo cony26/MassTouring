@@ -42,7 +42,18 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
     public final IDeleteConfirmationDialogCallback oDeleteDialogCallback = new IDeleteConfirmationDialogCallback() {
         @Override
         public void onPositiveClick() {
-            oMapActivitySharedViewModel.onDeletePositiveClick(oRecordsViewAdapter);
+            oMapActivitySharedViewModel.onDeletePositiveClick(new MapActivtySharedViewModel.IRecordItemOperationCallback() {
+
+                @Override
+                public void onCompleting() {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            oRecordsViewAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            });
         }
 
         @Override

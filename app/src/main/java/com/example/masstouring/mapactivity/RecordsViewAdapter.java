@@ -20,10 +20,8 @@ import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
-public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> implements MapActivtySharedViewModel.IRecordItemLoadCallback {
+public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder>{
     private final MapActivtySharedViewModel viewModel;
     private final IItemClickCallback callback;
     private final int initialColor;
@@ -45,9 +43,9 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
     public void onBindViewHolder(RecordsViewHolder aHolder, int aPosition){
         Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "onBindViewHolder");
 
-        RecordItem recordItem = viewModel.getRecords(false).get(aPosition);
+        RecordItem recordItem = viewModel.getRecordItems(false).get(aPosition);
         if(!recordItem.hasAllData()){
-            viewModel.getRecordAsync(recordItem.getId(), this);
+            viewModel.loadRecordAsync(recordItem.getId(), new RecordItemLoadRequest(aPosition));
         }
 
         LocalDateTime startDate = recordItem.getStartDate();
@@ -118,7 +116,6 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
                 return true;
             }
         });
-//        Log.d(LoggerTag.RECORD_RECYCLER_VIEW, "position:" + aPosition + ", AdapterPosition:" + aHolder.getAdapterPosition());
     }
 
     @Override
@@ -126,13 +123,20 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder> 
         return viewModel.getRecordSize();
     }
 
-    @Override
-    public void onCompletingLoad() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                notifyDataSetChanged();
-            }
-        });
+    private class RecordItemLoadRequest implements MapActivtySharedViewModel.IRecordItemOperationCallback {
+        private final int position;
+        private RecordItemLoadRequest(int aPosition){
+            position = aPosition;
+        }
+
+        @Override
+        public void onCompleting() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    notifyItemChanged(position);
+                }
+            });
+        }
     }
 }

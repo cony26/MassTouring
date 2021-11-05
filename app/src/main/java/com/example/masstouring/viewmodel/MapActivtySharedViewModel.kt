@@ -10,15 +10,11 @@ import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.event.*
 import com.example.masstouring.mapactivity.RecordItem
 import com.example.masstouring.mapactivity.RecordState
-import com.example.masstouring.mapactivity.RecordViewController
 import com.example.masstouring.recordservice.ILocationUpdateCallback
 import com.example.masstouring.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
-import java.util.function.Function
-import java.util.function.Predicate
-import java.util.stream.Collectors
 import javax.inject.Inject
 
 @HiltViewModel
@@ -67,10 +63,10 @@ class MapActivtySharedViewModel @Inject constructor(
         }
     }
 
-    fun onDeletePositiveClick(callback: IRecordItemLoadCallback){
+    fun onDeletePositiveClick(callback: IRecordItemOperationCallback){
         viewModelScope.launch {
             deleteRecord(getSelectedItemIdList().toIntArray())
-            callback.onCompletingLoad()
+            callback.onCompleting()
         }
         deleteRecordsIconVisible.value = false
     }
@@ -80,23 +76,34 @@ class MapActivtySharedViewModel @Inject constructor(
      * if {@code force} is true, reload the all RecordItem from Database. It may take time.<br>
      * if {@code force} is false, get RecordItem List from cached data.
      */
-    fun getRecords(force : Boolean): List<RecordItem>{
-        return repository.getRecords(force)
+    fun getRecordItems(force : Boolean): List<RecordItem>{
+        if(force){
+            return repository.cleanLoadRecordItems()
+        }else{
+            return repository.getCachedRecordItems()
+        }
     }
 
+    /**
+     * get RecordItem of {@code aId}.<br>
+     * If the record is already registered as cache, this immediately returns the value.<br>
+     * Otherwise, this takes a few times to load data from DB.
+     *
+     * @see loadRecordAsync for async process
+     */
     fun getRecord(aId : Int): RecordItem{
-        return repository.getRecord(aId)
+        return repository.loadRecord(aId)
     }
 
-    fun getRecordAsync(aId : Int, aCallback : IRecordItemLoadCallback){
+    fun loadRecordAsync(aId : Int, aCallback : IRecordItemOperationCallback){
         viewModelScope.launch {
-            repository.getRecord(aId)
-            aCallback.onCompletingLoad()
+            repository.loadRecord(aId)
+            aCallback.onCompleting()
         }
     }
 
     fun getSelectedItemIdList(): List<Int> {
-        return getRecords(false)
+        return getRecordItems(false)
                 .filter { it.isSelected }
                 .map{ it.id }
                 .toList()
@@ -118,7 +125,7 @@ class MapActivtySharedViewModel @Inject constructor(
         return renderedIdList.isEmpty()
     }
 
-    public interface IRecordItemLoadCallback{
-        fun onCompletingLoad()
+    public interface IRecordItemOperationCallback{
+        fun onCompleting()
     }
 }
