@@ -32,7 +32,16 @@ class Repository @Inject constructor(
     fun getCachedRecordItems(): List<RecordItem>{
         if(cachedRecordItems.isEmpty()){
             createRecordItemCacheWithId()
+        }else{
+//            GlobalScope.launch {
+//                val diff = db.recordSize - cachedRecordItems.size
+//                if(diff > 0){
+//                    cachedRecordItems.addAll(Collections.nCopies(diff, RecordItem.EMPTY_RECORD))
+//                }
+//            }
         }
+
+
 
         return cachedRecordItems
     }
