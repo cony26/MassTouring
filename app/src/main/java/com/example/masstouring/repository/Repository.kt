@@ -4,15 +4,16 @@ import com.example.masstouring.database.DatabaseHelper
 import com.example.masstouring.mapactivity.RecordItem
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.*
+import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
 
 class Repository @Inject constructor(
         private val db : DatabaseHelper
 ) {
+    private var initialized : Boolean = false
     private val cachedRecordItems: MutableList<RecordItem> = mutableListOf()
+    private val lock: ReentrantLock = ReentrantLock()
 
     fun restorePolylineOptionsFrom(aId: Int): PolylineOptions?{
         return db.restorePolylineOptionsFrom(aId)
@@ -23,70 +24,99 @@ class Repository @Inject constructor(
     }
 
     fun cleanLoadRecordItems(): List<RecordItem>{
-        cachedRecordItems.clear()
-        cachedRecordItems.addAll(db.records)
+        replaceCacheRecordItems(db.records)
 
-        return cachedRecordItems
+        return getImmutableCachedRecordItems()
     }
 
     fun getCachedRecordItems(): List<RecordItem>{
-        if(cachedRecordItems.isEmpty()){
-            createRecordItemCacheWithId()
-        }else{
-//            GlobalScope.launch {
-//                val diff = db.recordSize - cachedRecordItems.size
-//                if(diff > 0){
-//                    cachedRecordItems.addAll(Collections.nCopies(diff, RecordItem.EMPTY_RECORD))
-//                }
-//            }
+        lock.lock()
+        try{
+            if(initialized){
+                val diff = db.recordSize - cachedRecordItems.size
+                if(diff > 0){
+                    cachedRecordItems.addAll(Collections.nCopies(diff, RecordItem.EMPTY_RECORD))
+                }
+            }else{
+                replaceCacheRecordItems(loadRecordItemWithIdOnly())
+                initialized = true
+            }
+        }finally {
+            lock.unlock()
         }
 
-
-
-        return cachedRecordItems
+        return getImmutableCachedRecordItems()
     }
 
-    private fun createRecordItemCacheWithId(){
+    private fun loadRecordItemWithIdOnly(): List<RecordItem>{
         val idList = db.recordIdList
         val list = mutableListOf<RecordItem>()
         for (id in idList){
             list.add(RecordItem(id))
         }
-        cachedRecordItems.clear()
-        cachedRecordItems.addAll(list)
+        return list
     }
 
-    fun loadRecord(aId : Int): RecordItem{
+    fun loadRecordItem(aId : Int): RecordItem{
         if(aId == RecordItem.INVALID_ID){
             return RecordItem.EMPTY_RECORD
         }
 
-        val recordItem = cachedRecordItems.find { it.id == aId } ?: return RecordItem.EMPTY_RECORD
+        lock.lock()
+        try{
+            val recordItem = cachedRecordItems.find { it.id == aId } ?: return RecordItem.EMPTY_RECORD
 
-        if(recordItem.hasAllData()){
-            return recordItem
+            if(recordItem.hasAllData()){
+                return recordItem
+            }
+
+            val loadedItem = db.getRecordItem(aId);
+            val index = cachedRecordItems.indexOf(recordItem)
+            cachedRecordItems.removeAt(index)
+            cachedRecordItems.add(index, loadedItem)
+            return loadedItem
+        }finally {
+            lock.unlock()
         }
-
-        val loadedItem = db.getRecordItem(aId);
-        val index = cachedRecordItems.indexOf(recordItem)
-        cachedRecordItems.removeAt(index)
-        cachedRecordItems.add(index, loadedItem)
-
-        return loadedItem
     }
 
     fun getRecordSize(): Int{
-        if(cachedRecordItems.isEmpty()){
-            return db.recordSize
-        }else{
+        if(initialized){
             return cachedRecordItems.size
+        }else{
+            return db.recordSize
         }
     }
 
     fun deleteRecord(aIds: IntArray){
-        cachedRecordItems.removeIf {
-            aIds.contains(it.id)
+        lock.lock()
+        try{
+            cachedRecordItems.removeIf {
+                aIds.contains(it.id)
+            }
+        }finally {
+            lock.unlock()
         }
+
         db.deleteRecord(aIds)
+    }
+
+    private fun replaceCacheRecordItems(list: List<RecordItem>){
+        lock.lock()
+        try{
+            cachedRecordItems.clear()
+            cachedRecordItems.addAll(list)
+        }finally {
+            lock.unlock()
+        }
+    }
+
+    private fun getImmutableCachedRecordItems(): List<RecordItem>{
+        lock.lock()
+        try{
+            return cachedRecordItems.toList()
+        }finally {
+            lock.unlock()
+        }
     }
 }

@@ -92,12 +92,12 @@ class MapActivtySharedViewModel @Inject constructor(
      * @see loadRecordAsync for async process
      */
     fun getRecord(aId : Int): RecordItem{
-        return repository.loadRecord(aId)
+        return repository.loadRecordItem(aId)
     }
 
     fun loadRecordAsync(aId : Int, aCallback : IRecordItemOperationCallback){
         viewModelScope.launch {
-            repository.loadRecord(aId)
+            repository.loadRecordItem(aId)
             aCallback.onCompleting()
         }
     }

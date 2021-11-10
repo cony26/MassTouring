@@ -20,6 +20,7 @@ import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder>{
     private final MapActivtySharedViewModel viewModel;
@@ -120,7 +121,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder>{
 
     @Override
     public int getItemCount(){
-        return viewModel.getRecordSize();
+        return viewModel.getRecordItems(false).size();
     }
 
     private class RecordItemLoadRequest implements MapActivtySharedViewModel.IRecordItemOperationCallback {

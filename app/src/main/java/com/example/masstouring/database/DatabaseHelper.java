@@ -108,12 +108,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public int getRecordingInfo(){
         try (SQLiteDatabase db = getReadableDatabase()) {
-            Cursor recordingInfoCursor = db.query(Tables.RECORDING_INFO.getName(), null, null, null, null, null, null);
-            if(recordingInfoCursor.getCount() == 0){
-                return Const.INVALID_ID;
-            }else{
-                recordingInfoCursor.moveToNext();
-                return (int)Tables.RECORDING_INFO.get(recordingInfoCursor, RecordingInfo.ID);
+            try(Cursor recordingInfoCursor = db.query(Tables.RECORDING_INFO.getName(), null, null, null, null, null, null)){
+                if(recordingInfoCursor.getCount() == 0){
+                    return Const.INVALID_ID;
+                }else{
+                    recordingInfoCursor.moveToNext();
+                    return (int)Tables.RECORDING_INFO.get(recordingInfoCursor, RecordingInfo.ID);
+                }
             }
         }catch(SQLException | CursorIndexOutOfBoundsException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "error on getting Recording Info", e);
@@ -155,9 +156,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Set<Integer> ids = new HashSet<>();
         int uniqueId = 0;
         try (SQLiteDatabase db = getReadableDatabase()) {
-            Cursor cs = db.query(Tables.RECORDS_STARTINFO.getName(), new String[]{RecordsStartInfo.ID.getQuatedName()}, null, null, null, null, null);
-            while(cs.moveToNext()) {
-                ids.add(cs.getInt(0));
+            try(Cursor cs = db.query(Tables.RECORDS_STARTINFO.getName(), new String[]{RecordsStartInfo.ID.getQuatedName()}, null, null, null, null, null)){
+                while(cs.moveToNext()) {
+                    ids.add(cs.getInt(0));
+                }
             }
         }catch(Exception e){
             return uniqueId;
@@ -171,8 +173,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public int getRecordSize(){
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
-            return recordsStartInfoCursor.getCount();
+            try(Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null)){
+                return recordsStartInfoCursor.getCount();
+            }
         }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to loading RecordSize:", e);
             return 0;
@@ -182,10 +185,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Integer> getRecordIdList(){
         List<Integer> recordIdList = new ArrayList<>();
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
-            while(recordsStartInfoCursor.moveToNext()){
-                int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
-                recordIdList.add(id);
+            try(Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null)){
+                while(recordsStartInfoCursor.moveToNext()){
+                    int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
+                    recordIdList.add(id);
+                }
             }
         }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to load RecordIdList:", e);
@@ -196,35 +200,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<RecordItem> getRecords(){
         List<RecordItem> data = new ArrayList<>();
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null);
-            while(recordsStartInfoCursor.moveToNext()){
-                int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
-                String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
+            try(Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, null, null, null, null, null)){
+                while(recordsStartInfoCursor.moveToNext()){
+                    int id = (int)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.ID);
+                    String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
 
-                String endInfo = Const.NO_INFO;
-                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + id, null, null, null, null);
-                recordsEndInfoCusor.moveToNext();
-                if(!recordsEndInfoCusor.isAfterLast()){
-                    endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
+                    String endInfo = Const.NO_INFO;
+                    try(Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + id, null, null, null, null)){
+                        recordsEndInfoCusor.moveToNext();
+                        if(!recordsEndInfoCusor.isAfterLast()){
+                            endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
+                        }
+                    }
+
+                    Map<Integer, LatLng> locationMap = new HashMap<>();
+                    Map<Integer, String> timeStampMap = new HashMap<>();
+                    Map<Integer, Double> speedkmph = new HashMap<>();
+                    try(Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + id, null, null, null, null)){
+                        while(positionsCursor.moveToNext()){
+                            double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                            double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                            int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
+                            String date = (String)Tables.POSITIONS.get(positionsCursor, Positions.TIMESTAMP);
+                            locationMap.put(order, new LatLng(latitude, longitude));
+                            timeStampMap.put(order, date);
+                            speedkmph.put(order, (double)Tables.POSITIONS.get(positionsCursor, Positions.SPEEDMPS) * 60 * 60 / 1000);
+                        }
+                    }
+
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("id:").append(id).append(", startDate:").append(startInfo).append(", endDate:").append(endInfo);
+                    data.add(new RecordItem(id, startInfo, endInfo, locationMap, timeStampMap, speedkmph));
                 }
-
-                Map<Integer, LatLng> locationMap = new HashMap<>();
-                Map<Integer, String> timeStampMap = new HashMap<>();
-                Map<Integer, Double> speedkmph = new HashMap<>();
-                Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + id, null, null, null, null);
-                while(positionsCursor.moveToNext()){
-                    double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                    double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-                    int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
-                    String date = (String)Tables.POSITIONS.get(positionsCursor, Positions.TIMESTAMP);
-                    locationMap.put(order, new LatLng(latitude, longitude));
-                    timeStampMap.put(order, date);
-                    speedkmph.put(order, (double)Tables.POSITIONS.get(positionsCursor, Positions.SPEEDMPS) * 60 * 60 / 1000);
-                }
-
-                StringBuilder builder = new StringBuilder();
-                builder.append("id:").append(id).append(", startDate:").append(startInfo).append(", endDate:").append(endInfo);
-                data.add(new RecordItem(id, startInfo, endInfo, locationMap, timeStampMap, speedkmph));
             }
         }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to loading Records:", e);
@@ -240,33 +247,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public RecordItem getRecordItem(int aId){
         RecordItem recordItem = null;
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            recordsStartInfoCursor.moveToNext();
-            String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
+            try(Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
+                Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
+                Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null)){
+                recordsStartInfoCursor.moveToNext();
+                String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
 
-            String endInfo = Const.NO_INFO;
-            Cursor recordsEndInfoCusor = db.query(Tables.RECORDS_ENDINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            recordsEndInfoCusor.moveToNext();
-            if(!recordsEndInfoCusor.isAfterLast()){
-                endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
+                String endInfo = Const.NO_INFO;
+                recordsEndInfoCusor.moveToNext();
+                if(!recordsEndInfoCusor.isAfterLast()){
+                    endInfo = (String)Tables.RECORDS_ENDINFO.get(recordsEndInfoCusor, RecordsEndInfo.END_TIME);
+                }
+
+                Map<Integer, LatLng> locationMap = new HashMap<>();
+                Map<Integer, String> timeStampMap = new HashMap<>();
+                Map<Integer, Double> speedkmph = new HashMap<>();
+
+                while(positionsCursor.moveToNext()){
+                    double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                    double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                    int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
+                    String date = (String)Tables.POSITIONS.get(positionsCursor, Positions.TIMESTAMP);
+                    locationMap.put(order, new LatLng(latitude, longitude));
+                    timeStampMap.put(order, date);
+                    speedkmph.put(order, (double)Tables.POSITIONS.get(positionsCursor, Positions.SPEEDMPS) * 60 * 60 / 1000);
+                }
+
+                recordItem = new RecordItem(aId, startInfo, endInfo, locationMap, timeStampMap, speedkmph);
+                Log.d(LoggerTag.DATABASE_PROCESS, "loaded:" + recordItem.toString());
             }
-
-            Map<Integer, LatLng> locationMap = new HashMap<>();
-            Map<Integer, String> timeStampMap = new HashMap<>();
-            Map<Integer, Double> speedkmph = new HashMap<>();
-            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            while(positionsCursor.moveToNext()){
-                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-                int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
-                String date = (String)Tables.POSITIONS.get(positionsCursor, Positions.TIMESTAMP);
-                locationMap.put(order, new LatLng(latitude, longitude));
-                timeStampMap.put(order, date);
-                speedkmph.put(order, (double)Tables.POSITIONS.get(positionsCursor, Positions.SPEEDMPS) * 60 * 60 / 1000);
-            }
-
-            recordItem = new RecordItem(aId, startInfo, endInfo, locationMap, timeStampMap, speedkmph);
-            Log.d(LoggerTag.DATABASE_PROCESS, "loaded:" + recordItem.toString());
         }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to load RecordItem[id:" + aId + "]", e);
         }
@@ -277,27 +286,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public RecordObject restoreRecordObjectFromId(int aId){
         RecordObject recordObject = RecordObject.createRecordObjectForRestore(aId);
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            recordsStartInfoCursor.moveToNext();
-            String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
-            recordObject.setStartDate(startInfo);
+            try(Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
+                Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null)){
+                recordsStartInfoCursor.moveToNext();
+                String startInfo = (String)Tables.RECORDS_STARTINFO.get(recordsStartInfoCursor, RecordsStartInfo.START_TIME);
+                recordObject.setStartDate(startInfo);
 
-            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            if(positionsCursor.getCount() == 0){
-                recordObject.setRecordNumber(-1);
-                recordObject.setLastRecordedLocation(null);
-            }else{
-                positionsCursor.moveToLast();
+                if(positionsCursor.getCount() == 0){
+                    recordObject.setRecordNumber(-1);
+                    recordObject.setLastRecordedLocation(null);
+                }else{
+                    positionsCursor.moveToLast();
 
-                int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
-                recordObject.setRecordNumber(order);
+                    int order = (int)Tables.POSITIONS.get(positionsCursor, Positions.ORDER);
+                    recordObject.setRecordNumber(order);
 
-                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-                Location location = new Location("");
-                location.setLatitude(latitude);
-                location.setLongitude(longitude);
-                recordObject.setLastRecordedLocation(location);
+                    double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                    double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                    Location location = new Location("");
+                    location.setLatitude(latitude);
+                    location.setLongitude(longitude);
+                    recordObject.setLastRecordedLocation(location);
+                }
             }
         }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring RecordObject from ID:" + aId, e);
@@ -313,11 +323,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public PolylineOptions restorePolylineOptionsFrom(int aId){
         PolylineOptions polylineOptions = new PolylineOptions();
         try(SQLiteDatabase db = getReadableDatabase()){
-            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            while(positionsCursor.moveToNext()){
-                double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-                polylineOptions.add(new LatLng(latitude, longitude));
+            try(Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null)){
+                while(positionsCursor.moveToNext()){
+                    double latitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                    double longitude = (double)Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                    polylineOptions.add(new LatLng(latitude, longitude));
+                }
             }
         }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to restoring PolylineOptions from ID:" + aId, e);
@@ -330,12 +341,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public LatLng getLastLatLngFrom(int aId){
         LatLng latLng = null;
         try(SQLiteDatabase db = getReadableDatabase()) {
-            Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null);
-            positionsCursor.moveToLast();
-            if(!positionsCursor.isAfterLast()) {
-                double latitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
-                double longitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
-                latLng = new LatLng(latitude, longitude);
+            try(Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null)){
+                positionsCursor.moveToLast();
+                if(!positionsCursor.isAfterLast()) {
+                    double latitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LATITUDE);
+                    double longitude = (double) Tables.POSITIONS.get(positionsCursor, Positions.LONGITUDE);
+                    latLng = new LatLng(latitude, longitude);
+                }
             }
         }catch(SQLException | CursorIndexOutOfBoundsException | IllegalStateException e){
             Log.e(LoggerTag.DATABASE_PROCESS, "failed to getting last LatLng from ID:" + aId, e);
