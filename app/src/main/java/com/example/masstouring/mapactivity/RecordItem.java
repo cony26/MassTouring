@@ -27,7 +27,7 @@ public class RecordItem {
     private final Map<Integer, Double> oSpeedkmphMap;
     private boolean oSelected = false;
     private boolean oRendered = false;
-    private final boolean oHasAllData;
+    private boolean oHasAllData;
     private static final int alpha = 0x80000000;
     public static final int INVALID_ID = -1;
     public static final RecordItem EMPTY_RECORD = new RecordItem(INVALID_ID);
@@ -109,6 +109,10 @@ public class RecordItem {
 
     public boolean hasAllData(){
         return oHasAllData;
+    }
+
+    public void setReloadFlag(){
+        oHasAllData = false;
     }
 
     @Override

@@ -2,12 +2,14 @@ package com.example.masstouring.repository
 
 import com.example.masstouring.database.DatabaseHelper
 import com.example.masstouring.mapactivity.RecordItem
+import com.example.masstouring.mapactivity.RecordObject
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
-import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class Repository @Inject constructor(
         private val db : DatabaseHelper
 ) {
@@ -32,13 +34,9 @@ class Repository @Inject constructor(
     fun getCachedRecordItems(): List<RecordItem>{
         lock.lock()
         try{
-            if(initialized){
-                val diff = db.recordSize - cachedRecordItems.size
-                if(diff > 0){
-                    cachedRecordItems.addAll(Collections.nCopies(diff, RecordItem.EMPTY_RECORD))
-                }
-            }else{
-                replaceCacheRecordItems(loadRecordItemWithIdOnly())
+            if(!initialized){
+                val list = loadRecordItemWithIdOnly()
+                replaceCacheRecordItems(list)
                 initialized = true
             }
         }finally {
@@ -70,7 +68,7 @@ class Repository @Inject constructor(
                 return recordItem
             }
 
-            val loadedItem = db.getRecordItem(aId);
+            val loadedItem = db.getRecordItem(aId)
             val index = cachedRecordItems.indexOf(recordItem)
             cachedRecordItems.removeAt(index)
             cachedRecordItems.add(index, loadedItem)
@@ -118,5 +116,54 @@ class Repository @Inject constructor(
         }finally {
             lock.unlock()
         }
+    }
+
+    fun recordPositions(recordObj : RecordObject){
+        setReloadFlag(recordObj.recordId)
+        db.recordPositions(recordObj)
+    }
+
+    fun recordStartInfo(recordObj: RecordObject){
+        lock.lock()
+        try{
+            cachedRecordItems.add(RecordItem(recordObj.recordId))
+        }finally {
+            lock.unlock()
+        }
+        db.recordStartInfo(recordObj)
+    }
+
+    fun recordEndInfo(recordObj: RecordObject){
+        setReloadFlag(recordObj.recordId)
+        db.recordEndInfo(recordObj)
+    }
+
+    private fun setReloadFlag(id : Int){
+        lock.lock()
+        try{
+            cachedRecordItems.find { it.id == id }?.setReloadFlag()
+        }finally {
+            lock.unlock()
+        }
+    }
+
+    fun setRecordingInfo(recordObj: RecordObject){
+        db.setRecordingInfo(recordObj)
+    }
+
+    fun getRecordingInfo():Int{
+        return db.recordingInfo
+    }
+
+    fun resetRecordingInfo():Boolean{
+        return db.resetRecordingInfo()
+    }
+
+    fun restoreRecordObjectFromId(id: Int): RecordObject{
+        return db.restoreRecordObjectFromId(id)
+    }
+
+    fun getUniqueId(): Int{
+        return db.uniqueID
     }
 }

@@ -23,12 +23,18 @@ import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.mapactivity.RecordState;
+import com.example.masstouring.repository.Repository;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class RecordService extends LifecycleService {
     private BoundLocationClient oBoundLocationClient;
     private LocationCallback oLocCallback = new LocationCallback() {
@@ -45,7 +51,7 @@ public class RecordService extends LifecycleService {
             if (needUpdate) {
                 oRecordObject.setLastRecordedLocation(location);
                 oRecordObject.inclementRecordNumber();
-                oDatabaseHelper.recordPositions(oRecordObject);
+                oRepository.recordPositions(oRecordObject);
             }
 
             boolean finalNeedUpdate = needUpdate;
@@ -57,7 +63,9 @@ public class RecordService extends LifecycleService {
     private Notification oNotification;
     private RecordObject oRecordObject = null;
     private RecordState oRecordState = RecordState.STOP;
-    private final DatabaseHelper oDatabaseHelper = new DatabaseHelper(this);
+    @Inject
+    Repository oRepository;
+
     private static final String CANCEL_ACTION = "cancel record action";
     private final IBinder oBinder = new RecordServiceBinder();
     private Optional<ILocationUpdateCallback> oRecordServiceCallback = Optional.empty();
@@ -110,10 +118,10 @@ public class RecordService extends LifecycleService {
 
         if(intent == null){
             Log.w(LoggerTag.SYSTEM_PROCESS, "START_STICKY:start recovery process if recording");
-            int id = oDatabaseHelper.getRecordingInfo();
+            int id = oRepository.getRecordingInfo();
             if(id != Const.INVALID_ID){
                 oRecordState = RecordState.RECORDING;
-                oRecordObject = oDatabaseHelper.restoreRecordObjectFromId(id);
+                oRecordObject = oRepository.restoreRecordObjectFromId(id);
             }
         }
         if(intent != null){
@@ -141,10 +149,10 @@ public class RecordService extends LifecycleService {
 
     public void startRecording() {
         if(oRecordState == RecordState.STOP) {
-            oRecordObject = new RecordObject(oDatabaseHelper);
-            oDatabaseHelper.recordStartInfo(oRecordObject);
+            oRecordObject = new RecordObject(oRepository.getUniqueId());
+            oRepository.recordStartInfo(oRecordObject);
             oRecordState = RecordState.RECORDING;
-            oDatabaseHelper.setRecordingInfo(oRecordObject);
+            oRepository.setRecordingInfo(oRecordObject);
         }
         Log.d(LoggerTag.RECORD_SERVICE_PROCESS, "RecordService start Recording");
     }
@@ -153,10 +161,10 @@ public class RecordService extends LifecycleService {
         if(oRecordState == RecordState.RECORDING) {
             String endDate = LocalDateTime.now().format(Const.DATE_FORMAT);
             oRecordObject.setEndDate(endDate);
-            oDatabaseHelper.recordEndInfo(oRecordObject);
+            oRepository.recordEndInfo(oRecordObject);
             oRecordObject = null;
             oRecordState = RecordState.STOP;
-            oDatabaseHelper.resetRecordingInfo();
+            oRepository.resetRecordingInfo();
         }
         Log.d(LoggerTag.RECORD_SERVICE_PROCESS, "RecordService stop Recording");
     }

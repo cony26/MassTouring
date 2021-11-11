@@ -25,11 +25,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import dagger.hilt.android.qualifiers.ApplicationContext;
 
 import static java.util.Collections.max;
 
+@Singleton
 public class DatabaseHelper extends SQLiteOpenHelper {
     @Inject
     public DatabaseHelper(@ApplicationContext Context context){
@@ -284,7 +286,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public RecordObject restoreRecordObjectFromId(int aId){
-        RecordObject recordObject = RecordObject.createRecordObjectForRestore(aId);
+        RecordObject recordObject = new RecordObject(aId);
         try(SQLiteDatabase db = getReadableDatabase()){
             try(Cursor recordsStartInfoCursor = db.query(Tables.RECORDS_STARTINFO.getName(), null, RecordsEndInfo.ID.getQuatedName() + "=" + aId, null, null, null, null);
                 Cursor positionsCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + aId, null, null, null, null)){

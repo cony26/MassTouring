@@ -81,7 +81,7 @@ public class DatabaseInfoRepairer implements Runnable{
         }
 
         for(int id : needRepairEndInfoIdList){
-            RecordObject recordObject = RecordObject.createRecordObjectForRestore(id);
+            RecordObject recordObject = new RecordObject(id);
 
             try(SQLiteDatabase db = oDatabaseHelper.getReadableDatabase()){
                 Cursor positionCursor = db.query(Tables.POSITIONS.getName(), null, Positions.ID.getQuatedName() + "=" + id, null, null, null, null);

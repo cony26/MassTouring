@@ -26,18 +26,10 @@ public class RecordObject {
     private String oEndDate;
     private Location oLastRecordedLocation = null;
 
-    public RecordObject(DatabaseHelper aDatabaseHelper){
-        oRecordId = aDatabaseHelper.getUniqueID();
+    public RecordObject(int aId){
+        oRecordId = aId;
         oRecordNumber = -1;
         oStartDate = LocalDateTime.now().format(Const.DATE_FORMAT);
-    }
-
-    private RecordObject(int aId){
-        oRecordId = aId;
-    }
-
-    public static RecordObject createRecordObjectForRestore(int aId){
-        return new RecordObject(aId);
     }
 
     public int getRecordId() {
