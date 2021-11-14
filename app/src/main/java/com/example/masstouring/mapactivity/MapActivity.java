@@ -65,7 +65,6 @@ public class MapActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LoggerTask.getInstance().setMapActivityState(true);
         new LifeCycleLogger(this);
         BackPressedCallbackRegisterer.initialize(this);
         checkPermissions();
@@ -105,7 +104,6 @@ public class MapActivity extends AppCompatActivity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LoggerTask.getInstance().setMapActivityState(false);
     }
 
     @Override

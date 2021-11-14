@@ -18,8 +18,8 @@ import android.widget.LinearLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.example.masstouring.common.ApplicationLifeCycleObserver;
 import com.example.masstouring.common.LifeCycleLogger;
-import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.database.DatabaseHelper;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
@@ -45,12 +45,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private int count = 0;
+    @Inject
+    ApplicationLifeCycleObserver applicationLifeCycleObserver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LoggerTask.initialize(getApplicationContext());
+        applicationLifeCycleObserver.register(this);
         new LifeCycleLogger(this);
         setContentView(R.layout.activity_main);
         setButtonClickListeners();
@@ -65,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LoggerTask.getInstance().setMainActivityState(false);
     }
 
     private void setButtonClickListeners() {

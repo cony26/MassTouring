@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.LifecycleService;
 
 import com.example.masstouring.R;
+import com.example.masstouring.common.ApplicationLifeCycleObserver;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
@@ -64,6 +65,8 @@ public class RecordService extends LifecycleService {
     private RecordState oRecordState = RecordState.STOP;
     @Inject
     Repository oRepository;
+    @Inject
+    ApplicationLifeCycleObserver oApplicationLifeCycleObserver;
 
     private static final String CANCEL_ACTION = "cancel record action";
     private final IBinder oBinder = new RecordServiceBinder();
@@ -87,7 +90,7 @@ public class RecordService extends LifecycleService {
     @Override
     public void onCreate() {
         super.onCreate();
-        LoggerTask.getInstance().setRecordServiceState(true);
+        oApplicationLifeCycleObserver.register(this);
         new LifeCycleLogger(this);
         oBoundLocationClient = new BoundLocationClient(this, this, oLocCallback);
 
@@ -172,7 +175,6 @@ public class RecordService extends LifecycleService {
         stopRecording();
         stopForeground(true);
         stopSelf();
-        LoggerTask.getInstance().setRecordServiceState(false);
     }
 
     public RecordState getRecordState(){

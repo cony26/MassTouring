@@ -38,35 +38,30 @@ public class LoggerTask extends Thread {
         return oSingleton;
     }
 
-    public void setMainActivityState(boolean aMainActivityState){
-        oMainActivityState = aMainActivityState;
-    }
-
-    public void setMapActivityState(boolean aMapActivityState){
-        oMapActivityState = aMapActivityState;
-    }
-
-    public void setRecordServiceState(boolean aRecordServiceState){
-        oRecordServiceState = aRecordServiceState;
-    }
-
-    private boolean isApplicationAlive(){
-        return oMainActivityState || oMapActivityState || oRecordServiceState;
+    boolean isLoggingCompleted(){
+        return oLoggingCompleted;
     }
 
     @Override
     public void run() {
-        Log.e(LoggerTag.SYSTEM_PROCESS, "start logging output");
+        while(!oApplicationLifeCycleObserver.isAnyProcessRunning()){
+            try{
+                Thread.sleep(100);
+            }catch(InterruptedException e){
+                //do nothing
+            }
+        }
+        Log.i(LoggerTag.LOG_PROCESS, "start logging output");
 
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(new String[]{"logcat", "-v", "time"});
         }catch(IOException e){
-            Log.e(LoggerTag.SYSTEM_PROCESS, "can't execute \"logcat -v time\"", e);
+            Log.e(LoggerTag.LOG_PROCESS, "can't execute \"logcat -v time\"", e);
         }
 
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()))){
-            while(isApplicationAlive()){
+            while(oApplicationLifeCycleObserver.isAnyProcessRunning()){
                 String line = reader.readLine();
                 if(line == null || line.length() == 0){
                     Thread.sleep(Const.LOGGING_INTERVAL_MILLIS);
@@ -77,11 +72,12 @@ public class LoggerTask extends Thread {
                     writer.write(line);
                     writer.newLine();
                 }catch(IOException e){
-                    Log.e(LoggerTag.SYSTEM_PROCESS, "error happens in logging output", e);
+                    Log.e(LoggerTag.LOG_PROCESS, "error happens in logging output", e);
                 }
             }
         }catch(IOException | InterruptedException e){
             Log.e(LoggerTag.SYSTEM_PROCESS, "error happens in logging output", e);
+            oOutputFileName += "_exception";
         }finally {
             proc.destroy();
             Log.i(LoggerTag.SYSTEM_PROCESS, "finish logging output");
@@ -107,11 +103,11 @@ public class LoggerTask extends Thread {
             }
 
         }catch(IOException e){
-            Log.e(LoggerTag.SYSTEM_PROCESS, "error happens in zipping output file", e);
+            Log.e(LoggerTag.LOG_PROCESS, "error happens in zipping output file", e);
             return false;
         }
 
-        Log.i(LoggerTag.SYSTEM_PROCESS, "successfully zipped:" + aZipFileName);
+        Log.i(LoggerTag.LOG_PROCESS, "successfully zipped:" + aZipFileName);
         return true;
     }
 }

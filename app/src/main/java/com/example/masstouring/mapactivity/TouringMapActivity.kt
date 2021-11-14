@@ -13,6 +13,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.example.masstouring.R
+import com.example.masstouring.common.ApplicationLifeCycleObserver
 import com.example.masstouring.common.LifeCycleLogger
 import com.example.masstouring.common.LoggerTask
 import com.example.masstouring.database.DatabaseInfoRepairer
@@ -29,6 +30,8 @@ class TouringMapActivity : AppCompatActivity() {
 
     @Inject
     lateinit var recordServiceConnector: RecordServiceConnector
+    @Inject
+    lateinit var applicationLifeCycleObserver: ApplicationLifeCycleObserver
     val cExecutors: ExecutorService = Executors.newFixedThreadPool(5)
 
     private lateinit var toolbar : Toolbar
@@ -37,7 +40,7 @@ class TouringMapActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        LoggerTask.getInstance().setMapActivityState(true)
+        applicationLifeCycleObserver.register(this)
         LifeCycleLogger(this)
         checkPermissions()
 
@@ -64,7 +67,6 @@ class TouringMapActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        LoggerTask.getInstance().setMapActivityState(false)
     }
 
     private fun subscribeLiveData(){
