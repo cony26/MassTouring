@@ -40,6 +40,7 @@ class RecordServiceConnector @Inject constructor(
                 it.setUnbindRequestCallback(stopRequestCallback)
                 it.setIRecordServiceCallback(viewModel.locationUpdateCallback.value)
             }
+            restoreFromService()
             Log.d(LoggerTag.SYSTEM_PROCESS, "onServiceConnected MapActivity")
         }
 
@@ -90,7 +91,6 @@ class RecordServiceConnector @Inject constructor(
                 }
                 RecordServiceOrderEvent.Order.BOUND ->{
                     bindRecordService()
-                    restoreFromService()
                 }
                 RecordServiceOrderEvent.Order.END ->{
                     viewModel.isRecordServiceBound.value?.let {
