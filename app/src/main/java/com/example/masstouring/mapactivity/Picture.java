@@ -73,7 +73,7 @@ public class Picture implements ClusterItem {
      * @return the temporary bitmap
      */
     public Bitmap getItemBitmapAsynclyScaledOver(Context aContext, int aReqWidth, int aReqHeight, OnCompletedLoadBitmapCallback aCallback){
-        MapActivity.cExecutors.execute(new Runnable() {
+        TouringMapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 Bitmap bitmap = loadBitmap(aContext, aReqWidth, aReqHeight, SCALE_OVER_OPERATOR);

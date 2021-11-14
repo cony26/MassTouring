@@ -45,7 +45,7 @@ public class FocusedDrawable {
         oMaxHeight = point.y;
 
         oBitmap = oFocusedItem.getPicture().getBitmapSynclyScaledWithin(oContext, oMaxWidth, oMaxHeight);
-        MapActivity.cExecutors.execute(new Runnable() {
+        TouringMapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 int nextIndex = oIndex + 1;
@@ -88,7 +88,7 @@ public class FocusedDrawable {
             nextIndex = 0;
         }
         oIndex = nextIndex;
-        MapActivity.cExecutors.execute(new Runnable() {
+        TouringMapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 oNextBitmap = oDistributedItems.get(oIndex).getPicture().getBitmapSynclyScaledWithin(oContext, oMaxWidth, oMaxHeight);
@@ -111,7 +111,7 @@ public class FocusedDrawable {
             prevIndex = oDistributedItems.size() - 1;
         }
         oIndex = prevIndex;
-        MapActivity.cExecutors.execute(new Runnable() {
+        TouringMapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 oPrevBitmap = oDistributedItems.get(oIndex).getPicture().getBitmapSynclyScaledWithin(oContext, oMaxWidth, oMaxHeight);
@@ -142,7 +142,7 @@ public class FocusedDrawable {
         }
 
         int cycle = 200 / Const.FPS_MILLIS;
-        MapActivity.cExecutors.execute(new Runnable() {
+        TouringMapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 for(int i = 0; i < cycle; i++){

@@ -32,7 +32,11 @@ class TouringMapActivity : AppCompatActivity() {
     lateinit var recordServiceConnector: RecordServiceConnector
     @Inject
     lateinit var applicationLifeCycleObserver: ApplicationLifeCycleObserver
-    val cExecutors: ExecutorService = Executors.newFixedThreadPool(5)
+
+    companion object{
+        @JvmField
+        val cExecutors: ExecutorService = Executors.newFixedThreadPool(5)
+    }
 
     private lateinit var toolbar : Toolbar
 

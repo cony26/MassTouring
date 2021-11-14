@@ -19,10 +19,9 @@ import com.example.masstouring.common.ApplicationLifeCycleObserver;
 import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
-import com.example.masstouring.common.LoggerTask;
-import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.mapactivity.RecordState;
+import com.example.masstouring.mapactivity.TouringMapActivity;
 import com.example.masstouring.repository.Repository;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
@@ -94,7 +93,7 @@ public class RecordService extends LifecycleService {
         new LifeCycleLogger(this);
         oBoundLocationClient = new BoundLocationClient(this, this, oLocCallback);
 
-        Intent openMapIntent = new Intent(this, MapActivity.class);
+        Intent openMapIntent = new Intent(this, TouringMapActivity.class);
         openMapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent openMapPendingIntent = PendingIntent.getActivity(this, 0, openMapIntent, 0);
 

@@ -191,7 +191,7 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
 
 
     public void addPictureMarkersOnMapAsyncly(RecordItem aRecordItem){
-        MapActivity.cExecutors.execute(new Runnable() {
+        TouringMapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 List<Picture> picturesList = MediaAccessUtil.loadPictures(oMapFragment.getContext(), aRecordItem);
@@ -201,7 +201,7 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
     }
 
     public void removePictureMarkersOnMapAsyncly(RecordItem aRecordItem){
-        MapActivity.cExecutors.execute(new Runnable() {
+        TouringMapActivity.cExecutors.execute(new Runnable() {
             @Override
             public void run() {
                 List<Picture> picturesList = MediaAccessUtil.loadPictures(oMapFragment.getContext(), aRecordItem);
