@@ -44,7 +44,7 @@ public class HomeTouringMapFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new LifeCycleLogger(this, getClass().getSimpleName());
+        new LifeCycleLogger(this);
         BackPressedCallbackRegisterer.initialize((AppCompatActivity)getActivity());
         mapActivitySharedViewModel = new ViewModelProvider(requireActivity()).get(MapActivtySharedViewModel.class);
     }

@@ -38,7 +38,7 @@ class TouringMapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LoggerTask.getInstance().setMapActivityState(true)
-        LifeCycleLogger(this, javaClass.simpleName)
+        LifeCycleLogger(this)
         checkPermissions()
 
         setContentView(R.layout.touring_map_activity)

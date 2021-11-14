@@ -9,9 +9,9 @@ import androidx.lifecycle.OnLifecycleEvent;
 
 public class LifeCycleLogger implements LifecycleObserver {
     private final String oClassname;
-    public LifeCycleLogger(LifecycleOwner aOwner, String aClassName){
+    public LifeCycleLogger(LifecycleOwner aOwner){
         aOwner.getLifecycle().addObserver(this);
-        oClassname = aClassName;
+        oClassname = aOwner.getClass().getSimpleName();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)

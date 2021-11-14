@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -18,13 +17,10 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.OnLifecycleEvent;
 
-import com.example.masstouring.common.Const;
 import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTask;
 import com.example.masstouring.database.DatabaseHelper;
-import com.example.masstouring.mapactivity.MapActivity;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.mapactivity.TouringMapActivity;
@@ -40,23 +36,14 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private int count = 0;
@@ -64,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LoggerTask.initialize(getApplicationContext());
-        new LifeCycleLogger(this, getClass().getSimpleName());
+        new LifeCycleLogger(this);
         setContentView(R.layout.activity_main);
         setButtonClickListeners();
     }

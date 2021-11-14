@@ -66,7 +66,7 @@ public class MapActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LoggerTask.getInstance().setMapActivityState(true);
-        new LifeCycleLogger(this, getClass().getSimpleName());
+        new LifeCycleLogger(this);
         BackPressedCallbackRegisterer.initialize(this);
         checkPermissions();
         setContentView(R.layout.activity_maps);

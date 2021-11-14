@@ -65,7 +65,7 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
         oMapFragment = aMapFragment;
         oMapFragment.getMapAsync(this);
         oMapFragment.getLifecycle().addObserver(this);
-        new LifeCycleLogger(oMapFragment.getViewLifecycleOwner(), oMapFragment.getClass().getSimpleName());
+        new LifeCycleLogger(oMapFragment.getViewLifecycleOwner());
         oMapActivityViewModel = new ViewModelProvider(aAppCompatActivity).get(MapActivtySharedViewModel.class);
         oGoogleMapViewModel = new ViewModelProvider(oMapFragment.getParentFragment()).get(GoogleMapViewModel.class);
         subscribeLiveData();
