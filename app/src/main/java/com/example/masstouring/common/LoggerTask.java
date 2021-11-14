@@ -14,28 +14,16 @@ import java.time.LocalDateTime;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class LoggerTask extends Thread {
+public class LoggerTask extends Thread{
     private final Context oContext;
-    private final String oOutputFileName;
-    private boolean oMainActivityState = false;
-    private boolean oMapActivityState = false;
-    private boolean oRecordServiceState = false;
-    private static LoggerTask oSingleton = null;
-    private LoggerTask(Context aContext){
+    private String oOutputFileName;
+    private final ApplicationLifeCycleObserver oApplicationLifeCycleObserver;
+    private boolean oLoggingCompleted = false;
+
+    LoggerTask(Context aContext, ApplicationLifeCycleObserver aApplicationLifeCycleObserver){
         oContext = aContext;
         oOutputFileName = LocalDateTime.now().format(Const.LOG_OUTPUT_FILE_DATE_FORMAT);
-        oMainActivityState = true;
-    }
-
-    public static void initialize(Context aContext){
-        if(oSingleton == null){
-            oSingleton = new LoggerTask(aContext);
-            oSingleton.start();
-        }
-    }
-
-    public static LoggerTask getInstance(){
-        return oSingleton;
+        oApplicationLifeCycleObserver = aApplicationLifeCycleObserver;
     }
 
     boolean isLoggingCompleted(){
@@ -80,13 +68,13 @@ public class LoggerTask extends Thread {
             oOutputFileName += "_exception";
         }finally {
             proc.destroy();
-            Log.i(LoggerTag.SYSTEM_PROCESS, "finish logging output");
+            oLoggingCompleted = true;
+
+            if(zipFile(oOutputFileName + ".zip", oOutputFileName + ".txt")){
+                oContext.deleteFile(oOutputFileName + ".txt");
+                Log.i(LoggerTag.LOG_PROCESS, "successfully deleted the original log file.");
+            }
         }
-
-        zipFile(oOutputFileName + ".zip", oOutputFileName + ".txt");
-
-        oContext.deleteFile(oOutputFileName + ".txt");
-        Log.i(LoggerTag.SYSTEM_PROCESS, "successfully deleted the original log file.");
     }
 
     private boolean zipFile(String aZipFileName, String aOriginalFileName){
