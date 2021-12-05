@@ -19,8 +19,8 @@ public class Const {
     public static final String M_UNIT = "m";
 
     //parameter for location
-    public static int UPDATE_INTERVAL = 1000;
-    public static int UPDATE_FASTEST_INTERVAL = 500;
+    public static int UPDATE_INTERVAL = 2000;
+    public static int UPDATE_FASTEST_INTERVAL = 1000;
     public static double DISTANCE_GAP = 0.5;
 
     //DB

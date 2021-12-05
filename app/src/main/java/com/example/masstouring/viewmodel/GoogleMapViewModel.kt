@@ -19,6 +19,7 @@ class GoogleMapViewModel @Inject constructor(
 ): ViewModel(){
     var recordingPolyline: Polyline? = null
     var recordingPolylineOptions: PolylineOptions? = null
+    var renderedPolylineMap: Map<Int, List<Polyline>> = HashMap()
     val isClusterDistributed = MutableLiveData(false)
 
     fun updatePolyline(googleMap: GoogleMap, location: Location){

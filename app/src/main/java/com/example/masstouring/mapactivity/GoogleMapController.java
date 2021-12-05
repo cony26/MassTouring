@@ -50,7 +50,6 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
     private final SupportMapFragment oMapFragment;
     private final MapActivtySharedViewModel oMapActivityViewModel;
     private final GoogleMapViewModel oGoogleMapViewModel;
-    private Map<Integer, List<Polyline>> oRenderedPolylineMap = new HashMap<>();
     private final PrioritizedOnBackPressedCallback oOnBackPressedCallbackWhenClusterDistributed = new PrioritizedOnBackPressedCallback(false, PrioritizedOnBackPressedCallback.CLUSTER_DISTRIBUTED) {
         @Override
         public void handleOnBackPressed() {
@@ -106,7 +105,7 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
                     for(PolylineOptions polylineOptions : polylineOptionsList)
                         polylineList.add(oMap.addPolyline(polylineOptions));
 
-                    oRenderedPolylineMap.put(item.getId(), polylineList);
+                    oGoogleMapViewModel.getRenderedPolylineMap().put(item.getId(), polylineList);
                     oMapActivityViewModel.getRenderedIdList().add(item.getId());
                     addPictureMarkersOnMapAsyncly(item);
                 }
@@ -234,8 +233,8 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
     }
 
     public void removePolyline(int aId){
-        oRenderedPolylineMap.get(aId).stream().forEach(polyline -> polyline.remove());
-        oRenderedPolylineMap.remove(aId);
+        oGoogleMapViewModel.getRenderedPolylineMap().get(aId).stream().forEach(Polyline::remove);
+        oGoogleMapViewModel.getRenderedPolylineMap().remove(aId);
     }
 
     public void moveCameraToLastLocation(int aRecordId){
@@ -250,7 +249,7 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
         oClusterManager.clearItems();
         oClusterManager.cluster();
         oMapActivityViewModel.getRenderedIdList().clear();
-        oRenderedPolylineMap.clear();
+        oGoogleMapViewModel.getRenderedPolylineMap().clear();
         oMap.clear();
         oGoogleMapViewModel.setRecordingPolylineOptions(new PolylineOptions());
     }
