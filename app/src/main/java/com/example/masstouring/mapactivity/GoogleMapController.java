@@ -101,13 +101,43 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
                 RecordItem item = polylineRenderEvent.getContentIfNotHandled();
                 if(item != null){
                     List<PolylineOptions> polylineOptionsList = item.createPolylineOptions();
-                    List<Polyline> polylineList = new ArrayList<>();
-                    for(PolylineOptions polylineOptions : polylineOptionsList)
-                        polylineList.add(oMap.addPolyline(polylineOptions));
+                    Map<Integer, List<PolylineOptions>> oldList = oGoogleMapViewModel.getRenderedPolylineOptions().getValue();
+                    oldList.put(item.getId(), polylineOptionsList);
+                    oGoogleMapViewModel.getRenderedPolylineOptions().getValue().put(item.getId(), polylineOptionsList);
+                }
+            }
+        });
 
-                    oGoogleMapViewModel.getRenderedPolylineMap().put(item.getId(), polylineList);
-                    oMapActivityViewModel.getRenderedIdList().add(item.getId());
-                    addPictureMarkersOnMapAsyncly(item);
+        oGoogleMapViewModel.getRenderedPolylineOptions().observe(oMapFragment, new Observer<Map<Integer, List<PolylineOptions>>>() {
+            @Override
+            public void onChanged(Map<Integer, List<PolylineOptions>> polylineOptionsMap) {
+                List<Integer> shouldRemoveIdList = new ArrayList<>();
+                for(int id : polylineOptionsMap.keySet()){
+
+                    //the polyline has been already drawn
+                    List<Polyline> polylineList = oGoogleMapViewModel.getRenderedPolylineMap().get(id);
+                    if(polylineList != null && polylineList.stream().anyMatch(Polyline::isVisible)){
+                        continue;
+                    }
+
+                    List<PolylineOptions> polylineOptionsList = polylineOptionsMap.get(id);
+                    if(polylineOptionsList == null){
+                        shouldRemoveIdList.add(id);
+                        continue;
+                    }
+
+                    List<Polyline> renderedPolylineList = new ArrayList<>();
+                    for(PolylineOptions polylineOptions : polylineOptionsList)
+                        renderedPolylineList.add(oMap.addPolyline(polylineOptions));
+
+                    oGoogleMapViewModel.getRenderedPolylineMap().put(id, renderedPolylineList);
+                    oMapActivityViewModel.getRenderedIdList().add(id);
+                    addPictureMarkersOnMapAsyncly(oMapActivityViewModel.getRecord(id));
+                }
+
+                for(int id : shouldRemoveIdList){
+                    polylineOptionsMap.remove(id);
+                    oMapActivityViewModel.getRenderedIdList().remove(id);
                 }
             }
         });

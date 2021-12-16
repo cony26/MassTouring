@@ -1,6 +1,7 @@
 package com.example.masstouring.viewmodel
 
 import android.location.Location
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -19,6 +20,7 @@ class GoogleMapViewModel @Inject constructor(
 ): ViewModel(){
     var recordingPolyline: Polyline? = null
     var recordingPolylineOptions: PolylineOptions? = null
+    val renderedPolylineOptions: LiveData<Map<Int, List<PolylineOptions>>> = MutableLiveData(HashMap())
     var renderedPolylineMap: Map<Int, List<Polyline>> = HashMap()
     val isClusterDistributed = MutableLiveData(false)
 
