@@ -128,4 +128,11 @@ class MapActivtySharedViewModel @Inject constructor(
     public interface IRecordItemOperationCallback{
         fun onCompleting()
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        repository.getCachedRecordItems().stream().forEach {
+            it -> it.initializeUIFlags()
+        }
+    }
 }

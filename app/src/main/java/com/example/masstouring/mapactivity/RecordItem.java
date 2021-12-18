@@ -221,4 +221,9 @@ public class RecordItem {
 
         return area;
     }
+
+    public void initializeUIFlags(){
+        oSelected = false;
+        oRendered = false;
+    }
 }
