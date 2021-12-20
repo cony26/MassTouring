@@ -22,7 +22,7 @@ import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.mapactivity.RecordObject;
 import com.example.masstouring.mapactivity.RecordState;
 import com.example.masstouring.mapactivity.TouringMapActivity;
-import com.example.masstouring.repository.Repository;
+import com.example.masstouring.repository.RecordItemRepository;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
 
@@ -63,7 +63,7 @@ public class RecordService extends LifecycleService {
     private RecordObject oRecordObject = null;
     private RecordState oRecordState = RecordState.STOP;
     @Inject
-    Repository oRepository;
+    RecordItemRepository oRepository;
     @Inject
     ApplicationLifeCycleObserver oApplicationLifeCycleObserver;
 

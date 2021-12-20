@@ -18,13 +18,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.masstouring.R;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.event.FitAreaEvent;
-import com.example.masstouring.event.PolylineRenderEvent;
 import com.example.masstouring.event.RemoveRecordItemEvent;
 import com.example.masstouring.mapactivity.DeleteConfirmationDialog.IDeleteConfirmationDialogCallback;
 import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 public class RecordViewController implements LifecycleObserver, IItemClickCallback{
@@ -106,11 +103,8 @@ public class RecordViewController implements LifecycleObserver, IItemClickCallba
         if(locationMap.size() <= 1)
             return;
 
-        if(aRecordItem.isRendered()){
-            oMapActivitySharedViewModel.getRemoveRecordItemEvent().setValue(new RemoveRecordItemEvent(aRecordItem));
-        }else{
+        if(!aRecordItem.isRendered()){
             oMapActivitySharedViewModel.getFitAreaEvent().setValue(new FitAreaEvent(aRecordItem));
-            oMapActivitySharedViewModel.getPolylineRenderEvent().setValue(new PolylineRenderEvent(aRecordItem));
         }
 
         oMapActivitySharedViewModel.isTracePosition().setValue(false);

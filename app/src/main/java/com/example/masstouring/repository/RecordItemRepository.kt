@@ -10,12 +10,37 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class Repository @Inject constructor(
+class RecordItemRepository @Inject constructor(
         private val db : DatabaseHelper
 ) {
     private var initialized : Boolean = false
     private val cachedRecordItems: MutableList<RecordItem> = mutableListOf()
     private val lock: ReentrantLock = ReentrantLock()
+    public interface IRecordItemListener{
+        fun onRecordItemStateChanged(recordItem: RecordItem)
+    }
+    private val listeners: MutableList<IRecordItemListener> = mutableListOf()
+
+    fun addRecordItemStateChangeListener(listener: IRecordItemListener){
+        listeners.add(listener)
+    }
+
+    fun removeRecordItemStateChangeListener(listener: IRecordItemListener){
+        listeners.remove(listener)
+    }
+
+    fun updateRecordItem(newRecordItem: RecordItem){
+        lock.lock()
+        try{
+            val index = cachedRecordItems.indexOf(loadRecordItem(newRecordItem.id))
+            cachedRecordItems.removeAt(index)
+            cachedRecordItems.add(index, newRecordItem)
+        }finally {
+            lock.unlock()
+        }
+
+        listeners.stream().forEach { listener -> listener.onRecordItemStateChanged(newRecordItem) }
+    }
 
     fun restorePolylineOptionsFrom(aId: Int): PolylineOptions?{
         return db.restorePolylineOptionsFrom(aId)

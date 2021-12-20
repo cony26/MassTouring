@@ -25,6 +25,7 @@ public class RecordItem {
     private final Map<Integer, LatLng> oLocationMap;
     private final Map<Integer, String> oTimeStampMap;
     private final Map<Integer, Double> oSpeedkmphMap;
+    private List<PolylineOptions> oPolylineOptionsList;
     private boolean oSelected = false;
     private boolean oRendered = false;
     private boolean oHasAllData;
@@ -151,6 +152,10 @@ public class RecordItem {
     }
 
     public List<PolylineOptions> createPolylineOptions(){
+        if(oPolylineOptionsList != null){
+            return oPolylineOptionsList;
+        }
+
         double maxSpeedKmph = oSpeedkmphMap.values().stream().max(Double::compareTo).orElse(0.0);
         double minSpeedKmph = oSpeedkmphMap.values().stream().min(Double::compareTo).orElse(0.0);
         double diff = maxSpeedKmph - minSpeedKmph;
@@ -175,7 +180,10 @@ public class RecordItem {
             polylineOptions.add(oLocationMap.get(i));
             prevColor = color;
         }
-        return polylineOptionsList;
+
+        oPolylineOptionsList = polylineOptionsList;
+
+        return oPolylineOptionsList;
     }
 
     private int calculateColorForNewSpeed(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph){

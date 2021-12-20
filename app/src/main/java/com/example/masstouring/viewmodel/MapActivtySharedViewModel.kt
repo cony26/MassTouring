@@ -1,27 +1,23 @@
 package com.example.masstouring.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.masstouring.R
 import com.example.masstouring.common.LoggerTag
 import com.example.masstouring.event.*
 import com.example.masstouring.mapactivity.RecordItem
 import com.example.masstouring.mapactivity.RecordState
 import com.example.masstouring.recordservice.ILocationUpdateCallback
-import com.example.masstouring.repository.Repository
+import com.example.masstouring.repository.RecordItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MapActivtySharedViewModel @Inject constructor(
         private val savedStateHandle: SavedStateHandle,
-        private val repository : Repository
-): ViewModel() {
+        private val repository : RecordItemRepository
+): ViewModel(), RecordItemRepository.IRecordItemListener{
     val isTracePosition = MutableLiveData(true)
     val recordState = MutableLiveData(RecordState.STOP)
     val recordStartEvent = MutableLiveData<RecordStartEvent>()
@@ -34,10 +30,15 @@ class MapActivtySharedViewModel @Inject constructor(
         get() = recordState.value == RecordState.RECORDING
     val locationUpdateCallback = MutableLiveData<ILocationUpdateCallback>()
     val restoreEvent = MutableLiveData<RestoreFromServiceEvent>()
-    val polylineRenderEvent = MutableLiveData<PolylineRenderEvent>()
     val fitAreaEvent = MutableLiveData<FitAreaEvent>()
-    val removeRecordItemEvent = MutableLiveData<RemoveRecordItemEvent>()
-    val renderedIdList: List<Int> = ArrayList()
+
+    init {
+        repository.addRecordItemStateChangeListener(this);
+    }
+
+    override fun onRecordItemStateChanged(recordItem: RecordItem) {
+        //do nothing
+    }
 
     //Start/EndRecordButton
     fun onRecordButtonClick() {
@@ -117,12 +118,8 @@ class MapActivtySharedViewModel @Inject constructor(
         repository.deleteRecord(aIds)
     }
 
-    fun isRendered(aId: Int): Boolean {
-        return renderedIdList.contains(aId)
-    }
-
     fun isNothingRendered(): Boolean {
-        return renderedIdList.isEmpty()
+        return repository.getCachedRecordItems().stream().noneMatch(RecordItem::isRendered)
     }
 
     public interface IRecordItemOperationCallback{
@@ -131,8 +128,13 @@ class MapActivtySharedViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        repository.removeRecordItemStateChangeListener(this)
         repository.getCachedRecordItems().stream().forEach {
             it -> it.initializeUIFlags()
         }
+    }
+
+    fun updateRecordItem(newRecordItem: RecordItem){
+        repository.updateRecordItem(newRecordItem)
     }
 }

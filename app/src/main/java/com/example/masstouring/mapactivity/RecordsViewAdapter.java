@@ -100,6 +100,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder>{
                 view.setBackgroundColor(color);
                 callback.onRecordItemClick(recordItem);
                 recordItem.setRendered(!recordItem.isRendered());
+                viewModel.updateRecordItem(recordItem);
                 Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "record item clicked : " + recordItem.toString());
             }
         });

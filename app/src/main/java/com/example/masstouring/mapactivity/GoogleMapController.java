@@ -20,8 +20,6 @@ import com.example.masstouring.common.LifeCycleLogger;
 import com.example.masstouring.common.LoggerTag;
 import com.example.masstouring.common.MediaAccessUtil;
 import com.example.masstouring.event.FitAreaEvent;
-import com.example.masstouring.event.PolylineRenderEvent;
-import com.example.masstouring.event.RemoveRecordItemEvent;
 import com.example.masstouring.event.RestoreFromServiceEvent;
 import com.example.masstouring.recordservice.ILocationUpdateCallback;
 import com.example.masstouring.viewmodel.GoogleMapViewModel;
@@ -38,12 +36,14 @@ import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GoogleMapController implements OnMapReadyCallback, LifecycleObserver, ILocationUpdateCallback {
     private GoogleMap oMap;
     private ClusterManager<Picture> oClusterManager;
     private PictureClusterRenderer oPictureClusterRenderer = null;
     private ClusterDistributer oClusterDistributer;
+    private Map<Integer, PolylineInfo> lastPolylineInfoMap = null;
     private final SupportMapFragment oMapFragment;
     private final MapActivtySharedViewModel oMapActivityViewModel;
     private final GoogleMapViewModel oGoogleMapViewModel;
@@ -64,7 +64,6 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
         new LifeCycleLogger(oMapFragment.getViewLifecycleOwner());
         oMapActivityViewModel = new ViewModelProvider(aAppCompatActivity).get(MapActivtySharedViewModel.class);
         oGoogleMapViewModel = new ViewModelProvider(oMapFragment.getParentFragment()).get(GoogleMapViewModel.class);
-        subscribeLiveData();
         BackPressedCallbackRegisterer.getInstance().register(oOnBackPressedCallbackWhenClusterDistributed);
         oMapActivityViewModel.getLocationUpdateCallback().setValue(this);
     }
@@ -92,28 +91,14 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
             }
         });
 
-        oMapActivityViewModel.getPolylineRenderEvent().observe(oMapFragment, new Observer<PolylineRenderEvent>() {
-            @Override
-            public void onChanged(PolylineRenderEvent polylineRenderEvent) {
-                RecordItem item = polylineRenderEvent.getContentIfNotHandled();
-                if(item != null){
-                    List<PolylineOptions> polylineOptionsList = item.createPolylineOptions();
-                    Map<Integer, PolylineInfo> map = oGoogleMapViewModel.getRenderedPolylineInfo().getValue();
-                    map.put(item.getId(), new PolylineInfo(polylineOptionsList));
-                    oGoogleMapViewModel.getRenderedPolylineInfo().postValue(map);
-                }
-            }
-        });
-
         oGoogleMapViewModel.getRenderedPolylineInfo().observe(oMapFragment, new Observer<Map<Integer, PolylineInfo>>() {
             @Override
             public void onChanged(Map<Integer, PolylineInfo> polylineInfoMap) {
-                List<Integer> shouldRemoveIdList = new ArrayList<>();
+                //add Polyline
                 for(int id : polylineInfoMap.keySet()){
                     PolylineInfo info = polylineInfoMap.get(id);
                     if(info == null){
                         Log.e(LoggerTag.POLYLINE_PROCESS, "polylineInfo " + id + " is null.");
-                        shouldRemoveIdList.add(id);
                         continue;
                     }
 
@@ -123,21 +108,33 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
                         continue;
                     }
 
+                    //draw new Polyline
                     List<PolylineOptions> polylineOptionsList = info.getPolylineOptionsList();
-
                     List<Polyline> renderedPolylineList = new ArrayList<>();
-                    for(PolylineOptions polylineOptions : polylineOptionsList)
+                    for(PolylineOptions polylineOptions : polylineOptionsList){
                         renderedPolylineList.add(oMap.addPolyline(polylineOptions));
-
+                    }
                     info.setPolylineList(renderedPolylineList);
-                    oMapActivityViewModel.getRenderedIdList().add(id);
                     addPictureMarkersOnMapAsyncly(oMapActivityViewModel.getRecord(id));
                 }
 
-                for(int id : shouldRemoveIdList){
-                    polylineInfoMap.remove(id);
-                    oMapActivityViewModel.getRenderedIdList().remove(id);
+                //remove Polyline
+                if(lastPolylineInfoMap != null){
+                    List<Integer> shouldRemoveIdList = lastPolylineInfoMap.keySet().stream().filter(id -> !polylineInfoMap.containsKey(id)).collect(Collectors.toList());
+                    for(int id : shouldRemoveIdList){
+                        PolylineInfo polylineInfo = lastPolylineInfoMap.get(id);
+                        if(polylineInfo != null){
+                            List<Polyline> polylineList = polylineInfo.getPolylineList();
+                            if(polylineList != null){
+                                polylineList.stream().filter(Objects::nonNull).forEach(Polyline::remove);
+                                Log.v(LoggerTag.POLYLINE_PROCESS, "polyline " + id + " was removed");
+                            }
+                        }
+                        removePictureMarkersOnMapAsyncly(oMapActivityViewModel.getRecord(id));
+                    }
                 }
+
+                lastPolylineInfoMap = new HashMap<>(polylineInfoMap);
             }
         });
 
@@ -150,17 +147,6 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
                         LatLngBounds fitArea = item.createFitAreaFrom();
                         oMap.moveCamera(CameraUpdateFactory.newLatLngBounds(fitArea, 0));
                     }
-                }
-            }
-        });
-
-        oMapActivityViewModel.getRemoveRecordItemEvent().observe(oMapFragment, new Observer<RemoveRecordItemEvent>() {
-            @Override
-            public void onChanged(RemoveRecordItemEvent removeRecordItemEvent) {
-                RecordItem item = removeRecordItemEvent.getContentIfNotHandled();
-                if(item != null){
-                    removePolyline(item.getId());
-                    removePictureMarkersOnMapAsyncly(item);
                 }
             }
         });
@@ -198,6 +184,7 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
             }
         });
         instantiateClusterManagers();
+        subscribeLiveData();
     }
 
     @Override
@@ -260,30 +247,6 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
         });
     }
 
-    public void removePolyline(int aId){
-        Map<Integer, PolylineInfo> map = oGoogleMapViewModel.getRenderedPolylineInfo().getValue();
-        if(map == null){
-            return;
-        }
-
-        PolylineInfo info = map.get(aId);
-        if(info == null){
-            map.remove((Object)aId);
-            return;
-        }
-
-        List<Polyline> polylineList = info.getPolylineList();
-        if(polylineList == null){
-            map.remove((Object)aId);
-            return;
-        }
-
-        polylineList.stream().filter(Objects::nonNull).forEach(Polyline::remove);
-        map.remove((Object)aId);
-        oGoogleMapViewModel.getRenderedPolylineInfo().postValue(map);
-        oMapActivityViewModel.getRenderedIdList().remove((Object)aId);
-    }
-
     public void moveCameraToLastLocation(int aRecordId){
         LatLng latLng = oGoogleMapViewModel.getLastLatLngFrom(aRecordId);
         if(latLng != null){
@@ -292,15 +255,18 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
     }
 
     public void initialize(){
-        oClusterDistributer.detachDistributedView();
-        oClusterManager.clearItems();
-        oClusterManager.cluster();
-        oMapActivityViewModel.getRenderedIdList().clear();
-        oGoogleMapViewModel.getRenderedPolylineMap().clear();
-        oMap.clear();
+        clearMapContents();
         oGoogleMapViewModel.setRecordingPolylineOptions(new PolylineOptions());
     }
 
+    private void clearMapContents(){
+        oClusterDistributer.detachDistributedView();
+        oClusterManager.clearItems();
+        oClusterManager.cluster();
+        lastPolylineInfoMap = null;
+        oMap.clear();
+        oGoogleMapViewModel.clearPolyline();
+    }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     public void onResume(){
@@ -308,13 +274,12 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     public void clearAll(){
-//        oClusterManager.clearItems();
-//        oClusterManager.cluster();
-//        oPictureClusterRenderer.setOnClusterClickListener(null);
-//        oPictureClusterRenderer.setOnClusterItemClickListener(null);
-//        oClusterManager.getMarkerCollection().clear();
-//        oPictureClusterRenderer.onRemove();
         oMapActivityViewModel.getLocationUpdateCallback().setValue(null);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    public void onDestroy(){
+        clearMapContents();
     }
 
     private void instantiateClusterManagers(){
@@ -335,5 +300,4 @@ public class GoogleMapController implements OnMapReadyCallback, LifecycleObserve
             }
         });
     }
-
 }
