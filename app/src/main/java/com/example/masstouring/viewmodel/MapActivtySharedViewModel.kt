@@ -129,9 +129,7 @@ class MapActivtySharedViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         repository.removeRecordItemStateChangeListener(this)
-        repository.getCachedRecordItems().stream().forEach {
-            it -> it.initializeUIFlags()
-        }
+        repository.initializeRecordItemState()
     }
 
     fun updateRecordItem(newRecordItem: RecordItem){

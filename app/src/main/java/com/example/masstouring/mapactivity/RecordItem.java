@@ -18,118 +18,134 @@ import java.util.Map;
 import java.util.Set;
 
 public class RecordItem {
-    private final int oId;
-    private final LocalDateTime oStartDate;
-    private final LocalDateTime oEndDate;
-    private final double oDistance;
-    private final Map<Integer, LatLng> oLocationMap;
-    private final Map<Integer, String> oTimeStampMap;
-    private final Map<Integer, Double> oSpeedkmphMap;
-    private List<PolylineOptions> oPolylineOptionsList;
-    private boolean oSelected = false;
-    private boolean oRendered = false;
-    private boolean oHasAllData;
+    private final int id;
+    private final LocalDateTime startDate;
+    private final LocalDateTime endDate;
+    private final double distance;
+    private final Map<Integer, LatLng> locationMap;
+    private final Map<Integer, String> timeStampMap;
+    private final Map<Integer, Double> speedkmphMap;
+    private final boolean selected;
+    private final boolean rendered;
+    private final boolean hasAllData;
     private static final int alpha = 0x80000000;
     public static final int INVALID_ID = -1;
     public static final RecordItem EMPTY_RECORD = new RecordItem(INVALID_ID);
 
     public RecordItem(int aID, String aStartDateText, String aEndDateText, Map aLocationMap, Map aTimeStampMap, Map aSpeedKmphMap){
-        oId = aID;
+        id = aID;
 
-        oStartDate = LocalDateTime.parse(aStartDateText, Const.DATE_FORMAT);
+        startDate = LocalDateTime.parse(aStartDateText, Const.DATE_FORMAT);
 
         if(aEndDateText.equals(Const.NO_INFO)){
-            oEndDate = null;
+            endDate = null;
         }else {
-            oEndDate = LocalDateTime.parse(aEndDateText, Const.DATE_FORMAT);
+            endDate = LocalDateTime.parse(aEndDateText, Const.DATE_FORMAT);
         }
 
-        oLocationMap = aLocationMap;
-        oTimeStampMap = aTimeStampMap;
-        oSpeedkmphMap = aSpeedKmphMap;
-        oDistance = calculateDistance(aLocationMap);
-        oHasAllData = true;
+        locationMap = aLocationMap;
+        timeStampMap = aTimeStampMap;
+        speedkmphMap = aSpeedKmphMap;
+        distance = calculateDistance(aLocationMap);
+        selected = false;
+        rendered = false;
+        hasAllData = true;
     }
 
     public RecordItem(int aId){
-        oId = aId;
-        oStartDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);;
-        oEndDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);
-        oLocationMap = null;
-        oTimeStampMap = null;
-        oSpeedkmphMap = null;
-        oDistance = 0;
-        oHasAllData = false;
+        id = aId;
+        startDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);;
+        endDate = LocalDateTime.parse(Const.DUMMY_DATE_FORMAT, Const.DATE_FORMAT);
+        locationMap = null;
+        timeStampMap = null;
+        speedkmphMap = null;
+        distance = 0;
+        selected = false;
+        rendered = false;
+        hasAllData = false;
+    }
+
+    private RecordItem(RecordItem aRecordItem, boolean aRendered, boolean aSelected, boolean aHasAllData){
+        id = aRecordItem.id;
+        startDate = aRecordItem.startDate;
+        endDate = aRecordItem.endDate;
+        locationMap = aRecordItem.locationMap;
+        timeStampMap = aRecordItem.timeStampMap;
+        speedkmphMap = aRecordItem.speedkmphMap;
+        distance = aRecordItem.distance;
+        selected = aSelected;
+        rendered = aRendered;
+        hasAllData = aHasAllData;
+    }
+
+    public static RecordItem createNewReloadRecordItem(RecordItem aRecordItem){
+        return new RecordItem(aRecordItem, aRecordItem.rendered, aRecordItem.selected, false);
+    }
+
+    public static RecordItem createNewSelectedRecordItem(RecordItem aRecordItem, boolean aSelected){
+        return new RecordItem(aRecordItem, aRecordItem.rendered, aSelected, aRecordItem.hasAllData);
+    }
+
+    public static RecordItem createNewRenderedRecordItem(RecordItem aRecordItem, boolean aRendered){
+        return new RecordItem(aRecordItem, aRendered, aRecordItem.selected, aRecordItem.hasAllData);
     }
 
     public LocalDateTime getStartDate(){
-        return oStartDate;
+        return startDate;
     }
 
     public LocalDateTime getEndDate(){
-        return oEndDate;
+        return endDate;
     }
 
     public int getId() {
-        return oId;
+        return id;
     }
 
     public double getDistance() {
-        return oDistance;
+        return distance;
     }
 
     public Map<Integer, LatLng> getLocationMap() {
-        return oLocationMap;
+        return locationMap;
     }
 
     public Map<Integer, String> getTimeStampMap(){
-        return oTimeStampMap;
+        return timeStampMap;
     }
 
-    public Map<Integer, Double> getSpeedkmphMap(){ return oSpeedkmphMap;}
+    public Map<Integer, Double> getSpeedkmphMap(){ return speedkmphMap;}
 
     public String getYearText() {
-        return Integer.toString(oStartDate.getYear());
+        return Integer.toString(startDate.getYear());
     }
 
     public boolean isSelected() {
-        return oSelected;
-    }
-
-    public void setSelected(boolean aIsSelected) {
-         oSelected = aIsSelected;
-    }
-
-    public void setRendered(boolean aIsRendered){
-        oRendered = aIsRendered;
+        return selected;
     }
 
     public boolean isRendered(){
-        return oRendered;
+        return rendered;
     }
 
     public boolean hasAllData(){
-        return oHasAllData;
-    }
-
-    public void setReloadFlag(){
-        oHasAllData = false;
+        return hasAllData;
     }
 
     @Override
     public String toString(){
         StringBuilder builder = new StringBuilder();
-        builder.append("id:").append(oId).append(",")
+        builder.append("id:").append(id).append(",")
                 .append("Year:").append(getYearText()).append(",")
-                .append("StartDate:").append(oStartDate).append(",")
-                .append("EndDate:").append(oEndDate).append(",")
-                .append("Distance:").append(oDistance).append(",")
+                .append("StartDate:").append(startDate).append(",")
+                .append("EndDate:").append(endDate).append(",")
+                .append("Distance:").append(distance).append(",")
                 .append("Locations:[date, <latitude, longitude>]=");
-        for(int i = 0; i < oLocationMap.size(); i++){
+        for(int i = 0; i < locationMap.size(); i++){
             builder.append("[")
-                    .append(oTimeStampMap.get(i)).append(",<")
-                    .append(oLocationMap.get(i).latitude).append(",")
-                    .append(oLocationMap.get(i).longitude).append(">],");
+                    .append(timeStampMap.get(i)).append(",<")
+                    .append(locationMap.get(i).latitude).append(",")
+                    .append(locationMap.get(i).longitude).append(">],");
         }
         return builder.toString();
     }
@@ -152,20 +168,17 @@ public class RecordItem {
     }
 
     public List<PolylineOptions> createPolylineOptions(){
-        if(oPolylineOptionsList != null){
-            return oPolylineOptionsList;
-        }
 
-        double maxSpeedKmph = oSpeedkmphMap.values().stream().max(Double::compareTo).orElse(0.0);
-        double minSpeedKmph = oSpeedkmphMap.values().stream().min(Double::compareTo).orElse(0.0);
+        double maxSpeedKmph = speedkmphMap.values().stream().max(Double::compareTo).orElse(0.0);
+        double minSpeedKmph = speedkmphMap.values().stream().min(Double::compareTo).orElse(0.0);
         double diff = maxSpeedKmph - minSpeedKmph;
 
         List<PolylineOptions> polylineOptionsList = new ArrayList<>();
         PolylineOptions polylineOptions = null;
         int prevColor = Integer.MIN_VALUE;
 
-        for(int i = 0; i < oLocationMap.size(); i++){
-            int color = calculateColorForNewSpeed(oSpeedkmphMap.get(i), diff, minSpeedKmph);
+        for(int i = 0; i < locationMap.size(); i++){
+            int color = calculateColorForNewSpeed(speedkmphMap.get(i), diff, minSpeedKmph);
 
             if(polylineOptions == null){
                 polylineOptions = new PolylineOptions().color(color);
@@ -177,13 +190,11 @@ public class RecordItem {
                 polylineOptionsList.add(polylineOptions);
                 polylineOptions = new PolylineOptions().color(color);
             }
-            polylineOptions.add(oLocationMap.get(i));
+            polylineOptions.add(locationMap.get(i));
             prevColor = color;
         }
 
-        oPolylineOptionsList = polylineOptionsList;
-
-        return oPolylineOptionsList;
+        return polylineOptionsList;
     }
 
     private int calculateColorForNewSpeed(double aNewSpeedKmph, double aDiffSpeedKmph, double aMinSpeedKmph){
@@ -207,8 +218,8 @@ public class RecordItem {
         Set<Double> latSet = new HashSet<>();
         Set<Double> lonSet = new HashSet<>();
 
-        for(int i = 0; i < oLocationMap.size(); i++){
-            LatLng latLng = oLocationMap.get(i);
+        for(int i = 0; i < locationMap.size(); i++){
+            LatLng latLng = locationMap.get(i);
             latSet.add(latLng.latitude);
             lonSet.add(latLng.longitude);
         }
@@ -228,10 +239,5 @@ public class RecordItem {
         Log.d(LoggerTag.LOCATION, builder.toString());
 
         return area;
-    }
-
-    public void initializeUIFlags(){
-        oSelected = false;
-        oRendered = false;
     }
 }

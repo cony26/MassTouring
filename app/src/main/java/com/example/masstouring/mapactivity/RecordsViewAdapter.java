@@ -20,7 +20,6 @@ import com.example.masstouring.viewmodel.MapActivtySharedViewModel;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder>{
     private final MapActivtySharedViewModel viewModel;
@@ -92,6 +91,7 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder>{
         aHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                RecordItem recordItem = viewModel.getRecordItems(false).get(aPosition);
                 if(recordItem == RecordItem.EMPTY_RECORD){
                     return;
                 }
@@ -99,21 +99,20 @@ public class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewHolder>{
                 int color = recordItem.isRendered() ? initialColor : Color.GRAY;
                 view.setBackgroundColor(color);
                 callback.onRecordItemClick(recordItem);
-                recordItem.setRendered(!recordItem.isRendered());
-                viewModel.updateRecordItem(recordItem);
+                viewModel.updateRecordItem(RecordItem.createNewRenderedRecordItem(recordItem, !recordItem.isRendered()));
                 Log.i(LoggerTag.RECORD_RECYCLER_VIEW, "record item clicked : " + recordItem.toString());
             }
         });
         aHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
+                RecordItem recordItem = viewModel.getRecordItems(false).get(aPosition);
                 if(recordItem == RecordItem.EMPTY_RECORD){
                     return true;
                 }
 
-                boolean originalState = recordItem.isSelected();
-                recordItem.setSelected(!originalState);
-                view.setBackgroundColor(originalState ? initialColor : Color.CYAN);
+                viewModel.updateRecordItem(RecordItem.createNewSelectedRecordItem(recordItem, !recordItem.isSelected()));
+                view.setBackgroundColor(recordItem.isSelected() ? initialColor : Color.CYAN);
                 callback.onRecordItemLongClick();
                 return true;
             }

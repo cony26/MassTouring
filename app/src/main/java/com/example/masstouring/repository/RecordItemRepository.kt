@@ -32,9 +32,7 @@ class RecordItemRepository @Inject constructor(
     fun updateRecordItem(newRecordItem: RecordItem){
         lock.lock()
         try{
-            val index = cachedRecordItems.indexOf(loadRecordItem(newRecordItem.id))
-            cachedRecordItems.removeAt(index)
-            cachedRecordItems.add(index, newRecordItem)
+            replaceRecordItem(loadRecordItem(newRecordItem.id), newRecordItem)
         }finally {
             lock.unlock()
         }
@@ -94,9 +92,7 @@ class RecordItemRepository @Inject constructor(
             }
 
             val loadedItem = db.getRecordItem(aId)
-            val index = cachedRecordItems.indexOf(recordItem)
-            cachedRecordItems.removeAt(index)
-            cachedRecordItems.add(index, loadedItem)
+            replaceRecordItem(recordItem, loadedItem)
             return loadedItem
         }finally {
             lock.unlock()
@@ -166,7 +162,8 @@ class RecordItemRepository @Inject constructor(
     private fun setReloadFlag(id : Int){
         lock.lock()
         try{
-            cachedRecordItems.find { it.id == id }?.setReloadFlag()
+            val item = cachedRecordItems.find { it.id == id } ?: return
+            replaceRecordItem(item, RecordItem.createNewReloadRecordItem(item))
         }finally {
             lock.unlock()
         }
@@ -190,5 +187,24 @@ class RecordItemRepository @Inject constructor(
 
     fun getUniqueId(): Int{
         return db.uniqueID
+    }
+
+    private fun replaceRecordItem(recordItem : RecordItem, newRecordItem: RecordItem){
+        val index = cachedRecordItems.indexOf(recordItem)
+        cachedRecordItems[index] = newRecordItem
+    }
+
+    fun initializeRecordItemState(){
+        lock.lock()
+        try{
+            for(i in 0 until cachedRecordItems.size){
+                val item = cachedRecordItems[i]
+                if(item.isRendered || item.isSelected)
+                    replaceRecordItem(item, RecordItem.createNewReloadRecordItem(item))
+            }
+
+        }finally {
+            lock.unlock()
+        }
     }
 }
